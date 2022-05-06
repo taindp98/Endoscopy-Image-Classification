@@ -1,0 +1,15 @@
+﻿Reference,Year,Purpose,Method,Limitation,Performance
+Amiri et al.,2019,Multi-diseases GI tract,RoI,SVM,Depend on RoI,0.954
+Liu et al.,2017,Multi-diseases GI tract,Project low-dimensional space,SVM,Uses only spatial feature,0.702
+Naqvi et al.,2017,Multi-diseases GI tract,Local Binary Pattern,K-Means,KNN,Logistic Regression,Low F1-score,0.767
+Khan et al.,2018,Multi-diseases GI tract,Global feature,Deep feature,Logistic Regression,Random Forest,Random Trees,Low F1-score,0.752
+Hoang et al.,2019,Multi-diseases GI tract,Mask-RCNN,ResNet,Interact the labeled data,0.934
+Ghatwary et al.,2019,Multi-diseases GI tract,Faster R-CNN,DenseNet,Gabor filter,Low mAP,0.93
+Petscharning et al.,2017,Multi-diseases GI tract,GoogleNet,Low F1-score,0.755
+Steiner et al.,2018,Multi-diseases GI tract,Lucene Image Retrieval,DNN,High computational cost,0.575
+Pogorelov et al.,2017,Multi-diseases GI tract,CNN,Uses only spatial feature,0.747
+Mohapatra et al.,2021,Multi-diseases GI tract,DWT,CNN,Uses only spatial feature,0.936
+Smedsrud et al.,2020,Multi-diseases GI tract,CNN,Uses only spatial feature,0.736
+Borgli et al.,2020,Multi-diseases GI tract,CNN,Uses only spatial feature,0.910
+Attallah et al.,2021,Multi-diseases GI tract,DCT,DWT,CNN,High computational cost,0.971
+Lonseko et al.,2021,Multi-diseases GI tract,ResNet,Attention,Uses only spatial feature,0.928
