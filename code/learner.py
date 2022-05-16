@@ -223,13 +223,12 @@ class BaseLine:
 
     def train_one(self, epoch):
         self.model.train()
-        labeled_iter = iter(self.train_labeled_dl)
-        unlabeled_iter = iter(self.train_unlabeled_dl)
+        
         
         summary_loss = AverageMeter()
         
-        tk0 = tqdm(range(self.config.eval_step), total=self.config.eval_step)
-        
+        tk0 = tqdm(self.train_dl, total=len(self.train_dl))
+
         for step, (images, targets) in enumerate(tk0):
             images = images.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
