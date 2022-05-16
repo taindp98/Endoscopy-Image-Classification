@@ -1,53 +1,80 @@
+from torchvision import transforms
+import numpy as np
+import torch
+from torch.utils.data import Dataset
+from PIL import Image
+from randaugment import RandAugmentMC
+
 import cv2
 import torch
-from torch.utils.data.dataset import Dataset
-from torch.utils.data.dataloader import DataLoader
 from torch import nn
 from torchvision import datasets, transforms
 import torch.nn.functional as F
 import numpy as np
-from PIL import Image
+import os
+mean = [0.485, 0.456, 0.406]
+std = [0.229, 0.224, 0.225]
 
-def deformation(img):
-    h, w = img.shape[:2]
-    xcent = w / 2
-    ycent = h / 2
+class TransformFixMatch(object):
+    def __init__(self, config, mean, std):
+        self.weak = transforms.Compose([
+            transforms.Resize((config['size'],config['size'])),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop(size=config['size'],
+                                  padding=int(config['size']*0.125),
+                                  padding_mode='reflect')])
+        
+        self.strong = transforms.Compose([
+            transforms.Resize((config['size'],config['size'])),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop(size=config['size'],
+                                  padding=int(config['size']*0.125),
+                                  padding_mode='reflect'),
+            RandAugmentMC(n=2, m=10)])
+        self.normalize = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std)])
 
-    # set up the maps as float32 from output square (x,y) to input circle (u,v)
-    map_u = np.zeros((h, w), np.float32)
-    map_v = np.zeros((h, w), np.float32)
+    def __call__(self, x):
+        weak = self.weak(x)
+        strong = self.strong(x)
+        return self.normalize(weak), self.normalize(strong)
 
-    # create u and v maps where x,y is measured from the center and scaled from -1 to 1
-    for y in range(h):
-        y_norm = (y - ycent)/ycent
-        for x in range(w):
-            x_norm = (x - xcent)/xcent
-            map_u[y, x] = xcent * x_norm * np.sqrt(1 - 0.5*y_norm**2) + xcent
-            map_v[y, x] = ycent * y_norm * np.sqrt(1 - 0.5*x_norm**2) + ycent
-    img_deform = cv2.remap(img, map_u, map_v, cv2.INTER_LINEAR, borderMode = cv2.BORDER_REFLECT_101, borderValue=(0,0,0))
-    return img_deform
+def get_transform(config, is_train = False, is_labeled = True):
+    if is_train:
+        if is_labeled:
+            trf_aug = transforms.Compose([
+                transforms.Resize((config['size'],config['size'])),
+                transforms.RandomHorizontalFlip(0.5),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std)])
+        else:
+            trf_aug = TransformFixMatch(config, mean, std)
+    else:
+        trf_aug = transforms.Compose([
+            transforms.Resize((config['size'],config['size'])),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)])
+    return trf_aug
 
 class GIDataset(torch.utils.data.Dataset):
-    def __init__(self, data_frame, config, transforms=None):
-        self.data_frame = data_frame
+    def __init__(self, df, config, transforms=None):
+        self.df = df
         self.transforms = transforms
-        self.len = data_frame.shape[0]
+        self.len = df.shape[0]
         self.config = config
 
     def __len__(self):
         return self.len
 
     def __getitem__(self, index):
-        row = self.data_frame.iloc[index]
-        img_path = row['path']
-        x = cv2.imread(img_path)
+        row = self.df.iloc[index]
+        img_name = row['Image']
+        x = cv2.imread(os.path.join(self.config['data_path'], img_name))
         x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-#         x = deformation(x)
         x = Image.fromarray(x)
-        vec = np.array(row['target'], dtype=float)
+        vec = np.array(row['Categories'], dtype=float)
         y = torch.tensor(vec, dtype=torch.long)
-#         y = F.one_hot(y, num_classes = self.config.MODEL.NUM_CLASSES)
-#         y = y.type(torch.FloatTensor)
         
         if self.transforms:
             x = self.transforms(x)

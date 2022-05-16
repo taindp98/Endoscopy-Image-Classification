@@ -10,7 +10,10 @@ import torch.nn as nn
 from datetime import datetime,date
 import os
 
-
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -41,124 +44,6 @@ def calculate_metrics(pred, target):
            }
     
 
-def train_one(data_loader,model,criterion,optimizer, config, device):
-    model.train()
-    criterion.train()
-    
-    summary_loss = AverageMeter()
-    
-    tk0 = tqdm(data_loader, total=len(data_loader))
-    
-    for step, (images, targets) in enumerate(tk0):
-        images = images.to(device, non_blocking=True)
-        targets = targets.to(device, non_blocking=True)
-        outputs = model(images)
-        if config.MODEL.TYPE == 'attguide':
-            o_global, o_local = outputs
-            l_global = criterion(o_global, targets)
-            l_local = criterion(o_local, targets)
-            losses = 0.8*l_global + 0.2*l_local
-        else:
-            losses = criterion(outputs, targets)
-
-        optimizer.zero_grad()
-
-        losses.backward()
-        optimizer.step()
-#         if scheduler is not None:
-#             scheduler.step()
-        
-        summary_loss.update(losses.item(), config.DATA.BATCH_SIZE)
-        tk0.set_postfix(loss=summary_loss.avg)
-        
-    return summary_loss
-
-def eval_one(data_loader, model,criterion, config, device):
-    model.eval()
-    criterion.eval()
-    summary_loss = AverageMeter()
-    list_outputs = []
-    list_targets = []
-    with torch.no_grad():
-        
-        tk0 = tqdm(data_loader, total=len(data_loader))
-        for step, (images, targets) in enumerate(tk0):
-            images = images.to(device, non_blocking=True)
-            targets = targets.to(device, non_blocking=True)
-            
-            outputs = model(images, is_valid=True)
-            # if config.MODEL.TYPE == 'attguide':
-            #     o_global, o_local = outputs
-            #     l_global = criterion(o_global, targets)
-            #     l_local = criterion(o_local, targets)
-            #     losses = 0.8*l_global + 0.2*l_local
-            #     outputs = o_global
-            # else:
-            losses = criterion(outputs, targets)            
-            summary_loss.update(losses.item(), config.DATA.BATCH_SIZE)
-            tk0.set_postfix(loss=summary_loss.avg)
-            targets = targets.cpu().numpy()
-            outputs = F.softmax(outputs, dim=1)
-            outputs = outputs.cpu().numpy()
-            list_outputs += list(outputs)
-            list_targets += list(targets)
-        metric = calculate_metrics(np.array(list_outputs), np.array(list_targets))
-    return summary_loss, metric
-
-def inference(data_loader, model, device):
-    model.eval()
-    list_outputs = []
-    list_targets = []
-    with torch.no_grad():
-        
-        for step, (images, targets) in tqdm(enumerate(data_loader), total=len(data_loader)):
-            images = images.to(device, non_blocking=True)
-            targets = targets.to(device, non_blocking=True)
-            
-            outputs = model(images)
-            targets = targets.cpu().numpy()
-            outputs = F.softmax(outputs, dim=1)
-            outputs = outputs.cpu().numpy()
-            list_outputs += list(outputs)
-            list_targets += list(targets)
-    return list_outputs, list_targets
-
-def save_checkpoint(model, filepath, epoch):
-    """
-    checkpoint = {
-            'model': best_model,
-            'epoch':epoch+1,
-            'model_state_dict':best_model.state_dict(),
-            'optimizer_state_dict':best_optimizer.state_dict(),
-            'scheduler_state_dict':best_scheduler.state_dict()
-            }
-    """
-    d = date.today().strftime("%m_%d_%Y") 
-    h = datetime.now().strftime("%H_%M_%S").split('_')
-    h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+1
-    h[0] = str(h_offset)
-    h = '_'.join(h)
-    today_time = d +'_'+h
-
-    checkpoint = {
-            'model': model,
-            'epoch':epoch,
-            'model_state_dict':model.state_dict()
-            }
-    f = os.path.join(filepath, today_time + '.pth')
-    torch.save(checkpoint, f)
-    
-def load_checkpoint(model, filepath, is_train=False):
-    checkpoint = torch.load(filepath, map_location = {'cuda:0':'cpu'})    
-    # model = checkpoint['model']
-    model.load_state_dict(checkpoint['model_state_dict'])
-    if is_train:
-        for parameter in model.parameters():
-            parameter.requires_grad = True
-    else:
-        for parameter in model.parameters():
-            parameter.requires_grad = False
-    return model
 
 def show_cfs_matrix(targ, pred):
     C = confusion_matrix(targ, pred)
@@ -181,3 +66,33 @@ def show_batch(inp, title=None):
     if title is not None:
         plt.title(title)
     plt.pause(0.001)  # pause a bit so that plots are updated
+
+def show_grid(list_imgs):
+    fig=plt.figure(figsize=(20,7))
+    rows = 1
+    columns = len(list_imgs)//rows
+    k = 0
+    for i in range(0, rows):
+        for j in range(0, columns):
+            # img = cv2.imread(list_imgs[k])
+            # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            inp = list_imgs[k]
+            inp = inp.numpy().transpose((1, 2, 0))
+            mean = np.array([0.485, 0.456, 0.406])
+            std = np.array([0.229, 0.224, 0.225])
+            inp = std * inp + mean
+            inp = np.clip(inp, 0, 1)
+    
+            fig.add_subplot(rows, columns, k+1)
+            plt.imshow(inp)
+            plt.axis('off')
+            k += 1
+### UTILS FIXMATCH
+def interleave(x, size):
+    s = list(x.shape)
+    return x.reshape([-1, size] + s[1:]).transpose(0, 1).reshape([-1] + s[1:])
+
+
+def de_interleave(x, size):
+    s = list(x.shape)
+    return x.reshape([size, -1] + s[1:]).transpose(0, 1).reshape([-1] + s[1:])
