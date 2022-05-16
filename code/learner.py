@@ -221,13 +221,16 @@ class BaseLine:
 
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
 
+
+
     def train_one(self, epoch):
         self.model.train()
         
-        
+
         summary_loss = AverageMeter()
         
         tk0 = tqdm(self.train_dl, total=len(self.train_dl))
+        num_steps = len(self.train_dl)
 
         for step, (images, targets) in enumerate(tk0):
             images = images.to(self.device, non_blocking=True)
@@ -241,7 +244,7 @@ class BaseLine:
 
             losses.backward()
             self.optimizer.step()
-            self.lr_scheduler.step_update(epoch * self.config.eval_step + batch_idx)
+            self.lr_scheduler.step_update(epoch * num_steps + step)
 
             if self.config.use_ema:
                 self.ema_model.update(self.model)
