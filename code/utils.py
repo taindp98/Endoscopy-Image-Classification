@@ -33,7 +33,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 def calculate_metrics(pred, target):
-    pred = np.argmax(pred, axis=1)
+    # pred = np.argmax(pred, axis=1)
 #     target = np.argmax(target, axis=1)
     return {'micro/precision': precision_score(y_true=target, y_pred=pred, average='micro'),
             'micro/recall': recall_score(y_true=target, y_pred=pred, average='micro'),
@@ -49,7 +49,7 @@ def show_cfs_matrix(targ, pred):
     C = confusion_matrix(targ, pred)
     cmn = C / C.astype('float').sum(axis=1)
     fig, ax = plt.subplots(figsize=(10,10))
-    sns.heatmap(cmn, annot=True, fmt='.2f')
+    sns.heatmap(cmn, annot=True, fmt='.2f', cmap="Blues")
     plt.ylabel('Actual')
     plt.xlabel('Predicted')
     plt.show(block=False)

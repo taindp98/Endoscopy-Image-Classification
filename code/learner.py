@@ -11,6 +11,7 @@ import numpy as np
 from ema import ModelEMA
 from datetime import datetime,date
 import os
+import numpy as np
 
 class FixMatch:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -115,7 +116,10 @@ class FixMatch:
                 outputs = outputs.cpu().numpy()
                 list_outputs += list(outputs)
                 list_targets += list(targets)
-            metric = calculate_metrics(np.array(list_outputs), np.array(list_targets))
+            list_outputs = np.array(list_outputs)
+            list_outputs = np.argmax(list_outputs, axis=1)
+            list_targets = np.array(list_targets)
+            metric = calculate_metrics(list_outputs, list_targets)
             return summary_loss, metric
 
     def fit(self):
@@ -152,6 +156,10 @@ class FixMatch:
                 outputs = outputs.cpu().numpy()
                 list_outputs += list(outputs)
                 list_targets += list(targets)
+            list_outputs = np.array(list_outputs)
+            list_outputs = np.argmax(list_outputs, axis=1)
+            list_targets = np.array(list_targets)
+            
         return list_outputs, list_targets
 
     def save_checkpoint(self, foldname):
@@ -312,8 +320,8 @@ class BaseLine:
         with torch.no_grad():
             
             for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
-                images = images.to(device, non_blocking=True)
-                targets = targets.to(device, non_blocking=True)
+                images = images.to(self.device, non_blocking=True)
+                targets = targets.to(self.device, non_blocking=True)
                 
                 outputs = eval_model(images)
                 targets = targets.cpu().numpy()
@@ -321,6 +329,8 @@ class BaseLine:
                 outputs = outputs.cpu().numpy()
                 list_outputs += list(outputs)
                 list_targets += list(targets)
+        list_outputs = [np.argmax(item) for item in list_outputs]
+        
         return list_outputs, list_targets
 
     def save_checkpoint(self, foldname):
