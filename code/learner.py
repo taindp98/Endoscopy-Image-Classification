@@ -265,35 +265,38 @@ class BaseLine:
 
     def evaluate_one(self):
 
-        if self.config.use_ema:
-            eval_model = self.ema_model.ema
-        else:
-            eval_model = self.model
+            if self.config.use_ema:
+                eval_model = self.ema_model.ema
+            else:
+                eval_model = self.model
 
-        eval_model.eval()
-        
-        summary_loss = AverageMeter()
-        list_outputs = []
-        list_targets = []
-        with torch.no_grad():
+            eval_model.eval()
             
-            tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
-            for step, (images, targets) in enumerate(tk0):
-                images = images.to(self.device, non_blocking=True)
-                targets = targets.to(self.device, non_blocking=True)
+            summary_loss = AverageMeter()
+            list_outputs = []
+            list_targets = []
+            with torch.no_grad():
                 
-                outputs = eval_model(images)
-                losses = ce_loss(outputs, targets, reduction='mean')            
+                tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
+                for step, (images, targets) in enumerate(tk0):
+                    images = images.to(self.device, non_blocking=True)
+                    targets = targets.to(self.device, non_blocking=True)
+                    
+                    outputs = eval_model(images)
+                    losses = ce_loss(outputs, targets, reduction='mean')            
 
-                summary_loss.update(losses.item(), self.config.batch_size)
-                tk0.set_postfix(loss=summary_loss.avg)
-                targets = targets.cpu().numpy()
-                outputs = F.softmax(outputs, dim=1)
-                outputs = outputs.cpu().numpy()
-                list_outputs += list(outputs)
-                list_targets += list(targets)
-            metric = calculate_metrics(np.array(list_outputs), np.array(list_targets))
-            return summary_loss, metric
+                    summary_loss.update(losses.item(), self.config.batch_size)
+                    tk0.set_postfix(loss=summary_loss.avg)
+                    targets = targets.cpu().numpy()
+                    outputs = F.softmax(outputs, dim=1)
+                    outputs = outputs.cpu().numpy()
+                    list_outputs += list(outputs)
+                    list_targets += list(targets)
+                list_outputs = np.array(list_outputs)
+                list_outputs = np.argmax(list_outputs, axis=1)
+                list_targets = np.array(list_targets)
+                metric = calculate_metrics(list_outputs, list_targets)
+                return summary_loss, metric
 
     def fit(self):
         for epoch in range(1, self.config.epochs+1):
