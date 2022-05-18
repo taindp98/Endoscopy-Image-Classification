@@ -12,9 +12,14 @@ from timm.scheduler.scheduler import Scheduler
 
 
 def build_scheduler(config, optimizer):
-    num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.EVAL_STEP)
-    warmup_steps = int(20 * config.TRAIN.EVAL_STEP)
-    decay_steps = int(30 * config.TRAIN.EVAL_STEP)
+    if config.TRAIN.IS_SSL:
+        num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.EVAL_STEP)
+        warmup_steps = int(10 * config.TRAIN.EVAL_STEP)
+        decay_steps = int(30 * config.TRAIN.EVAL_STEP)
+    else:
+        num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.FREQ_EVAL)
+        warmup_steps = int(config.TRAIN.FREQ_EVAL)
+        decay_steps = int(config.TRAIN.FREQ_EVAL)
 
     lr_scheduler = None
     if config.TRAIN.SCH_NAME == 'cosine':
@@ -42,7 +47,7 @@ def build_scheduler(config, optimizer):
             optimizer,
             decay_t=decay_steps,
             decay_rate=0.1,
-            warmup_lr_init=5e-7,
+            warmup_lr_init=5e-3,
             warmup_t=warmup_steps,
             t_in_epochs=False,
         )

@@ -12,19 +12,21 @@ from ema import ModelEMA
 from datetime import datetime,date
 import os
 import numpy as np
+from sklearn.utils import class_weight
 
 class FixMatch:
-    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', class_weights = None):
+    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
         self.model = model
         self.opt_func = opt_func
         self.device = device
         self.model.to(self.device);
-        self.class_weights = class_weights
 
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_labeled_dl, self.train_unlabeled_dl  = train_dl
         self.valid_dl = valid_dl
         self.test_dl = test_dl
+
+
 
     def get_config(self, config):
         self.config = AttrDict(config)
@@ -32,11 +34,18 @@ class FixMatch:
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
-    # def get_opt(self):
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
-    # def get_lr_sch(self):
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
+
+        if self.config.TRAIN.CLS_WEIGHT:
+            self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
+                        classes  = np.unique(self.train_labeled_dl.dataset.df['Groupby_Categories']).tolist(),
+                        y = list(self.train_labeled_dl.dataset.df['Groupby_Categories']))
+
+            self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
+        else:
+            self.class_weights = None
 
     def train_one(self, epoch):
         self.model.train()
@@ -126,9 +135,9 @@ class FixMatch:
     def fit(self):
         for epoch in range(1, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
+            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.3f}')
             train_loss = self.train_one(self.epoch)
-            print(f'Training epoch: {self.epoch}')
-            print(f'\tCurrent LR: {self.optimizer.param_groups[0]["lr"]} | Train Loss: {train_loss.avg:.3f}')
+            print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one()
                 print(f'\tValid Loss: {valid_loss.avg:.3f}')
@@ -209,12 +218,12 @@ class FixMatch:
         
         
 class BaseLine:
-    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', class_weights = None):
+    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
         self.model = model
         self.opt_func = opt_func
         self.device = device
         self.model.to(self.device);
-        self.class_weights = class_weights
+
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
@@ -230,10 +239,15 @@ class BaseLine:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
-
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
+        if self.config.TRAIN.CLS_WEIGHT:
+            self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
+                        classes  = np.unique(self.train_dl.dataset.df['Groupby_Categories']).tolist(),
+                        y = list(self.train_dl.dataset.df['Groupby_Categories']))
 
-
+            self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
+        else:
+            self.class_weights = None
 
     def train_one(self, epoch):
         self.model.train()
@@ -305,9 +319,9 @@ class BaseLine:
     def fit(self):
         for epoch in range(1, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
+            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.3f}')
             train_loss = self.train_one(self.epoch)
-            print(f'Training epoch: {self.epoch}')
-            print(f'\tCurrent LR: {self.optimizer.param_groups[0]["lr"]} | Train Loss: {train_loss.avg:.3f}')
+            print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one()
                 print(f'\tValid Loss: {valid_loss.avg:.3f}')
