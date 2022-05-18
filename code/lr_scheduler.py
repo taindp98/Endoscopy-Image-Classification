@@ -46,8 +46,8 @@ def build_scheduler(config, optimizer):
         lr_scheduler = StepLRScheduler(
             optimizer,
             decay_t=decay_steps,
-            decay_rate=0.1,
-            warmup_lr_init=5e-3,
+            decay_rate=config.TRAIN.LR_DECAY,
+            warmup_lr_init=config.TRAIN.WARMUP_LR,
             warmup_t=warmup_steps,
             t_in_epochs=False,
         )

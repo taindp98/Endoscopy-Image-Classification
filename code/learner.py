@@ -135,7 +135,7 @@ class FixMatch:
     def fit(self):
         for epoch in range(1, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.3f}')
+            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
             print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
@@ -319,7 +319,7 @@ class BaseLine:
     def fit(self):
         for epoch in range(1, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.3f}')
+            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
             print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
