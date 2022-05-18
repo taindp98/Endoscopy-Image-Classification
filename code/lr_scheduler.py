@@ -18,7 +18,7 @@ def build_scheduler(config, optimizer):
         decay_steps = int(30 * config.TRAIN.EVAL_STEP)
     else:
         num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.FREQ_EVAL)
-        warmup_steps = int(config.TRAIN.FREQ_EVAL)
+        warmup_steps = 1
         decay_steps = int(config.TRAIN.FREQ_EVAL)
 
     lr_scheduler = None
