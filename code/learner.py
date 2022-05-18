@@ -36,7 +36,7 @@ class FixMatch:
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
-        self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
+        self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = config.TRAIN.EVAL_STEP)
 
         if self.config.TRAIN.CLS_WEIGHT:
             self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
@@ -239,7 +239,7 @@ class BaseLine:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
-        self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
+        self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl))
         if self.config.TRAIN.CLS_WEIGHT:
             self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
                         classes  = np.unique(self.train_dl.dataset.df['Groupby_Categories']).tolist(),

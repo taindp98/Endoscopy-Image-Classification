@@ -11,15 +11,15 @@ from timm.scheduler.step_lr import StepLRScheduler
 from timm.scheduler.scheduler import Scheduler
 
 
-def build_scheduler(config, optimizer):
+def build_scheduler(config, optimizer, n_iter_per_epoch):
     if config.TRAIN.IS_SSL:
-        num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.EVAL_STEP)
-        warmup_steps = int(10 * config.TRAIN.EVAL_STEP)
-        decay_steps = int(30 * config.TRAIN.EVAL_STEP)
+        num_steps = int(config.TRAIN.EPOCHS * n_iter_per_epoch)
+        warmup_steps = int(config.TRAIN.WARMUP_EPOCHS * n_iter_per_epoch)
+        decay_steps = int(config.TRAIN.DECAY_EPOCHS * n_iter_per_epoch)
     else:
-        num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.FREQ_EVAL)
-        warmup_steps = 1
-        decay_steps = int(config.TRAIN.FREQ_EVAL)
+        num_steps = int(config.TRAIN.EPOCHS * n_iter_per_epoch)
+        warmup_steps = int(config.TRAIN.WARMUP_EPOCHS * n_iter_per_epoch)
+        decay_steps = int(config.TRAIN.DECAY_EPOCHS * n_iter_per_epoch)
 
     lr_scheduler = None
     if config.TRAIN.SCH_NAME == 'cosine':
