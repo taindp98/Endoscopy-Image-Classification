@@ -73,7 +73,7 @@ class GIDataset(torch.utils.data.Dataset):
         x = cv2.imread(os.path.join(self.config['data_path'], img_name))
         x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
         x = Image.fromarray(x)
-        vec = np.array(row['Categories'], dtype=float)
+        vec = np.array(row['Groupby_Categories'], dtype=float)
         y = torch.tensor(vec, dtype=torch.long)
         
         if self.transforms:
