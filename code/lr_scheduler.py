@@ -12,12 +12,12 @@ from timm.scheduler.scheduler import Scheduler
 
 
 def build_scheduler(config, optimizer):
-    num_steps = int(config.epochs * config.eval_step)
-    warmup_steps = int(20 * config.eval_step)
-    decay_steps = int(30 * config.eval_step)
+    num_steps = int(config.TRAIN.EPOCHS * config.TRAIN.EVAL_STEP)
+    warmup_steps = int(20 * config.TRAIN.EVAL_STEP)
+    decay_steps = int(30 * config.TRAIN.EVAL_STEP)
 
     lr_scheduler = None
-    if config.sch_name == 'cosine':
+    if config.TRAIN.SCH_NAME == 'cosine':
         lr_scheduler = CosineLRScheduler(
             optimizer,
             t_initial=num_steps,
@@ -28,7 +28,7 @@ def build_scheduler(config, optimizer):
             cycle_limit=1,
             t_in_epochs=False,
         )
-    elif config.sch_name == 'linear':
+    elif config.TRAIN.SCH_NAME == 'linear':
         lr_scheduler = LinearLRScheduler(
             optimizer,
             t_initial=num_steps,
@@ -37,7 +37,7 @@ def build_scheduler(config, optimizer):
             warmup_t=warmup_steps,
             t_in_epochs=False,
         )
-    elif config.sch_name == 'step':
+    elif config.TRAIN.SCH_NAME == 'step':
         lr_scheduler = StepLRScheduler(
             optimizer,
             decay_t=decay_steps,

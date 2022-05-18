@@ -1,0 +1,23 @@
+DATA:
+ PATH: '/kaggle/input/hyper-kvasir/labeled_images_deform'
+ ANNO: '../resource/hyper_kvasir/full_labeled_group.csv'
+ IMG_SIZE: 224
+ BATCH_SIZE: 32
+ NUM_WORKERS: 2
+MODEL:
+ NUM_CLASSES: 6
+TRAIN:
+ EPOCHS: 50
+ BASE_LR: 1e-3
+ WARMUP_LR: 5e-7
+ WEIGHT_DECAY: 1e-5
+ WARMUP_EPOCHS: 20  
+ OPT_NAME: 'Adam'
+ EPS: 1e-8
+ BETAS: (0.9, 0.999)
+ MOMENTUM: 0.9
+ FREQ_EVAL: 5
+ SCH_NAME: step
+ USE_EMA: True
+ EMA_DECAY: 0.999
+ EVAL_STEP: 512

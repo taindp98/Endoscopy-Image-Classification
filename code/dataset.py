@@ -18,17 +18,17 @@ std = [0.229, 0.224, 0.225]
 class TransformFixMatch(object):
     def __init__(self, config, mean, std):
         self.weak = transforms.Compose([
-            transforms.Resize((config['size'],config['size'])),
+            transforms.Resize((config['DATA']['IMG_SIZE'],config['DATA']['IMG_SIZE'])),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(size=config['size'],
-                                  padding=int(config['size']*0.125),
+            transforms.RandomCrop(size=config['DATA']['IMG_SIZE'],
+                                  padding=int(config['DATA']['IMG_SIZE']*0.125),
                                   padding_mode='reflect')])
         
         self.strong = transforms.Compose([
-            transforms.Resize((config['size'],config['size'])),
+            transforms.Resize((config['DATA']['IMG_SIZE'],config['DATA']['IMG_SIZE'])),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(size=config['size'],
-                                  padding=int(config['size']*0.125),
+            transforms.RandomCrop(size=['DATA']['IMG_SIZE'],
+                                  padding=int(config['DATA']['IMG_SIZE']*0.125),
                                   padding_mode='reflect'),
             RandAugmentMC(n=2, m=10)])
         self.normalize = transforms.Compose([
@@ -44,7 +44,7 @@ def get_transform(config, is_train = False, is_labeled = True):
     if is_train:
         if is_labeled:
             trf_aug = transforms.Compose([
-                transforms.Resize((config['size'],config['size'])),
+                transforms.Resize((config['DATA']['IMG_SIZE'],config['DATA']['IMG_SIZE'])),
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)])
@@ -52,7 +52,7 @@ def get_transform(config, is_train = False, is_labeled = True):
             trf_aug = TransformFixMatch(config, mean, std)
     else:
         trf_aug = transforms.Compose([
-            transforms.Resize((config['size'],config['size'])),
+            transforms.Resize((config['DATA']['IMG_SIZE'],config['DATA']['IMG_SIZE'])),
             transforms.ToTensor(),
             transforms.Normalize(mean, std)])
     return trf_aug
@@ -70,7 +70,7 @@ class GIDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         row = self.df.iloc[index]
         img_name = row['Image']
-        x = cv2.imread(os.path.join(self.config['data_path'], img_name))
+        x = cv2.imread(os.path.join(self.config['DATA']['PATH'], img_name))
         x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
         x = Image.fromarray(x)
         vec = np.array(row['Groupby_Categories'], dtype=float)

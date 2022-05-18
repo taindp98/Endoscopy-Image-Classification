@@ -2,7 +2,7 @@ import torch.nn.functional as F
 import torch
 import torch.nn as nn
 
-def ce_loss(logits, targets, use_hard_labels=True, reduction='none'):
+def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none'):
     """
     wrapper for cross entropy loss in pytorch.
     
@@ -12,7 +12,7 @@ def ce_loss(logits, targets, use_hard_labels=True, reduction='none'):
         use_hard_labels: If True, targets have [Batch size] shape with int values. If False, the target is vector (default True)
     """
     if use_hard_labels:
-        return F.cross_entropy(logits, targets, reduction=reduction)
+        return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
     else:
         assert logits.shape == targets.shape
         log_pred = F.log_softmax(logits, dim=-1)
@@ -35,7 +35,10 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
         mask = max_probs.ge(p_cutoff).float()
         
         if use_hard_labels:
-            masked_loss = ce_loss(logits_s, max_idx, use_hard_labels, reduction='none') * mask
+            masked_loss = ce_loss(logits = logits_s, 
+                                targets = max_idx,
+                                class_weights = None,
+                                use_hard_labels = use_hard_labels, reduction='none') * mask
         else:
             pseudo_label = torch.softmax(logits_w/T, dim=-1)
             masked_loss = ce_loss(logits_s, pseudo_label, use_hard_labels) * mask

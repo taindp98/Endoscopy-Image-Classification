@@ -14,11 +14,12 @@ import os
 import numpy as np
 
 class FixMatch:
-    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
+    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', class_weights = None):
         self.model = model
         self.opt_func = opt_func
         self.device = device
         self.model.to(self.device);
+        self.class_weights = class_weights
 
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_labeled_dl, self.train_unlabeled_dl  = train_dl
@@ -28,11 +29,11 @@ class FixMatch:
     def get_config(self, config):
         self.config = AttrDict(config)
 
-        if self.config.use_ema:
-            self.ema_model = ModelEMA(model = self.model, decay = self.config.ema_decay, device = self.device)
+        if self.config.TRAIN.USE_EMA:
+            self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
     # def get_opt(self):
-        self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.lr)
+        self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
     # def get_lr_sch(self):
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
@@ -44,7 +45,7 @@ class FixMatch:
         
         summary_loss = AverageMeter()
         
-        tk0 = tqdm(range(self.config.eval_step), total=self.config.eval_step)
+        tk0 = tqdm(range(self.config.TRAIN.EVAL_STEP), total=self.config.TRAIN.EVAL_STEP)
         
         for batch_idx, _ in enumerate(tk0):
             try:
@@ -69,27 +70,27 @@ class FixMatch:
 
             del outputs
 
-            lx = ce_loss(outputs_x, targets_x, reduction = 'mean')
-            lu, mask = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.T, p_cutoff = self.config.threshold)
-            losses = lx + self.config.lambda_u * lu
+            lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
+            lu, mask = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+            losses = lx + self.config.TRAIN.LAMBDA_U * lu
             self.optimizer.zero_grad()
 
             losses.backward()
             self.optimizer.step()
-            self.lr_scheduler.step_update(epoch * self.config.eval_step + batch_idx)
+            self.lr_scheduler.step_update(epoch * self.config.TRAIN.EVAL_STEP + batch_idx)
 
             if self.config.use_ema:
                 self.ema_model.update(self.model)
             self.model.zero_grad()
 
-            summary_loss.update(losses.item(), self.config.batch_size)
+            summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
             tk0.set_postfix(loss=summary_loss.avg)
             
         return summary_loss
 
     def evaluate_one(self):
 
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             eval_model = self.ema_model.ema
         else:
             eval_model = self.model
@@ -109,7 +110,7 @@ class FixMatch:
                 outputs = eval_model(images)
                 losses = ce_loss(outputs, targets, reduction='mean')            
 
-                summary_loss.update(losses.item(), self.config.batch_size)
+                summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
                 tk0.set_postfix(loss=summary_loss.avg)
                 targets = targets.cpu().numpy()
                 outputs = F.softmax(outputs, dim=1)
@@ -123,19 +124,19 @@ class FixMatch:
             return summary_loss, metric
 
     def fit(self):
-        for epoch in range(1, self.config.epochs+1):
+        for epoch in range(1, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
             train_loss = self.train_one(self.epoch)
             print(f'Training epoch: {self.epoch}')
             print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (epoch)% self.config.freq_eval == 0:
+            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one()
                 print(f'\tValid Loss: {valid_loss.avg:.3f}')
                 print(f'\tMetric: {valid_metric}')
 
 
     def test_one(self):
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             eval_model = self.ema_model.ema
         else:
             eval_model = self.model
@@ -165,7 +166,7 @@ class FixMatch:
     def save_checkpoint(self, foldname):
         checkpoint = {}
 
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             checkpoint['ema_state_dict'] = self.ema_model.ema.state_dict()
 
         d = date.today().strftime("%m_%d_%Y") 
@@ -194,7 +195,7 @@ class FixMatch:
         else:
             for parameter in self.model.parameters():
                 parameter.requires_grad = False
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             self.ema_model.ema.load_state_dict(checkpoint['ema_state_dict'])
             if is_train:
                 for parameter in self.ema_model.ema.parameters():
@@ -208,12 +209,12 @@ class FixMatch:
         
         
 class BaseLine:
-    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
+    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', class_weights = None):
         self.model = model
         self.opt_func = opt_func
         self.device = device
         self.model.to(self.device);
-
+        self.class_weights = class_weights
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
@@ -221,11 +222,14 @@ class BaseLine:
 
     def get_config(self, config):
         self.config = AttrDict(config)
+        for k1 in self.config.keys():
+            for k2 in self.config[k1].keys():
+                self.config[k1] = AttrDict(self.config[k1])
 
-        if self.config.use_ema:
-            self.ema_model = ModelEMA(model = self.model, decay = self.config.ema_decay, device = self.device)
+        if self.config.TRAIN.USE_EMA:
+            self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
-        self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.lr)
+        self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer)
 
@@ -246,7 +250,7 @@ class BaseLine:
             
             outputs = self.model(images)
 
-            losses = ce_loss(outputs, targets, reduction = 'mean')
+            losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
             
             self.optimizer.zero_grad()
 
@@ -254,18 +258,18 @@ class BaseLine:
             self.optimizer.step()
             self.lr_scheduler.step_update(epoch * num_steps + step)
 
-            if self.config.use_ema:
+            if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model)
             self.model.zero_grad()
 
-            summary_loss.update(losses.item(), self.config.batch_size)
+            summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
             tk0.set_postfix(loss=summary_loss.avg)
             
         return summary_loss
 
     def evaluate_one(self):
 
-            if self.config.use_ema:
+            if self.config.TRAIN.USE_EMA:
                 eval_model = self.ema_model.ema
             else:
                 eval_model = self.model
@@ -285,7 +289,7 @@ class BaseLine:
                     outputs = eval_model(images)
                     losses = ce_loss(outputs, targets, reduction='mean')            
 
-                    summary_loss.update(losses.item(), self.config.batch_size)
+                    summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
                     tk0.set_postfix(loss=summary_loss.avg)
                     targets = targets.cpu().numpy()
                     outputs = F.softmax(outputs, dim=1)
@@ -299,19 +303,19 @@ class BaseLine:
                 return summary_loss, metric
 
     def fit(self):
-        for epoch in range(1, self.config.epochs+1):
+        for epoch in range(1, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
             train_loss = self.train_one(self.epoch)
             print(f'Training epoch: {self.epoch}')
             print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (epoch)% self.config.freq_eval == 0:
+            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one()
                 print(f'\tValid Loss: {valid_loss.avg:.3f}')
                 print(f'\tMetric: {valid_metric}')
 
 
     def test_one(self):
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             eval_model = self.ema_model.ema
         else:
             eval_model = self.model
@@ -339,7 +343,7 @@ class BaseLine:
     def save_checkpoint(self, foldname):
         checkpoint = {}
 
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             checkpoint['ema_state_dict'] = self.ema_model.ema.state_dict()
 
         d = date.today().strftime("%m_%d_%Y") 
@@ -368,7 +372,7 @@ class BaseLine:
         else:
             for parameter in self.model.parameters():
                 parameter.requires_grad = False
-        if self.config.use_ema:
+        if self.config.TRAIN.USE_EMA:
             self.ema_model.ema.load_state_dict(checkpoint['ema_state_dict'])
             if is_train:
                 for parameter in self.ema_model.ema.parameters():

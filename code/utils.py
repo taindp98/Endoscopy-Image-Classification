@@ -9,6 +9,8 @@ import torch.nn.functional as F
 import torch.nn as nn
 from datetime import datetime,date
 import os
+import yaml
+from yaml.loader import SafeLoader
 
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
@@ -96,3 +98,8 @@ def interleave(x, size):
 def de_interleave(x, size):
     s = list(x.shape)
     return x.reshape([size, -1] + s[1:]).transpose(0, 1).reshape([-1] + s[1:])
+
+def get_config(config_file):
+    with open(config_file) as f:
+        config = yaml.load(f, Loader=SafeLoader)
+    return config
