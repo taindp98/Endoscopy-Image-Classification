@@ -65,32 +65,50 @@ def get_transform(config, is_train = False, is_labeled = True):
     return trf_aug
 
 class GIDataset(torch.utils.data.Dataset):
-    def __init__(self, df, config, transforms=None):
+    def __init__(self, df, config, transforms=None, is_unanno = False):
         self.df = df
         self.transforms = transforms
         self.len = df.shape[0]
         self.config = config
         self.input_name = config.DATA.INPUT_NAME
         self.target_name = config.DATA.TARGET_NAME
-
+        self.is_unanno = is_unanno
     def __len__(self):
         return self.len
 
     def __getitem__(self, index):
         row = self.df.iloc[index]
         img_name = row[self.input_name]
-        x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
-        x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-        x = Image.fromarray(x)
-        if self.transforms:
-            x = self.transforms(x)
+        
         if self.config.TRAIN.IS_SSL:
             if self.config.DATA.MOCKUP_SSL:
+                x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
+                x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
+                x = Image.fromarray(x)
+                if self.transforms:
+                    x = self.transforms(x)
                 vec = np.array(row[self.target_name], dtype=float)
                 y = torch.tensor(vec, dtype=torch.long)
             else:
+                if self.is_unanno:
+                    x = cv2.imread(os.path.join(self.config.DATA.UNANNO_PATH, img_name))
+                    x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
+                    x = Image.fromarray(x)
+                    if self.transforms:
+                        x = self.transforms(x)
+                else:
+                    x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
+                    x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
+                    x = Image.fromarray(x)
+                    if self.transforms:
+                        x = self.transforms(x)
                 y = None
         else:
+            x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
+            x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
+            x = Image.fromarray(x)
+            if self.transforms:
+                x = self.transforms(x)
             vec = np.array(row[self.target_name], dtype=float)
             y = torch.tensor(vec, dtype=torch.long)
         
@@ -130,7 +148,7 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
         ## else for real unlabeled data
         else:
             train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True))
-            train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False))
+            train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False), is_unanno = True)
             train_labeled_dl = DataLoader(train_labeled_ds, 
                                         sampler=RandomSampler(train_labeled_ds),
                                         batch_size = config.DATA.BATCH_SIZE, 
