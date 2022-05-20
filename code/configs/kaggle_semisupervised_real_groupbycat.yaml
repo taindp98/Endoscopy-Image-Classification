@@ -1,0 +1,39 @@
+DATA:
+ PATH: '/kaggle/input/hyper-kvasir/labeled_images_deform'
+ ANNO: '../resource/hyper_kvasir/full_labeled_group.csv'
+ UNANNO_PATH: '/kaggle/input/hyper-kvasir/unlabeled-images-deform'
+ UNANNO: '../resource/hyper_kvasir/full_unlabeled.csv'
+ IMG_SIZE: 224
+ BATCH_SIZE: 12
+ NUM_WORKERS: 2
+ MOCKUP_SSL: True
+ MOCKUP_SIZE: 0.9
+ MU: 6
+ INPUT_NAME: 'Image'
+ TARGET_NAME: 'Groupby_Categories'
+MODEL:
+ NUM_CLASSES: 6
+TRAIN:
+ IS_SSL: True
+ EPOCHS: 100
+ BASE_LR: 0.001
+ WARMUP_LR: 0.00005
+ WEIGHT_DECAY: 0.00001
+ WARMUP_EPOCHS: 5  
+ DECAY_EPOCHS: 5
+ OPT_NAME: 'Adam'
+ EPS: 0.00000001
+ BETAS: [0.9, 0.999]
+ MOMENTUM: 0.9
+ FREQ_EVAL: 5
+ SCH_NAME: 'step'
+ LR_DECAY: 0.8
+ USE_EMA: True
+ EMA_DECAY: 0.999
+ EVAL_STEP: 512
+ CLS_WEIGHT: True
+ THRES: 0.95
+ T: 1.0
+ LAMBDA_U: 0.6
+ 
+

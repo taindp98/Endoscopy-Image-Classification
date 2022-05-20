@@ -96,7 +96,7 @@ class GIDataset(torch.utils.data.Dataset):
         
         return x, y
 
-def get_data(config, df_anno, is_visual=False):
+def get_data(config, df_anno, df_unanno = None, is_visual=False):
     """
     get training, validation, testing set
     """
@@ -128,9 +128,30 @@ def get_data(config, df_anno, is_visual=False):
                     break
                 show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
         ## else for real unlabeled data
+        else:
+            train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True))
+            train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False))
+            train_labeled_dl = DataLoader(train_labeled_ds, 
+                                        sampler=RandomSampler(train_labeled_ds),
+                                        batch_size = config.DATA.BATCH_SIZE, 
+                                        num_workers = config.DATA.NUM_WORKERS)
 
+            train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
+                                        sampler=RandomSampler(train_unlabeled_ds),
+                                        batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
+                                        num_workers = config.DATA.NUM_WORKERS)
+            train_dl = (train_labeled_dl, train_unlabeled_dl)
+
+            if is_visual:
+                for x1, y1 in train_labeled_dl:
+                    # print(x.shape)
+                    # print(y)
+                    break
+                for x2, y2 in train_unlabeled_dl:
+                    break
+                show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
     else:
-        train_ds = GIDataset(df = df_anno[df_anno['is_valid']==False], config = config, transforms = get_transform(config, is_train=True))
+        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True))
         train_dl = DataLoader(train_ds, 
                         sampler=RandomSampler(train_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
@@ -141,7 +162,7 @@ def get_data(config, df_anno, is_visual=False):
                 # print(y)
                 break
             show_batch(x[0,:,:], y[0])
-    valid_ds = GIDataset(df = df_anno[df_anno['is_valid']==True] , config = config, transforms = get_transform(config))
+    valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
     valid_dl = DataLoader(valid_ds, 
                         sampler=SequentialSampler(valid_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
