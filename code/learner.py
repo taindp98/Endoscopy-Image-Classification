@@ -46,6 +46,8 @@ class SemiSupLearning:
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
             self.class_weights = None
+        
+        self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
 
     def train_one(self, epoch):
         self.model.train()
@@ -245,6 +247,7 @@ class SupLearning:
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
             self.class_weights = None
+
 
     def train_one(self, epoch):
         self.model.train()
