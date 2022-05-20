@@ -14,7 +14,7 @@ import os
 import numpy as np
 from sklearn.utils import class_weight
 
-class FixMatch:
+class SemiSupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
         self.model = model
         self.opt_func = opt_func
@@ -29,7 +29,7 @@ class FixMatch:
 
 
     def get_config(self, config):
-        self.config = AttrDict(config)
+        self.config = config
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
@@ -217,7 +217,7 @@ class FixMatch:
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
         
         
-class BaseLine:
+class SupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
         self.model = model
         self.opt_func = opt_func
@@ -230,10 +230,11 @@ class BaseLine:
         self.test_dl = test_dl
 
     def get_config(self, config):
-        self.config = AttrDict(config)
-        for k1 in self.config.keys():
-            for k2 in self.config[k1].keys():
-                self.config[k1] = AttrDict(self.config[k1])
+        self.config = config
+        # self.config = AttrDict(config)
+        # for k1 in self.config.keys():
+        #     for k2 in self.config[k1].keys():
+        #         self.config[k1] = AttrDict(self.config[k1])
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)

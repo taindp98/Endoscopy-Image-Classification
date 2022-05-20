@@ -102,4 +102,7 @@ def de_interleave(x, size):
 def get_config(config_file):
     with open(config_file) as f:
         config = yaml.load(f, Loader=SafeLoader)
+    config = AttrDict(config)
+    for k1 in config.keys():
+        config[k1] = AttrDict(config[k1])
     return config
