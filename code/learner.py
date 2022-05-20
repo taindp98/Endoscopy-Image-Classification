@@ -135,11 +135,11 @@ class SemiSupLearning:
             metric = calculate_metrics(list_outputs, list_targets)
             if show_metric:
                 print('Metric:')
-                print(f'\t{0}'.format(metric))
+                print(metric)
             if show_report:
                 report = classification_report(list_targets, list_outputs)
                 print('Classification Report:')
-                print(f'\t{0}'.format(report))
+                print(report)
             if show_cf_matrix:
                 show_cfs_matrix(list_targets, list_outputs)
             return summary_loss, metric
@@ -334,11 +334,11 @@ class SupLearning:
                 metric = calculate_metrics(list_outputs, list_targets)
                 if show_metric:
                     print('Metric:')
-                    print(f'\t{0}'.format(metric))
+                    print(metric)
                 if show_report:
                     report = classification_report(list_targets, list_outputs)
                     print('Classification Report:')
-                    print(f'\t{0}'.format(report))
+                    print(report)
                 if show_cf_matrix:
                     show_cfs_matrix(list_targets, list_outputs)
                 return summary_loss, metric
