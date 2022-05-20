@@ -88,7 +88,7 @@ class SemiSupLearning:
             self.optimizer.step()
             self.lr_scheduler.step_update(epoch * self.config.TRAIN.EVAL_STEP + batch_idx)
 
-            if self.config.use_ema:
+            if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model)
             self.model.zero_grad()
 
