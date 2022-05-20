@@ -40,8 +40,8 @@ class SemiSupLearning:
 
         if self.config.TRAIN.CLS_WEIGHT:
             self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                        classes  = np.unique(self.train_labeled_dl.dataset.df[self.config.TARGET_NAME]).tolist(),
-                        y = list(self.train_labeled_dl.dataset.df[self.config.TARGET_NAME]))
+                        classes  = np.unique(self.train_labeled_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
+                        y = list(self.train_labeled_dl.dataset.df[self.config.DATA.TARGET_NAME]))
 
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
@@ -241,8 +241,8 @@ class SupLearning:
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl))
         if self.config.TRAIN.CLS_WEIGHT:
             self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                        classes  = np.unique(self.train_dl.dataset.df[self.config.TARGET_NAME]).tolist(),
-                        y = list(self.train_dl.dataset.df[self.config.TARGET_NAME]))
+                        classes  = np.unique(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
+                        y = list(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]))
 
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
