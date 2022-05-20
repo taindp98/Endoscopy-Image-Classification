@@ -71,7 +71,6 @@ class SemiSupLearning:
                 (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
 
             bs_lb = inputs_x.shape[0]
-            bs_ulb = inputs_u_w.shape[0]
             inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
             targets_x = targets_x.to(self.device, non_blocking=True)
             
@@ -79,6 +78,7 @@ class SemiSupLearning:
             outputs_x = outputs[:bs_lb]
             outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
+            del inputs
             del outputs
 
             lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
