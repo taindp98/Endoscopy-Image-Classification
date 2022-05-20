@@ -96,29 +96,31 @@ def get_data(config, df_anno, is_visual=False):
     df_train = df_anno[df_anno['is_valid']==False]
     df_valid = df_anno[df_anno['is_valid']==True]
     ## break down into labeled and unlabeled set
-    if config.DATA.MOCKUP_SSL:
-        df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
-        train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True))
-        train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False))
-        train_labeled_dl = DataLoader(train_labeled_ds, 
-                                      sampler=RandomSampler(train_labeled_ds),
-                                      batch_size = config.DATA.BATCH_SIZE, 
-                                      num_workers = config.DATA.NUM_WORKERS)
+    if config.TRAIN.IS_SSL:
+        if config.DATA.MOCKUP_SSL:
+            df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
+            train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True))
+            train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False))
+            train_labeled_dl = DataLoader(train_labeled_ds, 
+                                        sampler=RandomSampler(train_labeled_ds),
+                                        batch_size = config.DATA.BATCH_SIZE, 
+                                        num_workers = config.DATA.NUM_WORKERS)
 
-        train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
-                                      sampler=RandomSampler(train_unlabeled_ds),
-                                      batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
-                                      num_workers = config.DATA.NUM_WORKERS)
-        train_dl = (train_labeled_dl, train_unlabeled_dl)
+            train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
+                                        sampler=RandomSampler(train_unlabeled_ds),
+                                        batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
+                                        num_workers = config.DATA.NUM_WORKERS)
+            train_dl = (train_labeled_dl, train_unlabeled_dl)
 
-        if is_visual:
-            for x1, y1 in train_labeled_dl:
-                # print(x.shape)
-                # print(y)
-                break
-            for x2, y2 in train_unlabeled_dl:
-                break
-            show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
+            if is_visual:
+                for x1, y1 in train_labeled_dl:
+                    # print(x.shape)
+                    # print(y)
+                    break
+                for x2, y2 in train_unlabeled_dl:
+                    break
+                show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
+        ## else for real unlabeled data
 
     else:
         train_ds = GIDataset(df = df_anno[df_anno['is_valid']==False], config = config, transforms = get_transform(config, is_train=True))

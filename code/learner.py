@@ -1,4 +1,4 @@
-from utils import AverageMeter, calculate_metrics, AttrDict
+from utils import AverageMeter, calculate_metrics, AttrDict, show_cfs_matrix
 from tqdm import tqdm
 import torch
 import torch.nn as nn
@@ -13,6 +13,7 @@ from datetime import datetime,date
 import os
 import numpy as np
 from sklearn.utils import class_weight
+from sklearn.metrics import confusion_matrix, classification_report
 
 class SemiSupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -99,7 +100,7 @@ class SemiSupLearning:
             
         return summary_loss
 
-    def evaluate_one(self):
+    def evaluate_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
 
         if self.config.TRAIN.USE_EMA:
             eval_model = self.ema_model.ema
@@ -132,6 +133,15 @@ class SemiSupLearning:
             list_outputs = np.argmax(list_outputs, axis=1)
             list_targets = np.array(list_targets)
             metric = calculate_metrics(list_outputs, list_targets)
+            if show_metric:
+                print('Metric:')
+                print(f'\t{0}'.format(metric))
+            if show_report:
+                report = classification_report(list_targets, list_outputs)
+                print('Classification Report:')
+                print(f'\t{0}'.format(report))
+            if show_cf_matrix:
+                show_cfs_matrix(list_targets, list_outputs)
             return summary_loss, metric
 
     def fit(self):
@@ -146,33 +156,41 @@ class SemiSupLearning:
                 print(f'\tMetric: {valid_metric}')
 
 
-    def test_one(self):
-        if self.config.TRAIN.USE_EMA:
-            eval_model = self.ema_model.ema
-        else:
-            eval_model = self.model
+    # def test_one(self, metric = False, report = False, cm = False):
+    #     if self.config.TRAIN.USE_EMA:
+    #         eval_model = self.ema_model.ema
+    #     else:
+    #         eval_model = self.model
 
-        eval_model.eval()
+    #     eval_model.eval()
 
-        list_outputs = []
-        list_targets = []
-        with torch.no_grad():
+    #     list_outputs = []
+    #     list_targets = []
+    #     with torch.no_grad():
             
-            for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
-                images = images.to(device, non_blocking=True)
-                targets = targets.to(device, non_blocking=True)
+    #         for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
+    #             images = images.to(device, non_blocking=True)
+    #             targets = targets.to(device, non_blocking=True)
                 
-                outputs = eval_model(images)
-                targets = targets.cpu().numpy()
-                outputs = F.softmax(outputs, dim=1)
-                outputs = outputs.cpu().numpy()
-                list_outputs += list(outputs)
-                list_targets += list(targets)
-            list_outputs = np.array(list_outputs)
-            list_outputs = np.argmax(list_outputs, axis=1)
-            list_targets = np.array(list_targets)
-            
-        return list_outputs, list_targets
+    #             outputs = eval_model(images)
+    #             targets = targets.cpu().numpy()
+    #             outputs = F.softmax(outputs, dim=1)
+    #             outputs = outputs.cpu().numpy()
+    #             list_outputs += list(outputs)
+    #             list_targets += list(targets)
+    #         list_outputs = np.array(list_outputs)
+    #         list_outputs = np.argmax(list_outputs, axis=1)
+    #         list_targets = np.array(list_targets)
+    #         if metric:
+    #             metric = calculate_metrics(list_outputs, list_targets)
+    #             print('Metric:')
+    #             print(f'\t{0}'.format(metric))
+    #         elif type_observer == 'report':
+    #             report = classification_report(list_targets, list_outputs)
+    #             print('Classification Report:')
+    #             print(f'\t{0}'.format(report))
+    #         elif type_observer == ''
+    #     return list_outputs, list_targets
 
     def save_checkpoint(self, foldname):
         checkpoint = {}
@@ -281,7 +299,7 @@ class SupLearning:
             
         return summary_loss
 
-    def evaluate_one(self):
+    def evaluate_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
 
             if self.config.TRAIN.USE_EMA:
                 eval_model = self.ema_model.ema
@@ -314,6 +332,15 @@ class SupLearning:
                 list_outputs = np.argmax(list_outputs, axis=1)
                 list_targets = np.array(list_targets)
                 metric = calculate_metrics(list_outputs, list_targets)
+                if show_metric:
+                    print('Metric:')
+                    print(f'\t{0}'.format(metric))
+                if show_report:
+                    report = classification_report(list_targets, list_outputs)
+                    print('Classification Report:')
+                    print(f'\t{0}'.format(report))
+                if show_cf_matrix:
+                    show_cfs_matrix(list_targets, list_outputs)
                 return summary_loss, metric
 
     def fit(self):
@@ -328,31 +355,31 @@ class SupLearning:
                 print(f'\tMetric: {valid_metric}')
 
 
-    def test_one(self):
-        if self.config.TRAIN.USE_EMA:
-            eval_model = self.ema_model.ema
-        else:
-            eval_model = self.model
+    # def test_one(self):
+    #     if self.config.TRAIN.USE_EMA:
+    #         eval_model = self.ema_model.ema
+    #     else:
+    #         eval_model = self.model
 
-        eval_model.eval()
+    #     eval_model.eval()
 
-        list_outputs = []
-        list_targets = []
-        with torch.no_grad():
+    #     list_outputs = []
+    #     list_targets = []
+    #     with torch.no_grad():
             
-            for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
-                images = images.to(self.device, non_blocking=True)
-                targets = targets.to(self.device, non_blocking=True)
+    #         for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
+    #             images = images.to(self.device, non_blocking=True)
+    #             targets = targets.to(self.device, non_blocking=True)
                 
-                outputs = eval_model(images)
-                targets = targets.cpu().numpy()
-                outputs = F.softmax(outputs, dim=1)
-                outputs = outputs.cpu().numpy()
-                list_outputs += list(outputs)
-                list_targets += list(targets)
-        list_outputs = [np.argmax(item) for item in list_outputs]
+    #             outputs = eval_model(images)
+    #             targets = targets.cpu().numpy()
+    #             outputs = F.softmax(outputs, dim=1)
+    #             outputs = outputs.cpu().numpy()
+    #             list_outputs += list(outputs)
+    #             list_targets += list(targets)
+    #     list_outputs = [np.argmax(item) for item in list_outputs]
         
-        return list_outputs, list_targets
+    #     return list_outputs, list_targets
 
     def save_checkpoint(self, foldname):
         checkpoint = {}
