@@ -82,11 +82,18 @@ class GIDataset(torch.utils.data.Dataset):
         x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
         x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
         x = Image.fromarray(x)
-        vec = np.array(row[self.target_name], dtype=float)
-        y = torch.tensor(vec, dtype=torch.long)
-        
         if self.transforms:
             x = self.transforms(x)
+        if self.config.TRAIN.IS_SSL:
+            if self.config.DATA.MOCKUP_SSL:
+                vec = np.array(row[self.target_name], dtype=float)
+                y = torch.tensor(vec, dtype=torch.long)
+            else:
+                y = None
+        else:
+            vec = np.array(row[self.target_name], dtype=float)
+            y = torch.tensor(vec, dtype=torch.long)
+        
         return x, y
 
 def get_data(config, df_anno, is_visual=False):
