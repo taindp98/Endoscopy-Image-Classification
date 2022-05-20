@@ -40,8 +40,8 @@ class SemiSupLearning:
 
         if self.config.TRAIN.CLS_WEIGHT:
             self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                        classes  = np.unique(self.train_labeled_dl.dataset.df['Groupby_Categories']).tolist(),
-                        y = list(self.train_labeled_dl.dataset.df['Groupby_Categories']))
+                        classes  = np.unique(self.train_labeled_dl.dataset.df[self.config.TARGET_NAME]).tolist(),
+                        y = list(self.train_labeled_dl.dataset.df[self.config.TARGET_NAME]))
 
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
@@ -231,10 +231,6 @@ class SupLearning:
 
     def get_config(self, config):
         self.config = config
-        # self.config = AttrDict(config)
-        # for k1 in self.config.keys():
-        #     for k2 in self.config[k1].keys():
-        #         self.config[k1] = AttrDict(self.config[k1])
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
@@ -243,8 +239,8 @@ class SupLearning:
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl))
         if self.config.TRAIN.CLS_WEIGHT:
             self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                        classes  = np.unique(self.train_dl.dataset.df['Groupby_Categories']).tolist(),
-                        y = list(self.train_dl.dataset.df['Groupby_Categories']))
+                        classes  = np.unique(self.train_dl.dataset.df[self.config.TARGET_NAME]).tolist(),
+                        y = list(self.train_dl.dataset.df[self.config.TARGET_NAME]))
 
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
