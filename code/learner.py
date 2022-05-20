@@ -66,10 +66,10 @@ class SemiSupLearning:
                 labeled_iter = iter(self.train_labeled_dl)
                 inputs_x, targets_x = labeled_iter.next()
             try:
-                (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
+                (inputs_u_w, inputs_u_s) = unlabeled_iter.next()
             except:
                 unlabeled_iter = iter(self.train_unlabeled_dl)
-                (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
+                (inputs_u_w, inputs_u_s) = unlabeled_iter.next()
 
             bs_lb = inputs_x.shape[0]
             inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
