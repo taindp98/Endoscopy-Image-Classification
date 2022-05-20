@@ -2,7 +2,7 @@ DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_deform'
  ANNO: '../resource/hyper_kvasir/full_labeled_group.csv'
  IMG_SIZE: 224
- BATCH_SIZE: 24
+ BATCH_SIZE: 8
  NUM_WORKERS: 2
 MODEL:
  NUM_CLASSES: 6
@@ -23,5 +23,5 @@ TRAIN:
  LR_DECAY: 0.8 
  USE_EMA: False
  EMA_DECAY: 0.999
- EVAL_STEP: 512
+ EVAL_STEP: 256
  CLS_WEIGHT: True
