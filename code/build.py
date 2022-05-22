@@ -5,12 +5,12 @@
 # Written by Ze Liu
 # --------------------------------------------------------
 
-from models.swin_transformer import SwinTransformer
-from models.swin_mlp import SwinMLP
-from models.coat_net import CoAtNet
-from models.custom_model import AttentionGuideCNN
-import torch.nn as nn
-from torch.nn import DataParallel
+# from models.swin_transformer import SwinTransformer
+# from models.swin_mlp import SwinMLP
+# from models.coat_net import CoAtNet
+# from models.custom_model import AttentionGuideCNN
+# import torch.nn as nn
+# from torch.nn import DataParallel
 import timm
 from models.conformer import Conformer
 
@@ -56,14 +56,14 @@ def build_model(config):
         #                 patch_norm= True,
         #                 use_checkpoint=None)
         
-    elif model_name == 'coat':
-        model = CoAtNet(image_size = (config.DATA.IMG_SIZE, config.DATA.IMG_SIZE), 
-                        num_classes=config.MODEL.NUM_CLASSES, 
-                        batch_size = config.DATA.BATCH_SIZE,
-                        in_channels = 3, 
-                        num_blocks = [2, 2, 3, 5, 2], 
-                        channels = [64, 96, 192, 384, 768], 
-                        block_types=['C', 'C', 'T', 'T'])
+    # elif model_name == 'coat':
+    #     model = CoAtNet(image_size = (config.DATA.IMG_SIZE, config.DATA.IMG_SIZE), 
+    #                     num_classes=config.MODEL.NUM_CLASSES, 
+    #                     batch_size = config.DATA.BATCH_SIZE,
+    #                     in_channels = 3, 
+    #                     num_blocks = [2, 2, 3, 5, 2], 
+    #                     channels = [64, 96, 192, 384, 768], 
+    #                     block_types=['C', 'C', 'T', 'T'])
     
     elif model_name == 'conformer':
         model = Conformer(patch_size=16, 
