@@ -68,7 +68,7 @@ def build_model(config):
     elif model_name == 'conformer':
         model = Conformer(patch_size=16, 
                         num_classes = config.MODEL.NUM_CLASSES,
-                        channel_ratio=4, 
+                        channel_ratio=1, 
                         embed_dim=384, 
                         depth=12,
                         num_heads=6, 
