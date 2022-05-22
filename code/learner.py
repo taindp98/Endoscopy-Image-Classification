@@ -244,7 +244,8 @@ class SemiSupLearning:
         print('Saved checkpoint')
 
     def load_checkpoint(self, checkpoint_dir, is_train=False):
-        checkpoint = torch.load(checkpoint_dir, map_location = {'cuda:0':'cpu'})    
+        checkpoint = torch.load(checkpoint_dir, map_location = {'cuda:0':'cpu'})   
+    
         self.model.load_state_dict(checkpoint['model_state_dict'])
         if is_train:
             for parameter in self.model.parameters():
