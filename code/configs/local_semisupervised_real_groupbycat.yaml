@@ -13,6 +13,7 @@ DATA:
  TARGET_NAME: 'Groupby_Categories'
 MODEL:
  NUM_CLASSES: 6
+ NAME: 'conformer'
 TRAIN:
  IS_SSL: True
  EPOCHS: 10

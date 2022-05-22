@@ -76,8 +76,16 @@ class SemiSupLearning:
             targets_x = targets_x.to(self.device, non_blocking=True)
             
             outputs = self.model(inputs)
-            outputs_x = outputs[:bs_lb]
-            outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
+
+            if self.config.MODEL.NAME == 'conformer':
+                ## out_conv and out_trans
+                out_conv, out_trans = outputs
+                outputs_x = out_trans[:bs_lb]
+                outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
+                outputs_u_s = out_trans[bs_lb:].chunk(2)[1]
+            else:
+                outputs_x = outputs[:bs_lb]
+                outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
             del inputs
             del outputs
