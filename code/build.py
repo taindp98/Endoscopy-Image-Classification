@@ -12,6 +12,7 @@
 import torch.nn as nn
 from torch.nn import DataParallel
 import timm
+import torch
 from models.conformer import Conformer
 
 
@@ -19,7 +20,7 @@ def build_model(config):
     model_name = config.MODEL.NAME
     if model_name == 'swin':
         model = timm.create_model('swin_base_patch4_window7_224', 
-                                pretrained = True, 
+                                pretrained = config.MODEL.PRE_TRAIN, 
                                 num_classes = config.MODEL.NUM_CLASSES)
         # model = SwinTransformer(img_size=config.DATA.IMG_SIZE,
         #                         num_classes=config.MODEL.NUM_CLASSES,
@@ -39,7 +40,7 @@ def build_model(config):
         #                         use_checkpoint=None)
     elif model_name == 'swin_mlp':
         model = timm.create_model('swin_mlp_base_patch4_window7_224', 
-                                pretrained = True, 
+                                pretrained = config.MODEL.PRE_TRAIN, 
                                 num_classes = config.MODEL.NUM_CLASSES)
         # model = SwinMLP(img_size=config.DATA.IMG_SIZE,
         #                 num_classes=config.MODEL.NUM_CLASSES,
@@ -66,7 +67,24 @@ def build_model(config):
     #                     block_types=['C', 'C', 'T', 'T'])
     
     elif model_name == 'conformer':
-        model = Conformer(patch_size=16, 
+        if config.MODEL.PRE_TRAIN:
+            model = Conformer(patch_size=16, 
+                        num_classes = 1000,
+                        channel_ratio=1, 
+                        embed_dim=384, 
+                        depth=12,
+                        num_heads=6, 
+                        mlp_ratio=4, 
+                        qkv_bias=True)
+            checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+            model.load_state_dict(checkpoint)
+            num_ftrs_conv = model.conv_cls_head.in_features
+            num_ftrs_trans = model.trans_cls_head.in_features
+
+            model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+        else:
+            model = Conformer(patch_size=16, 
                         num_classes = config.MODEL.NUM_CLASSES,
                         channel_ratio=1, 
                         embed_dim=384, 
@@ -74,6 +92,7 @@ def build_model(config):
                         num_heads=6, 
                         mlp_ratio=4, 
                         qkv_bias=True)
+
     else:
         # raise NotImplementedError(f"Unkown model: {model_name}")
         model = nn.Sequential(timm.create_model(model_name,

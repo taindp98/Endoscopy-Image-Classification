@@ -14,6 +14,8 @@ DATA:
 MODEL:
  NUM_CLASSES: 6
  NAME: 'conformer'
+ PRE_TRAIN: True
+ PRE_TRAIN_PATH: 'D:\\model\\conformer_tiny_patch16.pth'
 TRAIN:
  IS_SSL: True
  EPOCHS: 10
