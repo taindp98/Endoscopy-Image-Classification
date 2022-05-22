@@ -9,8 +9,8 @@
 # from models.swin_mlp import SwinMLP
 # from models.coat_net import CoAtNet
 # from models.custom_model import AttentionGuideCNN
-# import torch.nn as nn
-# from torch.nn import DataParallel
+import torch.nn as nn
+from torch.nn import DataParallel
 import timm
 from models.conformer import Conformer
 
@@ -75,6 +75,9 @@ def build_model(config):
                         mlp_ratio=4, 
                         qkv_bias=True)
     else:
-        raise NotImplementedError(f"Unkown model: {model_name}")
+        # raise NotImplementedError(f"Unkown model: {model_name}")
+        model = nn.Sequential(timm.create_model(model_name,
+                                                pretrained=True,
+                                                num_classes = config.MODEL.NUM_CLASSES))
 
     return model

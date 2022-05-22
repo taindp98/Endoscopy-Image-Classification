@@ -139,6 +139,15 @@ class SemiSupLearning:
                 targets = targets.to(self.device, non_blocking=True)
                 
                 outputs = eval_model(images)
+                if self.config.MODEL.NAME == 'conformer':
+                    ## out_conv and out_trans
+                    out_conv, out_trans = outputs
+                    del outputs
+                    outputs = out_trans
+                    # loss_conv = ce_loss(out_conv, targets, reduction='mean')            
+                    # loss_trans = ce_loss(out_trans, targets, reduction='mean')            
+                    # losses = loss_conv + loss_trans
+                
                 losses = ce_loss(outputs, targets, reduction='mean')            
 
                 summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
