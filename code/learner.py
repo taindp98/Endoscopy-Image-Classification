@@ -82,17 +82,28 @@ class SemiSupLearning:
                 out_conv, out_trans = outputs
                 outputs_x = out_trans[:bs_lb]
                 outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
-                outputs_u_s = out_trans[bs_lb:].chunk(2)[1]
+                outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
+                outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
+
+                del inputs
+                del outputs
+
+                lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
+                lu_conv, mask_conv = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+                lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+                lu = lu_conv + lu_trans
             else:
                 outputs_x = outputs[:bs_lb]
                 outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
-            del inputs
-            del outputs
+                del inputs
+                del outputs
 
-            lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-            lu, mask = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+                lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
+                lu, mask = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+            
             losses = lx + self.config.TRAIN.LAMBDA_U * lu
+
             self.optimizer.zero_grad()
 
             losses.backward()
