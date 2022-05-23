@@ -24,7 +24,7 @@ class SemiSupLearning:
 
         ## init
         self.epoch_start = 1
-
+        self.best_valid_perf = None
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_labeled_dl, self.train_unlabeled_dl  = train_dl
         self.valid_dl = valid_dl
@@ -175,17 +175,7 @@ class SemiSupLearning:
                 show_cfs_matrix(list_targets, list_outputs)
             return summary_loss, metric
 
-    def fit(self):
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
-            self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
-            train_loss = self.train_one(self.epoch)
-            print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one()
-                print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                print(f'\tMetric: {valid_metric}')
-
+    
 
     # def test_one(self, metric = False, report = False, cm = False):
     #     if self.config.TRAIN.USE_EMA:
@@ -237,7 +227,7 @@ class SemiSupLearning:
         filename = d +'_'+h
 
         checkpoint['epoch'] = self.epoch
-
+        checkpoint['best_valid_perf'] = self.best_valid_perf
         checkpoint['model_state_dict'] = self.model.state_dict()
         checkpoint['optimizer'] = self.optimizer.state_dict()
         checkpoint['scheduler'] = self.lr_scheduler.state_dict()
@@ -268,7 +258,24 @@ class SemiSupLearning:
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
         
-        
+    def fit(self):
+        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
+            self.epoch = epoch
+            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
+            train_loss = self.train_one(self.epoch)
+            print(f'\tTrain Loss: {train_loss.avg:.3f}')
+            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+                valid_loss, valid_metric = self.evaluate_one()
+                if self.best_valid_perf:
+                    if self.best_valid_perf > valid_loss.avg:
+                        self.best_valid_perf = valid_loss.avg
+                        self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                else:
+                    self.best_valid_perf = valid_loss.avg
+                    self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                print(f'\tValid Loss: {valid_loss.avg:.3f}')
+                print(f'\tMetric: {valid_metric}')
+
 class SupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
         self.model = model
@@ -277,6 +284,7 @@ class SupLearning:
         self.model.to(self.device);
         ## init
         self.epoch_start = 1
+        self.best_valid_perf = None
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
@@ -376,17 +384,7 @@ class SupLearning:
                     show_cfs_matrix(list_targets, list_outputs)
                 return summary_loss, metric
 
-    def fit(self):
-        
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
-            self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
-            train_loss = self.train_one(self.epoch)
-            print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one()
-                print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                print(f'\tMetric: {valid_metric}')
+    
 
 
     # def test_one(self):
@@ -429,7 +427,7 @@ class SupLearning:
         filename = d +'_'+h
 
         checkpoint['epoch'] = self.epoch
-
+        checkpoint['best_valid_perf'] = self.best_valid_perf
         checkpoint['model_state_dict'] = self.model.state_dict()
         checkpoint['optimizer'] = self.optimizer.state_dict()
         checkpoint['scheduler'] = self.lr_scheduler.state_dict()
@@ -458,3 +456,22 @@ class SupLearning:
         self.epoch_start = checkpoint['epoch']
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
+
+    def fit(self):
+        
+        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
+            self.epoch = epoch
+            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
+            train_loss = self.train_one(self.epoch)
+            print(f'\tTrain Loss: {train_loss.avg:.3f}')
+            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+                valid_loss, valid_metric = self.evaluate_one()
+                if self.best_valid_perf:
+                    if self.best_valid_perf > valid_loss.avg:
+                        self.best_valid_perf = valid_loss.avg
+                        self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                else:
+                    self.best_valid_perf = valid_loss.avg
+                    self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                print(f'\tValid Loss: {valid_loss.avg:.3f}')
+                print(f'\tMetric: {valid_metric}')

@@ -39,5 +39,6 @@ TRAIN:
  T: 1.0
  LAMBDA_U: 2.
  RESUME: True
+ SAVE_CP: '/kaggle/working/'
  
 
