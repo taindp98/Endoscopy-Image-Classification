@@ -22,6 +22,9 @@ class SemiSupLearning:
         self.device = device
         self.model.to(self.device);
 
+        ## init
+        self.epoch_start = 1
+
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_labeled_dl, self.train_unlabeled_dl  = train_dl
         self.valid_dl = valid_dl
@@ -173,7 +176,7 @@ class SemiSupLearning:
             return summary_loss, metric
 
     def fit(self):
-        for epoch in range(1, self.config.TRAIN.EPOCHS+1):
+        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
@@ -261,7 +264,7 @@ class SemiSupLearning:
             else:
                 for parameter in self.ema_model.ema.parameters():
                     parameter.requires_grad = False
-
+        self.epoch_start = checkpoint['epoch']
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
         
@@ -272,7 +275,8 @@ class SupLearning:
         self.opt_func = opt_func
         self.device = device
         self.model.to(self.device);
-
+        ## init
+        self.epoch_start = 1
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
@@ -373,14 +377,8 @@ class SupLearning:
                 return summary_loss, metric
 
     def fit(self):
-        if self.config.TRAIN.RESUME:
-            epoch_start = self.epoch_start
-        else:
-            epoch_start = 1
         
-        epoch_end = self.config.TRAIN.EPOCHS+1
-        
-        for epoch in range(epoch_start, epoch_end):
+        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
