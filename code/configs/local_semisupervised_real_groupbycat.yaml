@@ -28,7 +28,7 @@ TRAIN:
  EPS: 0.00000001
  BETAS: [0.9, 0.999]
  MOMENTUM: 0.9
- FREQ_EVAL: 5
+ FREQ_EVAL: 1
  SCH_NAME: 'step'
  LR_DECAY: 0.8
  USE_EMA: False
@@ -38,5 +38,7 @@ TRAIN:
  THRES: 0.95
  T: 1.0
  LAMBDA_U: 0.6
+ RESUME: False
+ SAVE_CP: 'D:\model\endoscopy\hyper_kvasir\semi_conformer'
  
 

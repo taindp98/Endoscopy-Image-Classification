@@ -57,7 +57,7 @@ def show_cfs_matrix(targ, pred):
     plt.show(block=False)
     
 def show_batch(inp, title=None):
-    """Imshow for Tensor."""
+    """Imshow for Tensor"""
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
@@ -67,7 +67,7 @@ def show_batch(inp, title=None):
     plt.imshow(inp)
     if title is not None:
         plt.title(title)
-    plt.pause(0.001)  # pause a bit so that plots are updated
+    plt.pause(0.001)
 
 def show_grid(list_imgs):
     fig=plt.figure(figsize=(20,7))
