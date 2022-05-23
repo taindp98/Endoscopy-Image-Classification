@@ -22,8 +22,8 @@ std = [0.229, 0.224, 0.225]
 class TransformFixMatch(object):
     def __init__(self, config, mean, std):
         self.weak = transforms.Compose([
-            transforms.CenterCrop(config.DATA.IMG_SIZE),
-            # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            # transforms.CenterCrop(config.DATA.IMG_SIZE),
+            transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomCrop(size=config.DATA.IMG_SIZE,
                                   padding=int(config.DATA.IMG_SIZE*0.125),
@@ -49,11 +49,11 @@ def get_transform(config, is_train = False, is_labeled = True):
     if is_train:
         if is_labeled:
             trf_aug = transforms.Compose([
-                transforms.CenterCrop(config.DATA.IMG_SIZE),
-                # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+                # transforms.CenterCrop(config.DATA.IMG_SIZE),
+                transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
                 transforms.RandomHorizontalFlip(p=0.3),
                 transforms.RandomVerticalFlip(p=0.3),
-                transforms.RandomRotation(20),
+                # transforms.RandomRotation(20),
                 transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)])
