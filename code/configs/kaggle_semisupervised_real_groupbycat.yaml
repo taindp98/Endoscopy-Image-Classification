@@ -38,5 +38,6 @@ TRAIN:
  THRES: 0.7
  T: 1.0
  LAMBDA_U: 2.
+ RESUME: True
  
 

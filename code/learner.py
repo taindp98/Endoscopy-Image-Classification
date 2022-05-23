@@ -373,7 +373,14 @@ class SupLearning:
                 return summary_loss, metric
 
     def fit(self):
-        for epoch in range(1, self.config.TRAIN.EPOCHS+1):
+        if self.config.TRAIN.RESUME:
+            epoch_start = self.epoch_start
+            epoch_end = self.config.TRAIN.EPOCHS+1 - self.epoch_start
+        else:
+            epoch_start = 1
+            epoch_end = self.config.TRAIN.EPOCHS+1
+        
+        for epoch in range(epoch_start, epoch_end):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
@@ -450,6 +457,6 @@ class SupLearning:
             else:
                 for parameter in self.ema_model.ema.parameters():
                     parameter.requires_grad = False
-
+        self.epoch_start = checkpoint['epoch']
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
