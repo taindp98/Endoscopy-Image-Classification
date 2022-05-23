@@ -375,10 +375,10 @@ class SupLearning:
     def fit(self):
         if self.config.TRAIN.RESUME:
             epoch_start = self.epoch_start
-            epoch_end = self.config.TRAIN.EPOCHS+1 - self.epoch_start
         else:
             epoch_start = 1
-            epoch_end = self.config.TRAIN.EPOCHS+1
+        
+        epoch_end = self.config.TRAIN.EPOCHS+1
         
         for epoch in range(epoch_start, epoch_end):
             self.epoch = epoch
