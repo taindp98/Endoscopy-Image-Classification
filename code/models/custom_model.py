@@ -1,4 +1,7 @@
 # from distutils.command.config import config
+"""
+attention-guided. extract the attention map to highlight the important area
+"""
 import torch.nn as nn
 import timm
 import torch
