@@ -255,13 +255,18 @@ class SemiSupLearning:
                 for parameter in self.ema_model.ema.parameters():
                     parameter.requires_grad = False
         self.epoch_start = checkpoint['epoch']
+        self.best_valid_perf = checkpoint['best_valid_perf']
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
         
     def fit(self):
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {float(self.best_valid_perf):.3f}')
+            if self.best_valid_perf:
+                print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {float(self.best_valid_perf):.3f}')
+            else:
+                print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {self.best_valid_perf:.3f}')
+
             train_loss = self.train_one(self.epoch)
             print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
