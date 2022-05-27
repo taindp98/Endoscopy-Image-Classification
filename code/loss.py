@@ -34,7 +34,7 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
         pseudo_label = pseudo_label.to(device)
         max_probs, max_idx = torch.max(pseudo_label, dim=-1)
         mask = max_probs.ge(p_cutoff).float()
-        mask = mask.to(device)
+        mask = mask
         if use_hard_labels:
             masked_loss = ce_loss(logits = logits_s, 
                                 targets = max_idx,
