@@ -102,14 +102,14 @@ class SemiSupLearning:
                 outputs_u_s_conv = out_conv[bs_lb:].cpu()
                 outputs_u_s_trans = out_trans[bs_lb:]
 
-                outputs_u_w = output_pseudo_branch[0]
+                outputs_u_w = output_pseudo_branch[0].to(self.device)
 
                 del inputs_semi_branch
                 del outputs_semi_branch
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
                 lu, mask_conv = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
-                lu = lu.to(self.device)
+                
                 # lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
                 # lu = lu_conv + lu_trans
             else:
