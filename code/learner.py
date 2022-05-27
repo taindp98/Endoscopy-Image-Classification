@@ -125,7 +125,7 @@ class SemiSupLearning:
                 del outputs
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-                lu = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+                lu = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
             
             losses = lx + self.config.TRAIN.LAMBDA_U * lu
 

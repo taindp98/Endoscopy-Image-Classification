@@ -3,7 +3,7 @@ DATA:
  ANNO: '../resource/hyper_kvasir/full_labeled_group.csv'
  UNANNO_PATH: '/kaggle/input/hyper-kvasir/unlabeled-images-deform'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled.csv'
- IMG_SIZE: 224
+ IMG_SIZE: 112
  BATCH_SIZE: 8
  NUM_WORKERS: 2
  MOCKUP_SSL: False
@@ -13,7 +13,7 @@ DATA:
  TARGET_NAME: 'Groupby_Categories'
 MODEL:
  NUM_CLASSES: 6
- NAME: 'conformer'
+ NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_tiny_patch16.pth'
 TRAIN:
