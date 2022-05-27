@@ -8,7 +8,7 @@ DATA:
  NUM_WORKERS: 2
  MOCKUP_SSL: False
  MOCKUP_SIZE: 0.9
- MU: 7
+ MU: 6
  INPUT_NAME: 'Image'
  TARGET_NAME: 'Groupby_Categories'
 MODEL:
