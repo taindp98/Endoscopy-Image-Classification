@@ -85,7 +85,7 @@ class SemiSupLearning:
             targets_x = targets_x.to(self.device, non_blocking=True)
             
             outputs_semi_branch = self.model(inputs_semi_branch)
-            if self.config.USE_EMA:
+            if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model.to('cpu'))
                 output_pseudo_branch = self.ema_model.ema(input_pseudo_branch)
             else:
