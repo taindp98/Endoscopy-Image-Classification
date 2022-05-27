@@ -75,29 +75,46 @@ class SemiSupLearning:
                 (inputs_u_w, inputs_u_s) = unlabeled_iter.next()
 
             bs_lb = inputs_x.shape[0]
-            inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
+
+            ## split branch
+            ## semi-supervised branch
+            # inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
+            
+            inputs_semi_branch = torch.cat((inputs_x, inputs_u_s)).to(self.device, non_blocking=True)
+            input_pseudo_branch =  inputs_u_w
             targets_x = targets_x.to(self.device, non_blocking=True)
             
-            outputs = self.model(inputs)
-
+            outputs_semi_branch = self.model(inputs_semi_branch)
+            if self.config.USE_EMA:
+                self.ema_model.update(self.model.to('cpu'))
+                output_pseudo_branch = self.ema_model.ema(input_pseudo_branch)
+            else:
+                self.model = self.model.to('cpu')
+                output_pseudo_branch = self.model(input_pseudo_branch)
             if self.config.MODEL.NAME == 'conformer':
                 ## out_conv and out_trans
-                out_conv, out_trans = outputs
+                out_conv, out_trans = outputs_semi_branch
                 outputs_x = out_trans[:bs_lb]
-                outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
-                outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
-                outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
+                # outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
+                # outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
+                # outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
+                outputs_u_s_conv = out_conv[bs_lb:]
+                outputs_u_s_trans = out_trans[bs_lb:]
 
-                del inputs
-                del outputs
+                outputs_u_w = output_pseudo_branch[0]
+
+                del inputs_semi_branch
+                del outputs_semi_branch
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-                lu_conv, mask_conv = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
-                lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
-                lu = lu_conv + lu_trans
+                lu, mask_conv = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+                # lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
+                # lu = lu_conv + lu_trans
             else:
                 outputs_x = outputs[:bs_lb]
-                outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
+                outputs_u_s = outputs[bs_lb:]
+                outputs_u_w = output_pseudo_branch
+                # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
                 del inputs
                 del outputs
