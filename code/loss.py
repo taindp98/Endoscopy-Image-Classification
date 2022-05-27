@@ -43,7 +43,8 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
         else:
             pseudo_label = torch.softmax(logits_w/T, dim=-1)
             masked_loss = ce_loss(logits_s, pseudo_label, use_hard_labels) * mask
-        return masked_loss.mean(), mask.mean()
+        # return masked_loss.mean(), mask.mean()
+        return  masked_loss.mean()
 
     else:
         assert Exception('Not Implemented consistency_loss')
