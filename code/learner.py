@@ -121,7 +121,7 @@ class SemiSupLearning:
                 outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
                 # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
-                del inputs
+                # del inputs
                 del outputs
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
