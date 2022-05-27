@@ -19,7 +19,7 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
         nll_loss = torch.sum(-targets*log_pred, dim=1)
         return nll_loss
 
-def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_hard_labels=True):
+def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_hard_labels=True, device = None):
     assert name in ['ce', 'L2']
     logits_w = logits_w.detach()
     if name == 'L2':
@@ -31,6 +31,7 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
 
     elif name == 'ce':
         pseudo_label = torch.softmax(logits_w, dim=-1)
+        pseudo_label = pseudo_label.to(device)
         max_probs, max_idx = torch.max(pseudo_label, dim=-1)
         mask = max_probs.ge(p_cutoff).float()
         
