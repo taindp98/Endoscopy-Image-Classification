@@ -4,7 +4,7 @@ DATA:
  UNANNO_PATH: '/kaggle/input/hyper-kvasir/unlabeled-images-deform'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled.csv'
  IMG_SIZE: 112
- BATCH_SIZE: 8
+ BATCH_SIZE: 32
  NUM_WORKERS: 2
  MOCKUP_SSL: False
  MOCKUP_SIZE: 0.9
