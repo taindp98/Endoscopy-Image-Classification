@@ -84,16 +84,16 @@ class SemiSupLearning:
             # input_pseudo_branch =  inputs_u_w
             targets_x = targets_x.to(self.device, non_blocking=True)
             
-            outputs_semi_branch = self.model(inputs_semi_branch)
+            # outputs_semi_branch = self.model(inputs_semi_branch)
             # if self.config.TRAIN.USE_EMA:
                 # self.ema_model.update(self.model)
-            output_pseudo_branch = self.ema_model.ema(inputs_u_w.to(self.device))
             # else:
                 # self.model = self.model.to('cpu')
                 # output_pseudo_branch = self.model(inputs_u_w.to(self.device))
             if self.config.MODEL.NAME == 'conformer':
                 ## out_conv and out_trans
-                out_conv, out_trans = outputs_semi_branch
+                out_conv, out_trans = self.model(inputs_semi_branch)
+
                 outputs_x = out_trans[:bs_lb]
                 # outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
                 # outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
@@ -101,11 +101,13 @@ class SemiSupLearning:
                 outputs_u_s_conv = out_conv[bs_lb:]
                 # outputs_u_s_trans = out_trans[bs_lb:]
 
-                outputs_u_w = output_pseudo_branch[0]
+                # outputs_u_w = output_pseudo_branch[0]
+                outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))[0]
+
 
                 del inputs_semi_branch
-                del outputs_semi_branch
-                del output_pseudo_branch
+                # del outputs_semi_branch
+                # del output_pseudo_branch
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
                 lu = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
@@ -113,9 +115,10 @@ class SemiSupLearning:
                 # lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
                 # lu = lu_conv + lu_trans
             else:
+                outputs = self.model(inputs_semi_branch)
                 outputs_x = outputs[:bs_lb]
                 outputs_u_s = outputs[bs_lb:]
-                outputs_u_w = output_pseudo_branch
+                outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
                 # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
                 del inputs
