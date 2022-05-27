@@ -37,7 +37,7 @@ class SemiSupLearning:
         self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
 
         if self.config.TRAIN.USE_EMA:
-            self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
+            self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = 'cpu')
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
