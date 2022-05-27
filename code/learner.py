@@ -287,7 +287,7 @@ class SemiSupLearning:
             if self.best_valid_perf:
                 print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {float(self.best_valid_perf):.3f}')
             else:
-                print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {self.best_valid_perf:.3f}')
+                print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: inf')
 
             train_loss = self.train_one(self.epoch)
             print(f'\tTrain Loss: {train_loss.avg:.3f}')
