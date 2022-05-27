@@ -81,16 +81,16 @@ class SemiSupLearning:
             # inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
             
             inputs_semi_branch = torch.cat((inputs_x, inputs_u_s)).to(self.device, non_blocking=True)
-            input_pseudo_branch =  inputs_u_w
+            # input_pseudo_branch =  inputs_u_w
             targets_x = targets_x.to(self.device, non_blocking=True)
             
             outputs_semi_branch = self.model(inputs_semi_branch)
             if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model)
-                output_pseudo_branch = self.ema_model.ema(input_pseudo_branch)
+                output_pseudo_branch = self.ema_model.ema(inputs_u_w)
             else:
                 self.model = self.model.to('cpu')
-                output_pseudo_branch = self.model(input_pseudo_branch)
+                output_pseudo_branch = self.model(inputs_u_w)
             if self.config.MODEL.NAME == 'conformer':
                 ## out_conv and out_trans
                 out_conv, out_trans = outputs_semi_branch
