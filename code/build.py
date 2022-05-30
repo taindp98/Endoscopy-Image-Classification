@@ -8,7 +8,7 @@
 # from models.swin_transformer import SwinTransformer
 # from models.swin_mlp import SwinMLP
 # from models.coat_net import CoAtNet
-from models.custom_model import AttentionGuideCNN, ModelMargin
+from models.custom_model import ModelMargin
 from pydantic import create_model
 import torch.nn as nn
 from torch.nn import DataParallel
