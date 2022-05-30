@@ -2,6 +2,7 @@
 """
 attention-guided. extract the attention map to highlight the important area
 """
+from pydantic import create_model
 import torch.nn as nn
 import timm
 import torch
@@ -92,3 +93,18 @@ class AttentionGuideCNN(nn.Module):
             x_global_cls = self.model_swin(x)
             x_local_cls = self.model_swin(x_crop)
             return x_global_cls, x_local_cls
+
+
+class ModelMargin(nn.Module):
+    def __init__(self, model_name, pretrained, num_classes):
+        super().__init__()
+        self.model = timm.create_model(model_name,
+                                    pretrained=pretrained,
+                                    num_classes = num_classes)
+        
+        num_ftrs = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_ftrs, num_classes, bias=False)
+        self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+        self.fc = self.model.fc
+    def forward(self, x):
+        return self.model(x)

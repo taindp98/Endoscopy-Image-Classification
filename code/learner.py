@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -334,6 +334,7 @@ class SupLearning:
         else:
             self.class_weights = None
 
+        self.loss_fc = AngularPenaltySMLoss(config, weight=self.class_weights)
 
     def train_one(self, epoch):
         self.model.train()
@@ -348,9 +349,12 @@ class SupLearning:
             images = images.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
             
-            outputs = self.model(images)
-
-            losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
+            if self.config.MODEL.MARGIN:
+                fts = self.model.backbone(images)
+                losses = self.loss_fc(fts, targets, self.model.fc)
+            else:
+                outputs = self.model(images)
+                losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
             
             self.optimizer.zero_grad()
 

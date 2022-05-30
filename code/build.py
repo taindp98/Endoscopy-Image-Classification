@@ -8,12 +8,14 @@
 # from models.swin_transformer import SwinTransformer
 # from models.swin_mlp import SwinMLP
 # from models.coat_net import CoAtNet
-# from models.custom_model import AttentionGuideCNN
+from models.custom_model import AttentionGuideCNN, ModelMargin
+from pydantic import create_model
 import torch.nn as nn
 from torch.nn import DataParallel
 import timm
 import torch
 from models.conformer import Conformer
+from torchvision import models
 
 
 def build_model(config):
@@ -94,9 +96,13 @@ def build_model(config):
                         qkv_bias=True)
 
     else:
-        # raise NotImplementedError(f"Unkown model: {model_name}")
-        model = nn.Sequential(timm.create_model(model_name,
-                                                pretrained=True,
-                                                num_classes = config.MODEL.NUM_CLASSES))
+        if config.MODEL.MARGIN:
+            model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
+
+        else:
+            # raise NotImplementedError(f"Unkown model: {model_name}")
+            model = nn.Sequential(timm.create_model(model_name,
+                                                    pretrained=True,
+                                                    num_classes = config.MODEL.NUM_CLASSES))
 
     return model

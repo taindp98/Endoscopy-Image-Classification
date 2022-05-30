@@ -82,7 +82,7 @@ class AngularPenaltySMLoss(nn.Module):
         # loss_type = loss_type.lower()
         # assert loss_type in  ['arcface', 'sphereface', 'cosface']
 
-        self.loss_type = config.TRAIN.MARGIN
+        self.loss_type = config.MODEL.MARGIN
         if self.loss_type == 'arcface':
             self.s = 30.0 if not s else s
             self.m = 0.3 if not m else m
@@ -95,9 +95,9 @@ class AngularPenaltySMLoss(nn.Module):
         self.eps = eps
         self.weight = weight
         # self.bn = nn.BatchNorm1d(config.MODEL.NUM_CLASSES)
-        self.device = str(config.TRAIN.DEVICE)
+        # self.device = str(config.TRAIN.DEVICE)
 
-    def forward(self, input, target):
+    def forward(self, input, target, weight_fc):
         '''
         input shape (N, in_features)
         '''
@@ -107,6 +107,10 @@ class AngularPenaltySMLoss(nn.Module):
         # input = self.bn(input)
         input = F.normalize(input, p=2, dim=1)
 
+        for w in weight_fc.parameters():
+            w = F.normalize(w, p=2, dim=1)
+    
+        input = weight_fc(input)
         if self.loss_type == 'cosface':
             numerator = self.s * (torch.diagonal(input.transpose(0, 1)[target]) - self.m)
         if self.loss_type == 'arcface':
@@ -117,8 +121,8 @@ class AngularPenaltySMLoss(nn.Module):
         excl = torch.cat([torch.cat((input[i, :y], input[i, y+1:])).unsqueeze(0) for i, y in enumerate(target)], dim=0)
         denominator = torch.exp(numerator) + torch.sum(torch.exp(self.s * excl), dim=1)
         if self.weight != None:
-            wc = torch.tensor([self.weight[i] for i in target], device = self.device)
-            L = wc*(numerator - torch.log(denominator))
+            self.weight = torch.tensor([self.weight[i] for i in target])
+            L = self.weight*(numerator - torch.log(denominator))
         else:
             L = numerator - torch.log(denominator)
         return -torch.mean(L)
