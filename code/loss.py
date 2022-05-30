@@ -68,7 +68,7 @@ class FocalLoss(nn.Module):
 
 class AngularPenaltySMLoss(nn.Module):
 
-    def __init__(self, config, s=None, m=None, eps=1e-7, weight = None, device):
+    def __init__(self, config, s=None, m=None, eps=1e-7, weight = None, device = None):
         '''
         Angular Penalty Softmax Loss
         Three 'loss_types' available: ['arcface', 'sphereface', 'cosface']
