@@ -334,7 +334,7 @@ class SupLearning:
         else:
             self.class_weights = None
 
-        self.loss_fc = AngularPenaltySMLoss(config, weight=self.class_weights)
+        self.loss_fc = AngularPenaltySMLoss(config, weight=self.class_weights, device = self.device)
 
     def train_one(self, epoch):
         self.model.train()

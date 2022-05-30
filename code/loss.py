@@ -68,7 +68,7 @@ class FocalLoss(nn.Module):
 
 class AngularPenaltySMLoss(nn.Module):
 
-    def __init__(self, config, s=None, m=None, eps=1e-7, weight = None):
+    def __init__(self, config, s=None, m=None, eps=1e-7, weight = None, device):
         '''
         Angular Penalty Softmax Loss
         Three 'loss_types' available: ['arcface', 'sphereface', 'cosface']
@@ -95,7 +95,7 @@ class AngularPenaltySMLoss(nn.Module):
         self.eps = eps
         self.weight = weight
         # self.bn = nn.BatchNorm1d(config.MODEL.NUM_CLASSES)
-        # self.device = str(config.TRAIN.DEVICE)
+        self.device = device
 
     def forward(self, input, target, weight_fc):
         '''
@@ -121,7 +121,7 @@ class AngularPenaltySMLoss(nn.Module):
         excl = torch.cat([torch.cat((input[i, :y], input[i, y+1:])).unsqueeze(0) for i, y in enumerate(target)], dim=0)
         denominator = torch.exp(numerator) + torch.sum(torch.exp(self.s * excl), dim=1)
         if self.weight != None:
-            self.weight = torch.tensor([self.weight[i] for i in target])
+            self.weight = torch.tensor([self.weight[i] for i in target], device=self.device)
             L = self.weight*(numerator - torch.log(denominator))
         else:
             L = numerator - torch.log(denominator)
