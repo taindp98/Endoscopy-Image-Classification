@@ -93,6 +93,9 @@ class AngularPenaltySMLoss(nn.Module):
         if self.loss_type == 'cosface':
             self.s = 30.0 if not s else s
             self.m = 0.4 if not m else m
+        if self.loss_type == 'acloss':
+            self.s = 30.0 if not s else s
+            self.m = 0.3 if not m else m
         self.eps = eps
         self.weight = weight
         # self.bn = nn.BatchNorm1d(config.MODEL.NUM_CLASSES)
@@ -119,8 +122,8 @@ class AngularPenaltySMLoss(nn.Module):
         if self.loss_type == 'sphereface':
             numerator = self.s * torch.cos(self.m * torch.acos(torch.clamp(torch.diagonal(input.transpose(0, 1)[target]), -1.+self.eps, 1-self.eps)))
         if self.loss_type == 'acloss':
-            numerator = self.s * g_theta(torch.acos(torch.clamp(torch.diagonal(input.transpose(0, 1)[target]), -1.+self.eps, 1-self.eps)) + self.m)
-
+            acos = torch.acos(torch.clamp(torch.diagonal(input.transpose(0, 1)[target]), -1.+self.eps, 1-self.eps)) + self.m
+            numerator = self.s * g_theta(acos)
         excl = torch.cat([torch.cat((input[i, :y], input[i, y+1:])).unsqueeze(0) for i, y in enumerate(target)], dim=0)
         denominator = torch.exp(numerator) + torch.sum(torch.exp(self.s * excl), dim=1)
         if self.weight != None:
@@ -130,8 +133,8 @@ class AngularPenaltySMLoss(nn.Module):
             L = numerator - torch.log(denominator)
         return -torch.mean(L)
 
-def g_theta(arccos, k):
-    sigmoid1 = (1+torch.exp(-math.pi/2.0/k))/(1-torch.exp(-math.pi/2.0/k))
+def g_theta(arccos, k = 0.3):
+    sigmoid1 = (1+math.exp(-math.pi/2.0/k))/(1-math.exp(-math.pi/2.0/k))
     sigmoid2 = (1-torch.exp(arccos/k-math.pi/2.0/k))/(1+torch.exp(arccos/k-math.pi/2.0/k))
     cos_t = sigmoid1 * sigmoid2
     return cos_t
