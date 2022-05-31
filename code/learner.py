@@ -79,7 +79,7 @@ class SemiSupLearning:
             ## split branch
             ## semi-supervised branch
             # inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
-            
+            # print(inputs_x.shape, inputs_u_s.shape)
             inputs_semi_branch = torch.cat((inputs_x, inputs_u_s)).to(self.device, non_blocking=True)
             # input_pseudo_branch =  inputs_u_w
             targets_x = targets_x.to(self.device, non_blocking=True)
@@ -102,8 +102,10 @@ class SemiSupLearning:
                 # outputs_u_s_trans = out_trans[bs_lb:]
 
                 # outputs_u_w = output_pseudo_branch[0]
-                outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))[0]
-
+                if self.config.TRAIN.USE_EMA:
+                    outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))[0]
+                else:
+                    outputs_u_w = self.model(inputs_u_w.to(self.device))[0]
 
                 del inputs_semi_branch
                 # del outputs_semi_branch
@@ -118,7 +120,10 @@ class SemiSupLearning:
                 outputs = self.model(inputs_semi_branch)
                 outputs_x = outputs[:bs_lb]
                 outputs_u_s = outputs[bs_lb:]
-                outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
+                if self.config.TRAIN.USE_EMA:
+                    outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
+                else:
+                    outputs_u_w = self.model(inputs_u_w.to(self.device))
                 # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
                 # del inputs

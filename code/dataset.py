@@ -92,7 +92,11 @@ class GIDataset(torch.utils.data.Dataset):
                 # y = torch.tensor(vec, dtype=torch.long)
             # else:
         if self.is_unanno:
-            x = cv2.imread(os.path.join(self.config.DATA.UNANNO_PATH, img_name))
+            if self.config.DATA.MOCKUP_SSL:
+                data_dir = self.config.DATA.PATH
+            else:
+                data_dir = self.config.DATA.UNANNO_PATH
+            x = cv2.imread(os.path.join(data_dir, img_name))
             x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
             x = Image.fromarray(x)
             if self.transforms:
@@ -127,7 +131,7 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
         if config.DATA.MOCKUP_SSL:
             df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
             train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True))
-            train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False))
+            train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False), is_unanno = True)
             train_labeled_dl = DataLoader(train_labeled_ds, 
                                         sampler=RandomSampler(train_labeled_ds),
                                         batch_size = config.DATA.BATCH_SIZE, 
@@ -144,7 +148,7 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
                     # print(x.shape)
                     # print(y)
                     break
-                for x2, y2 in train_unlabeled_dl:
+                for x2 in train_unlabeled_dl:
                     break
                 show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
         ## else for real unlabeled data
@@ -166,7 +170,7 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
                     # print(x.shape)
                     # print(y)
                     break
-                for x2 in train_unlabeled_dl:
+                for x2, y2 in train_unlabeled_dl:
                     break
                 show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
     else:
