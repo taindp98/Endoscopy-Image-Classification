@@ -10,7 +10,7 @@ DATA:
  INPUT_NAME: 'Image'
  TARGET_NAME: 'Groupby_Categories'
 MODEL:
- NUM_CLASSES: 6
+ NUM_CLASSES: 5
 TRAIN:
  IS_SSL: True
  EPOCHS: 10
