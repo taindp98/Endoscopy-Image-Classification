@@ -1,5 +1,6 @@
 import torch.nn.functional as F
 import torch
+import math
 import torch.nn as nn
 
 def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none'):
@@ -117,6 +118,8 @@ class AngularPenaltySMLoss(nn.Module):
             numerator = self.s * torch.cos(torch.acos(torch.clamp(torch.diagonal(input.transpose(0, 1)[target]), -1.+self.eps, 1-self.eps)) + self.m)
         if self.loss_type == 'sphereface':
             numerator = self.s * torch.cos(self.m * torch.acos(torch.clamp(torch.diagonal(input.transpose(0, 1)[target]), -1.+self.eps, 1-self.eps)))
+        if self.loss_type == 'acloss':
+            numerator = self.s * g_theta(torch.acos(torch.clamp(torch.diagonal(input.transpose(0, 1)[target]), -1.+self.eps, 1-self.eps)) + self.m)
 
         excl = torch.cat([torch.cat((input[i, :y], input[i, y+1:])).unsqueeze(0) for i, y in enumerate(target)], dim=0)
         denominator = torch.exp(numerator) + torch.sum(torch.exp(self.s * excl), dim=1)
@@ -126,6 +129,12 @@ class AngularPenaltySMLoss(nn.Module):
         else:
             L = numerator - torch.log(denominator)
         return -torch.mean(L)
+
+def g_theta(arccos, k):
+    sigmoid1 = (1+torch.exp(-math.pi/2.0/k))/(1-torch.exp(-math.pi/2.0/k))
+    sigmoid2 = (1-torch.exp(arccos/k-math.pi/2.0/k))/(1+torch.exp(arccos/k-math.pi/2.0/k))
+    cos_t = sigmoid1 * sigmoid2
+    return cos_t
 
 def choose_loss_fnc(config, class_weights=None):
 

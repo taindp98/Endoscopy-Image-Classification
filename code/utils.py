@@ -11,6 +11,7 @@ from datetime import datetime,date
 import os
 import yaml
 from yaml.loader import SafeLoader
+import cv2
 
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
@@ -106,3 +107,21 @@ def get_config(config_file):
     for k1 in config.keys():
         config[k1] = AttrDict(config[k1])
     return config
+
+def resize_aspect_ratio(img, size, interp=cv2.INTER_LINEAR):
+    """
+    resize min edge to target size, keeping aspect ratio
+    """
+    if len(img.shape) == 2:
+        h,w = img.shape
+    elif len(img.shape) == 3:
+        h,w,_ = img.shape
+    else:
+        return None
+    if h > w:
+        new_w = size
+        new_h = h*new_w//w
+    else:
+        new_h = size
+        new_w = w*new_h//h
+    return cv2.resize(img, (new_w, new_h), interpolation=interp)
