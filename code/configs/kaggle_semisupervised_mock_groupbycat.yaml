@@ -2,7 +2,7 @@ DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_deform'
  ANNO: '../resource/hyper_kvasir/full_labeled_group.csv'
  IMG_SIZE: 112
- BATCH_SIZE: 64
+ BATCH_SIZE: 16
  NUM_WORKERS: 2
  MOCKUP_SSL: True
  MOCKUP_SIZE: 0.9
