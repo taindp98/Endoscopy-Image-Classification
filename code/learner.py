@@ -126,7 +126,7 @@ class SemiSupLearning:
                 outputs = self.model(images)
                 losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
                 """
-                if self.config.MODEL.MARGIN:
+                if self.config.MODEL.MARGIN != 'None':
                     fts = self.model.backbone(inputs_semi_branch)[:bs_lb]
                     lx = self.loss_fc(fts, targets_x, self.model.fc)
                     outputs = self.model(inputs_semi_branch)
@@ -377,7 +377,7 @@ class SupLearning:
             images = images.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
             
-            if self.config.MODEL.MARGIN:
+            if self.config.MODEL.MARGIN != 'None':
                 fts = self.model.backbone(images)
                 losses = self.loss_fc(fts, targets, self.model.fc)
             else:
