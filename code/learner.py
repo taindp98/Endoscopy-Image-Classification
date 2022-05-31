@@ -127,7 +127,7 @@ class SemiSupLearning:
                 losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
                 """
                 if self.config.MODEL.MARGIN:
-                    fts = self.model.backbone(inputs_semi_branch)
+                    fts = self.model.backbone(inputs_semi_branch)[:bs_lb]
                     lx = self.loss_fc(fts, targets_x, self.model.fc)
                     outputs = self.model(inputs_semi_branch)
                     # outputs_x = outputs[:bs_lb]
