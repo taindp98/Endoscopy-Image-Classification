@@ -36,5 +36,6 @@ TRAIN:
  THRES: 0.95
  T: 1.0
  LAMBDA_U: 0.6
+ SAVE_CP: '/kaggle/working/'
  
 
