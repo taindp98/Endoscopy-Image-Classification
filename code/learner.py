@@ -127,17 +127,18 @@ class SemiSupLearning:
                 losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
                 """
                 if self.config.MODEL.MARGIN != 'None':
-                    fts = self.model.backbone(inputs_semi_branch)[:bs_lb]
-                    lx = self.loss_fc(fts, targets_x, self.model.fc)
-                    outputs = self.model(inputs_semi_branch)
+                    fts = self.model.backbone(inputs_semi_branch)
+                    fts_x, fts_s = fts[:bs_lb], fts[bs_lb:]
+                    lx = self.loss_fc(fts_x, targets_x, self.model.fc)
+                    # outputs = self.model(inputs_semi_branch)
                     # outputs_x = outputs[:bs_lb]
-                    outputs_u_s = outputs[bs_lb:]
+                    # outputs_u_s = outputs[bs_lb:]
                     if self.config.TRAIN.USE_EMA:
                         outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
                     else:
                         outputs_u_w = self.model(inputs_u_w.to(self.device))
-                    del outputs
-                    lu = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                    del fts
+                    lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
 
                 else:
                     outputs = self.model(inputs_semi_branch)

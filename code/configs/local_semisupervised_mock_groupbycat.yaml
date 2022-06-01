@@ -13,7 +13,7 @@ MODEL:
  NUM_CLASSES: 5
  NAME: 'resnet50'
  PRE_TRAIN: True
- MARGIN: None
+ MARGIN: 'arcface'
 TRAIN:
  IS_SSL: True
  EPOCHS: 100
