@@ -138,7 +138,8 @@ class SemiSupLearning:
                     else:
                         outputs_u_w = self.model(inputs_u_w.to(self.device))
                     del fts
-                    lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
+                    lu = consistency_loss(outputs_u_w, self.model.fc(fts_s), T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                    # lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
 
                 else:
                     outputs = self.model(inputs_semi_branch)
