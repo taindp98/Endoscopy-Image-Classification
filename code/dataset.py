@@ -170,7 +170,7 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
                     # print(x.shape)
                     # print(y)
                     break
-                for x2, y2 in train_unlabeled_dl:
+                for x2 in train_unlabeled_dl:
                     break
                 show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
     else:
