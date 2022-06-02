@@ -16,6 +16,7 @@ MODEL:
  NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_tiny_patch16.pth'
+ MARGIN: None
 TRAIN:
  IS_SSL: True
  EPOCHS: 100
@@ -35,7 +36,7 @@ TRAIN:
  EMA_DECAY: 0.999
  EVAL_STEP: 512
  CLS_WEIGHT: True
- THRES: 0.7
+ THRES: 0.85
  T: 1.0
  LAMBDA_U: 2.
  RESUME: True
