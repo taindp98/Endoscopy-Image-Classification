@@ -52,7 +52,7 @@ class SemiSupLearning:
         else:
             self.class_weights = None
         
-        self.loss_fc = AngularPenaltySMLoss(config, weight=self.class_weights, device = self.device)
+        self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
 
     def train_one(self, epoch):
         self.model.train()
@@ -129,7 +129,7 @@ class SemiSupLearning:
                 if self.config.MODEL.MARGIN != 'None':
                     fts = self.model.backbone(inputs_semi_branch)
                     fts_x, fts_s = fts[:bs_lb], fts[bs_lb:]
-                    lx = self.loss_fc(fts_x, targets_x, self.model.fc)
+                    lx = self.loss_fc(fts_x, targets_x, self.model.fc, self.class_weights)
                     # outputs = self.model(inputs_semi_branch)
                     # outputs_x = outputs[:bs_lb]
                     # outputs_u_s = outputs[bs_lb:]
@@ -363,7 +363,7 @@ class SupLearning:
         else:
             self.class_weights = None
 
-        self.loss_fc = AngularPenaltySMLoss(config, weight=self.class_weights, device = self.device)
+        self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
 
     def train_one(self, epoch):
         self.model.train()
@@ -380,7 +380,7 @@ class SupLearning:
             
             if self.config.MODEL.MARGIN != 'None':
                 fts = self.model.backbone(images)
-                losses = self.loss_fc(fts, targets, self.model.fc)
+                losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
             else:
                 outputs = self.model(images)
                 losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')

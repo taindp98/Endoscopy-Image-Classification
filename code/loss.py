@@ -82,7 +82,7 @@ class FocalLoss(nn.Module):
 
 class AngularPenaltySMLoss(nn.Module):
 
-    def __init__(self, config, s=None, m=None, eps=1e-7, weight = None, device = None):
+    def __init__(self, config, s=None, m=None, eps=1e-7, device = None):
         '''
         Angular Penalty Softmax Loss
         Three 'loss_types' available: ['arcface', 'sphereface', 'cosface']
@@ -110,11 +110,11 @@ class AngularPenaltySMLoss(nn.Module):
             self.s = 30.0 if not s else s
             self.m = 0.3 if not m else m
         self.eps = eps
-        self.weight = weight
+        # self.weight = weight
         # self.bn = nn.BatchNorm1d(config.MODEL.NUM_CLASSES)
         self.device = device
 
-    def forward(self, input, target, weight_fc):
+    def forward(self, input, target, weight_fc, cls_weight = None):
         '''
         input shape (N, in_features)
         '''
@@ -139,9 +139,9 @@ class AngularPenaltySMLoss(nn.Module):
             numerator = self.s * g_theta(acos)
         excl = torch.cat([torch.cat((input[i, :y], input[i, y+1:])).unsqueeze(0) for i, y in enumerate(target)], dim=0)
         denominator = torch.exp(numerator) + torch.sum(torch.exp(self.s * excl), dim=1)
-        if self.weight != None:
-            self.weight = torch.tensor([self.weight[i] for i in target], device=self.device)
-            L = self.weight*(numerator - torch.log(denominator))
+        if cls_weight != None:
+            cls_weight = torch.tensor([cls_weight[i] for i in target], device=self.device)
+            L = cls_weight*(numerator - torch.log(denominator))
         else:
             L = numerator - torch.log(denominator)
         return -torch.mean(L)
