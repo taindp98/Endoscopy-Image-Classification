@@ -29,9 +29,8 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
         pseudo_label = pseudo_label.to(device)
         max_probs, max_idx = torch.max(pseudo_label, dim=-1)
         mask = max_probs.ge(p_cutoff).float()
-        mask = mask
 
-        masked_loss = loss_fc(logits_s, max_idx, fc)
+        masked_loss = loss_fc(logits_s, max_idx, fc, use_mask = 'True', mask = mask)
 
         return masked_loss
     else:
@@ -114,7 +113,7 @@ class AngularPenaltySMLoss(nn.Module):
         # self.bn = nn.BatchNorm1d(config.MODEL.NUM_CLASSES)
         self.device = device
 
-    def forward(self, input, target, weight_fc, cls_weight = None):
+    def forward(self, input, target, weight_fc, cls_weight = None, use_mask = False, mask = None):
         '''
         input shape (N, in_features)
         '''
@@ -144,6 +143,8 @@ class AngularPenaltySMLoss(nn.Module):
             L = cls_weight*(numerator - torch.log(denominator))
         else:
             L = numerator - torch.log(denominator)
+        if use_mask:
+            L = L * mask
         return -torch.mean(L)
 
 def g_theta(arccos, k = 0.3):
