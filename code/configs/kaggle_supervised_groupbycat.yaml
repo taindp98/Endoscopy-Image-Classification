@@ -8,9 +8,9 @@ DATA:
  TARGET_NAME: 'Groupby_Categories'
 MODEL:
  NUM_CLASSES: 5
- NAME: 'resnet50'
+ NAME: 'coatnet'
  PRE_TRAIN: True
- MARGIN: 'cosface'
+ MARGIN: None
 TRAIN:
  IS_SSL: False
  EPOCHS: 100
