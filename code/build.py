@@ -59,10 +59,10 @@ def build_model(config):
         #                 patch_norm= True,
         #                 use_checkpoint=None)
         
-    elif model_name == 'coat':
+    elif model_name == 'coatnet':
         model = CoAtNet(image_size = (config.DATA.IMG_SIZE, config.DATA.IMG_SIZE), 
                         num_classes=config.MODEL.NUM_CLASSES, 
-                        batch_size = config.DATA.BATCH_SIZE,
+                        # batch_size = config.DATA.BATCH_SIZE,
                         in_channels = 3, 
                         num_blocks = [2, 2, 3, 5, 2], 
                         channels = [64, 96, 192, 384, 768], 
