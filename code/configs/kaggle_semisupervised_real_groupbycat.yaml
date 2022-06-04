@@ -16,7 +16,7 @@ MODEL:
  NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_tiny_patch16.pth'
- MARGIN: 'arcface'
+ MARGIN: None
 TRAIN:
  IS_SSL: True
  EPOCHS: 100
