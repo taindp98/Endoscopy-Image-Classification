@@ -113,7 +113,7 @@ class SemiSupLearning:
                 # del output_pseudo_branch
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-                lu = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
                 
                 # lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
                 # lu = lu_conv + lu_trans
@@ -138,9 +138,9 @@ class SemiSupLearning:
                     else:
                         outputs_u_w = self.model(inputs_u_w.to(self.device))
                     del fts
-                    lu = consistency_loss(outputs_u_w, self.model.fc(fts_s), T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                    lu, mask_mean = consistency_loss(outputs_u_w, self.model.fc(fts_s), T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
                     # lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
-
+                    print('mask_mean:', mask_mean)
                 else:
                     outputs = self.model(inputs_semi_branch)
                     outputs_x = outputs[:bs_lb]
@@ -155,7 +155,7 @@ class SemiSupLearning:
                     del outputs
 
                     lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-                    lu = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                    lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
             
             losses = lx + self.config.TRAIN.LAMBDA_U * lu
 

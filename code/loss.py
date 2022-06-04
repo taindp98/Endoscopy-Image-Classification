@@ -31,8 +31,9 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
         mask = max_probs.ge(p_cutoff).float()
 
         masked_loss = loss_fc(logits_s, max_idx, fc, use_mask = 'True', mask = mask)
+        # return masked_loss
+        return masked_loss, mask.mean()
 
-        return masked_loss
     else:
 
         if name == 'L2':
@@ -47,7 +48,7 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
             pseudo_label = pseudo_label.to(device)
             max_probs, max_idx = torch.max(pseudo_label, dim=-1)
             mask = max_probs.ge(p_cutoff).float()
-            mask = mask
+            # mask = mask
             if use_hard_labels:
                 masked_loss = ce_loss(logits = logits_s, 
                                     targets = max_idx,
@@ -56,8 +57,8 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
             else:
                 pseudo_label = torch.softmax(logits_w/T, dim=-1)
                 masked_loss = ce_loss(logits_s, pseudo_label, use_hard_labels) * mask
-            # return masked_loss.mean(), mask.mean()
-            return  masked_loss.mean()
+            return masked_loss.mean(), mask.mean()
+            # return  masked_loss.mean()
 
         else:
             assert Exception('Not Implemented consistency_loss')
