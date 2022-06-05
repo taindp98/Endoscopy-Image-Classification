@@ -11,9 +11,9 @@ DATA:
  TARGET_NAME: 'Groupby_Categories'
 MODEL:
  NUM_CLASSES: 5
- NAME: 'resnet50'
+ NAME: 'conformer'
  PRE_TRAIN: True
- MARGIN: 'arcface'
+ MARGIN: None
 TRAIN:
  IS_SSL: True
  EPOCHS: 100

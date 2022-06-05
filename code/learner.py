@@ -130,7 +130,7 @@ class SemiSupLearning:
                     del fts
                     lu, mask_mean = consistency_loss(outputs_u_w, self.model.fc(fts_s), T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
                     # lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
-                    print('mask_mean:', mask_mean)
+                    # print('mask_mean:', mask_mean)
                 else:
                     outputs = self.model(inputs_semi_branch)
                     outputs_x = outputs[:bs_lb]
