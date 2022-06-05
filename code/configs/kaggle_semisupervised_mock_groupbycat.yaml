@@ -13,6 +13,7 @@ MODEL:
  NUM_CLASSES: 5
  NAME: 'conformer'
  PRE_TRAIN: True
+ PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_tiny_patch16.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: True
