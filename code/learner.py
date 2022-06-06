@@ -95,7 +95,7 @@ class SemiSupLearning:
                 ## out_conv and out_trans
                 out_conv, out_trans = self.model(inputs_semi_branch)
 
-                outputs_x = out_trans[:bs_lb]
+                outputs_x = out_trans[:bs_lb] + out_conv[:bs_lb]
                 # outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
                 # outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
                 # outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
@@ -188,7 +188,7 @@ class SemiSupLearning:
                     ## out_conv and out_trans
                     out_conv, out_trans = outputs
                     del outputs
-                    outputs = out_trans
+                    outputs = out_conv + out_trans 
                     # loss_conv = ce_loss(out_conv, targets, reduction='mean')            
                     # loss_trans = ce_loss(out_trans, targets, reduction='mean')            
                     # losses = loss_conv + loss_trans
