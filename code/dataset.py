@@ -176,7 +176,8 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
                     break
                 show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
     else:
-        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True))
+        df_train_labeled = df_train[df_train['is_labeled']==True]
+        train_ds = GIDataset(df_train_labeled, config = config, transforms = get_transform(config, is_train=True))
         train_dl = DataLoader(train_ds, 
                         sampler=RandomSampler(train_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
