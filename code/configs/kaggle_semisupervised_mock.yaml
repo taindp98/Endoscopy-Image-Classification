@@ -1,6 +1,6 @@
 DATA:
- PATH: '/kaggle/input/hyper-kvasir/labeled_images_deform'
- ANNO: '../resource/hyper_kvasir/full_labeled_group.csv'
+ PATH: '/kaggle/input/endoscopy/kvasir_capsule'
+ ANNO: '../resource/kvasir_capsule/df_pathologies.csv'
  IMG_SIZE: 112
  BATCH_SIZE: 16
  NUM_WORKERS: 2
@@ -10,8 +10,8 @@ DATA:
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
 MODEL:
- NUM_CLASSES: 5
- NAME: 'conformer'
+ NUM_CLASSES: 6
+ NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_tiny_patch16.pth'
  MARGIN: None

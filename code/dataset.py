@@ -129,7 +129,9 @@ def get_data(config, df_anno, df_unanno = None, is_visual=False):
     ## break down into labeled and unlabeled set
     if config.TRAIN.IS_SSL:
         if config.DATA.MOCKUP_SSL:
-            df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
+            df_labeled = df_train[df_train['is_labeled']==True]
+            df_unlabeled = df_train[df_train['is_labeled']==False]
+            # df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
             train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True))
             train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False), is_unanno = True)
             train_labeled_dl = DataLoader(train_labeled_ds, 
