@@ -4,8 +4,8 @@ DATA:
  IMG_SIZE: 128
  BATCH_SIZE: 64
  NUM_WORKERS: 2
- INPUT_NAME: 'Image'
- TARGET_NAME: 'Groupby_Categories'
+ INPUT_NAME: 'image'
+ TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 5
  NAME: 'coatnet'

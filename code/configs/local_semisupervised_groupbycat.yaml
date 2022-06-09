@@ -7,8 +7,8 @@ DATA:
  MOCKUP_SSL: True
  MOCKUP_SIZE: 0.9
  MU: 7
- INPUT_NAME: 'Image'
- TARGET_NAME: 'Groupby_Categories'
+ INPUT_NAME: 'image'
+ TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 5
 TRAIN:

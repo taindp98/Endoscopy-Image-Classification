@@ -4,11 +4,11 @@ DATA:
  IMG_SIZE: 128
  BATCH_SIZE: 8
  NUM_WORKERS: 0
- INPUT_NAME: 'Image'
- TARGET_NAME: 'Groupby_Categories'
+ INPUT_NAME: 'image'
+ TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 5
- NAME: 'coatnet'
+ NAME: 'resnet50'
  PRE_TRAIN: True
  MARGIN: None
 TRAIN:
