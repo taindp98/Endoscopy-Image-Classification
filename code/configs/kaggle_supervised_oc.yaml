@@ -1,5 +1,5 @@
 DATA:
- PATH: '/kaggle/input/endoscopy/hyper-kvasir'
+ PATH: '/kaggle/input/endoscopy/hyper-kvasir/labeled_images_resize'
  ANNO: '../resource/hyper_kvasir/df_abnormal.csv'
  IMG_SIZE: 112
  BATCH_SIZE: 64
