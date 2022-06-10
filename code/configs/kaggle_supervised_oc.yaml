@@ -8,7 +8,7 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 2
- NAME: 'resnet50'
+ NAME: 'resnet152'
  PRE_TRAIN: True
  MARGIN: None
 TRAIN:
