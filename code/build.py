@@ -96,7 +96,7 @@ def build_model(config):
                         qkv_bias=True)
 
     else:
-        if config.MODEL.MARGIN:
+        if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
 
         else:
