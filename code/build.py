@@ -18,7 +18,7 @@ from models.conformer import Conformer
 from torchvision import models
 
 
-def build_model(config):
+def build_model(config, is_pathology = True):
     model_name = config.MODEL.NAME
     if model_name == 'swin':
         model = timm.create_model('swin_base_patch4_window7_224', 
@@ -79,7 +79,10 @@ def build_model(config):
                         mlp_ratio=4, 
                         qkv_bias=True)
             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
-            model.load_state_dict(checkpoint)
+            if is_pathology:
+                model.load_state_dict(checkpoint['model_state_dict'])
+            else:
+                model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
             num_ftrs_trans = model.trans_cls_head.in_features
 
