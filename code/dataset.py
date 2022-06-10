@@ -125,14 +125,14 @@ class GIDataset(torch.utils.data.Dataset):
         #     y = torch.tensor(vec, dtype=torch.long)
             return x, y
 
-def get_data(config, df_anno, df_unanno = None, is_pathology = False,is_visual=False):
+def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False):
     """
     get training, validation, testing set
     """
     df_train = df_anno[df_anno['is_valid']==False]
     df_valid = df_anno[df_anno['is_valid']==True]
     ## break down into labeled and unlabeled set
-    if is_pathology:
+    if not is_full_sup:
         if config.TRAIN.IS_SSL:
             if config.DATA.MOCKUP_SSL:
                 df_labeled = df_train[df_train['is_labeled']==True]
