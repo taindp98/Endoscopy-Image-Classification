@@ -1,6 +1,6 @@
 DATA:
- PATH: '/kaggle/input/endoscopy/kvasir_capsule'
- ANNO: '../resource/kvasir_capsule/df_pathologies.csv'
+ PATH: '/kaggle/input/endoscopy/hyper-kvasir'
+ ANNO: '../resource/hyper_kvasir/df_abnormal.csv'
  IMG_SIZE: 112
  BATCH_SIZE: 64
  NUM_WORKERS: 2
