@@ -106,7 +106,7 @@ def build_model(config):
                 model.load_state_dict(checkpoint['model_state_dict'])
                 print('Loaded checkpoint abnormal')
                 in_fts = model.fc.in_features
-                model.fc = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES)
+                model.fc = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
             else:
                 model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
 
