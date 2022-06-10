@@ -5,7 +5,7 @@ DATA:
  BATCH_SIZE: 16
  NUM_WORKERS: 2
  MOCKUP_SSL: True
- MU: 5
+ MU: 4
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
 MODEL:
