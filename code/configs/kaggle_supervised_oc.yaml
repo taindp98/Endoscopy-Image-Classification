@@ -1,0 +1,34 @@
+DATA:
+ PATH: '/kaggle/input/endoscopy/kvasir_capsule'
+ ANNO: '../resource/kvasir_capsule/df_pathologies.csv'
+ IMG_SIZE: 112
+ BATCH_SIZE: 64
+ NUM_WORKERS: 2
+ INPUT_NAME: 'image'
+ TARGET_NAME: 'target'
+MODEL:
+ NUM_CLASSES: 2
+ NAME: 'resnet50'
+ PRE_TRAIN: True
+ MARGIN: None
+TRAIN:
+ IS_SSL: False
+ EPOCHS: 100
+ BASE_LR: 0.001
+ WARMUP_LR: 0.0005
+ WEIGHT_DECAY: 0.00001
+ WARMUP_EPOCHS: 5  
+ DECAY_EPOCHS: 5
+ OPT_NAME: 'Adam'
+ EPS: 0.00000001
+ BETAS: [0.9, 0.999]
+ MOMENTUM: 0.9
+ FREQ_EVAL: 5
+ SCH_NAME: 'step'
+ LR_DECAY: 0.8 
+ USE_EMA: False
+ EMA_DECAY: 0.999
+ EVAL_STEP: 512
+ CLS_WEIGHT: True
+ RESUME: False
+ SAVE_CP: '/kaggle/working/'
