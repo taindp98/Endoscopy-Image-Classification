@@ -78,14 +78,20 @@ def build_model(config, is_pathology = True):
                         num_heads=6, 
                         mlp_ratio=4, 
                         qkv_bias=True)
+
+            
+
             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
             if is_pathology:
+                num_ftrs_conv = model.conv_cls_head.in_features
+                num_ftrs_trans = model.trans_cls_head.in_features
+                model.conv_cls_head = nn.Linear(num_ftrs_conv, 2)
+                model.trans_cls_head = nn.Linear(num_ftrs_trans, 2)
                 model.load_state_dict(checkpoint['model_state_dict'])
             else:
                 model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
             num_ftrs_trans = model.trans_cls_head.in_features
-
             model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
             model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
         else:
