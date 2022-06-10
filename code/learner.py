@@ -416,9 +416,13 @@ class SupLearning:
                     images = images.to(self.device, non_blocking=True)
                     targets = targets.to(self.device, non_blocking=True)
                     
-                    outputs = eval_model(images)
+                    if self.config.MODEL.NAME == 'conformer':
+                        ## out_conv and out_trans
+                        out_conv, out_trans = eval_model(images)
+                        outputs = out_trans + out_conv
+                    else:
+                        outputs = eval_model(images)
                     losses = ce_loss(outputs, targets, reduction='mean')            
-
                     summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
                     tk0.set_postfix(loss=summary_loss.avg)
                     targets = targets.cpu().numpy()
