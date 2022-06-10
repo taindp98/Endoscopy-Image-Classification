@@ -200,7 +200,7 @@ def get_data(config, df_anno, df_unanno = None, is_pathology = False,is_visual=F
                             num_workers = config.DATA.NUM_WORKERS)
 
     else:
-        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config))
+        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True))
         train_dl = DataLoader(train_ds, 
                         sampler=RandomSampler(train_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
