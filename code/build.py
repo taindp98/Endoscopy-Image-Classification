@@ -100,7 +100,6 @@ def build_model(config):
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
 
         else:
-            # raise NotImplementedError(f"Unkown model: {model_name}")
             model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
 
     return model
