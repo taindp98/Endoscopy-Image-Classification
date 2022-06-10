@@ -10,7 +10,7 @@ MODEL:
  NUM_CLASSES: 6
  NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
