@@ -14,8 +14,25 @@ import torch.nn as nn
 from torch.nn import DataParallel
 import timm
 import torch
+from torch import nn
 from models.conformer import Conformer
 from torchvision import models
+from fastai.layers import PooledSelfAttention2d
+
+
+def build_head(in_fts, out_fts):
+    head = nn.Sequential(
+                        PooledSelfAttention2d(in_fts), 
+                        nn.AdaptiveAvgPool2d(1), 
+                        nn.Flatten(),
+                        nn.Dropout(0.5), 
+                        nn.Linear(in_fts, in_fts//4), 
+                        nn.ReLU(), 
+                        nn.Dropout(0.25), 
+                        nn.BatchNorm1d(in_fts//4), nn.Linear(in_fts//4, out_fts)
+                        )   
+
+    return head
 
 
 def build_model(config, is_pathology = True):
@@ -92,8 +109,10 @@ def build_model(config, is_pathology = True):
                 model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
             num_ftrs_trans = model.trans_cls_head.in_features
-            model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
-            model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+            model.conv_cls_head = build_head(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            model.trans_cls_head = build_head(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+            # model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            # model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
         else:
             model = Conformer(patch_size=16, 
                         num_classes = config.MODEL.NUM_CLASSES,
