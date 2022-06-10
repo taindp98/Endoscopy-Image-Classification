@@ -369,12 +369,18 @@ class SupLearning:
             images = images.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
             
-            if self.config.MODEL.MARGIN != 'None':
-                fts = self.model.backbone(images)
-                losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
-            else:
-                outputs = self.model(images)
+            if self.config.MODEL.NAME == 'conformer':
+                ## out_conv and out_trans
+                out_conv, out_trans = self.model(images)
+                outputs = out_trans + out_conv
                 losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
+            else:
+                if self.config.MODEL.MARGIN != 'None':
+                    fts = self.model.backbone(images)
+                    losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
+                else:
+                    outputs = self.model(images)
+                    losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
             
             self.optimizer.zero_grad()
 
