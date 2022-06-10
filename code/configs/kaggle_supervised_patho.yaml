@@ -8,9 +8,9 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 6
- NAME: 'swin_base_patch4_window7_224'
+ NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: 'None'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
