@@ -101,5 +101,8 @@ def build_model(config):
 
         else:
             model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
-
+            if config.MODEL.PRE_TRAIN_PATH != 'None':
+                checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+                model.load_state_dict(checkpoint['model_state_dict'])
+                print('Loaded checkpoint')
     return model

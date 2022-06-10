@@ -10,6 +10,7 @@ MODEL:
  NUM_CLASSES: 2
  NAME: 'resnet50'
  PRE_TRAIN: True
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
