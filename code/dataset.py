@@ -56,6 +56,7 @@ def get_transform(config, is_train = False, is_labeled = True):
                 transforms.RandomHorizontalFlip(p=0.3),
                 transforms.RandomVerticalFlip(p=0.3),
                 transforms.RandomRotation(20),
+                transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
                 # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)])
