@@ -101,8 +101,6 @@ def build_model(config):
 
         else:
             # raise NotImplementedError(f"Unkown model: {model_name}")
-            model = nn.Sequential(timm.create_model(model_name,
-                                                    pretrained=True,
-                                                    num_classes = config.MODEL.NUM_CLASSES))
+            model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
 
     return model
