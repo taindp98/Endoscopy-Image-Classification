@@ -55,8 +55,8 @@ def get_transform(config, is_train = False, is_labeled = True):
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(p=0.3),
                 transforms.RandomVerticalFlip(p=0.3),
-                # transforms.RandomRotation(20),
-                transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
+                transforms.RandomRotation(20),
+                # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)])
         else:
