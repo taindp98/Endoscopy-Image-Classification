@@ -50,9 +50,9 @@ def get_transform(config, is_train = False, is_labeled = True):
         if is_labeled:
             trf_aug = transforms.Compose([
                 # transforms.CenterCrop(config.DATA.IMG_SIZE),
-                # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
-                transforms.Resize((170,170)),
-                transforms.CenterCrop(config.DATA.IMG_SIZE),
+                transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+                # transforms.Resize((170,170)),
+                # transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(p=0.3),
                 transforms.RandomVerticalFlip(p=0.3),
                 # transforms.RandomRotation(20),
@@ -63,9 +63,9 @@ def get_transform(config, is_train = False, is_labeled = True):
             trf_aug = TransformFixMatch(config, mean, std)
     else:
         trf_aug = transforms.Compose([
-            # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
-            transforms.Resize((170,170)),
-            transforms.CenterCrop(config.DATA.IMG_SIZE),
+            transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            # transforms.Resize((170,170)),
+            # transforms.CenterCrop(config.DATA.IMG_SIZE),
             transforms.ToTensor(),
             transforms.Normalize(mean, std)])
     return trf_aug
