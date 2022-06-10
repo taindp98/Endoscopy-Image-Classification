@@ -51,7 +51,7 @@ def get_transform(config, is_train = False, is_labeled = True):
             trf_aug = transforms.Compose([
                 # transforms.CenterCrop(config.DATA.IMG_SIZE),
                 # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
-                transforms.Resize((156,156)),
+                transforms.Resize((170,170)),
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(p=0.3),
                 transforms.RandomVerticalFlip(p=0.3),
@@ -63,7 +63,9 @@ def get_transform(config, is_train = False, is_labeled = True):
             trf_aug = TransformFixMatch(config, mean, std)
     else:
         trf_aug = transforms.Compose([
-            transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            transforms.Resize((170,170)),
+            transforms.CenterCrop(config.DATA.IMG_SIZE),
             transforms.ToTensor(),
             transforms.Normalize(mean, std)])
     return trf_aug
@@ -198,7 +200,7 @@ def get_data(config, df_anno, df_unanno = None, is_pathology = False,is_visual=F
                             num_workers = config.DATA.NUM_WORKERS)
 
     else:
-        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True))
+        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config))
         train_dl = DataLoader(train_ds, 
                         sampler=RandomSampler(train_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
