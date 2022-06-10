@@ -8,9 +8,9 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 6
- NAME: 'densenet161'
+ NAME: 'swin_base_patch4_window7_224'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
 TRAIN:
  IS_SSL: False
