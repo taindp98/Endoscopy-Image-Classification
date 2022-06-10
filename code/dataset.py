@@ -192,7 +192,9 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     # print(x.shape)
                     # print(y)
                     break
-                show_batch(x[0,:,:], y[0])
+                # show_batch(x[0,:,:], y[0])
+                show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+
         
         valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
         valid_dl = DataLoader(valid_ds, 
