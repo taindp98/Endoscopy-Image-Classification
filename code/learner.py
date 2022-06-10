@@ -263,7 +263,7 @@ class SemiSupLearning:
 
         d = date.today().strftime("%m_%d_%Y") 
         h = datetime.now().strftime("%H_%M_%S").split('_')
-        h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+1
+        h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+2
         h[0] = str(h_offset)
         h = '_'.join(h)
         filename = d +'_'+h
@@ -472,7 +472,7 @@ class SupLearning:
 
         d = date.today().strftime("%m_%d_%Y") 
         h = datetime.now().strftime("%H_%M_%S").split('_')
-        h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+1
+        h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+2
         h[0] = str(h_offset)
         h = '_'.join(h)
         filename = d +'_'+h

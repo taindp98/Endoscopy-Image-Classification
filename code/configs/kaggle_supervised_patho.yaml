@@ -8,9 +8,9 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 12
- NAME: 'resnet152'
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: None
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
