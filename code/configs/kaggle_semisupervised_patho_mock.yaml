@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_pathologies.csv'
+ ANNO: '../resource/hyper_kvasir/df_pathologies_mock_8_2.csv'
  IMG_SIZE: 112
  BATCH_SIZE: 16
  NUM_WORKERS: 2
@@ -9,10 +9,10 @@ DATA:
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
 MODEL:
- NUM_CLASSES: 6
+ NUM_CLASSES: 12
  NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/densenet161_abnormalies.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: True

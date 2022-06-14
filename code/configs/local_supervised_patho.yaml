@@ -1,15 +1,16 @@
 DATA:
  PATH: 'D:\data\endoscopic\hyper_kvasir\labeled_images'
- ANNO: '../resource/hyper_kvasir/df_abnormal.csv'
- IMG_SIZE: 128
+ ANNO: '../resource/hyper_kvasir/df_pathologies.csv'
+ IMG_SIZE: 224
  BATCH_SIZE: 8
  NUM_WORKERS: 0
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
 MODEL:
- NUM_CLASSES: 5
- NAME: 'resnet50'
+ NUM_CLASSES: 12
+ NAME: 'densenet161'
  PRE_TRAIN: True
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
 TRAIN:
  IS_SSL: False
