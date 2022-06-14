@@ -29,11 +29,11 @@ TRAIN:
  FREQ_EVAL: 5
  SCH_NAME: 'step'
  LR_DECAY: 0.8 
- USE_EMA: False
+ USE_EMA: True
  EMA_DECAY: 0.999
  EVAL_STEP: 512
  CLS_WEIGHT: True
- THRES: 0.85
+ THRES: 0.9
  T: 1.0
  LAMBDA_U: 2.
  SAVE_CP: '/kaggle/working/'
