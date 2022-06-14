@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_pathologies_mock_2_8.csv'
+ ANNO: '../resource/hyper_kvasir/df_pathologies_mock_8_2.csv'
  IMG_SIZE: 96
  BATCH_SIZE: 16
  NUM_WORKERS: 2
