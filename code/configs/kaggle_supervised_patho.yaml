@@ -7,10 +7,10 @@ DATA:
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
 MODEL:
- NUM_CLASSES: 6
- NAME: 'conformer'
+ NUM_CLASSES: 12
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/densenet161_abnormalies.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
