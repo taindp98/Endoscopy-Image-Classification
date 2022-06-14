@@ -23,11 +23,13 @@ class TransformFixMatch(object):
     def __init__(self, config, mean, std):
         self.weak = transforms.Compose([
             # transforms.CenterCrop(config.DATA.IMG_SIZE),
-            transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(size=config.DATA.IMG_SIZE,
-                                  padding=int(config.DATA.IMG_SIZE*0.125),
-                                  padding_mode='reflect')])
+            transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+            transforms.CenterCrop(config.DATA.IMG_SIZE)])
+            # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            # transforms.RandomHorizontalFlip()])
+            # transforms.RandomCrop(size=config.DATA.IMG_SIZE,
+                                #   padding=int(config.DATA.IMG_SIZE*0.125),
+                                #   padding_mode='reflect')])
         
         self.strong = transforms.Compose([
             transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
