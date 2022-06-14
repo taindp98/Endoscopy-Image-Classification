@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_abnormal.csv'
+ ANNO: '../resource/hyper_kvasir/df_abnomalies.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -8,9 +8,9 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 2
- NAME: 'conformer'
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_tiny_patch16.pth'
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
 TRAIN:
  IS_SSL: False
