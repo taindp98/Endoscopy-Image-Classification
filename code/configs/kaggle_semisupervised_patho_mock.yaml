@@ -1,11 +1,11 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_pathologies_mock_7_3.csv'
- IMG_SIZE: 112
+ ANNO: '../resource/hyper_kvasir/df_pathologies_mock_2_8.csv'
+ IMG_SIZE: 96
  BATCH_SIZE: 16
  NUM_WORKERS: 2
  MOCKUP_SSL: True
- MU: 4
+ MU: 7
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
 MODEL:
