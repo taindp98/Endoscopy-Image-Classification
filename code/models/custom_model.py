@@ -109,19 +109,42 @@ class ModelMargin(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+class Normalize(nn.Module):
+
+    def __init__(self, power=2):
+        super(Normalize, self).__init__()
+        self.power = power
+
+    def forward(self, x):
+        norm = x.pow(self.power).sum(1, keepdim=True).pow(1. / self.power)
+        out = x.div(norm)
+        return out
+
 class ModelCoMatch(nn.Module):
-    def __init__(self, model_name, pretrained, num_classes):
+    def __init__(self, model_name, pretrained, num_classes, low_dim = 64):
         super().__init__()
         ## load pre-trained weight abnormality classification
         self.model = timm.create_model(model_name, num_classes = 2)
-        self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
-        self.model.load_state_dict(self.checkpoint['model_state_dict'])
+        self.k = 2
+
+        if pretrained != 'None':
+            self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
+            self.model.load_state_dict(self.checkpoint['model_state_dict'])
         ## transfer
         in_fts = self.model.classifier.in_features
         self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
         self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
-        self.fc = self.model.classifier
+        self.classifier = self.model.classifier
+
+        self.head_emb = nn.Sequential(
+            nn.Linear(in_fts, 64 * self.k),
+            nn.LeakyReLU(inplace=True, negative_slope=0.1),
+            nn.Linear(64 * self.k, low_dim), 
+            Normalize(2))
+
     def forward(self, x):
         fts = self.backbone(x)
-        logits = self.fc(fts)
+        # fts = torch.mean(fts, dim=(2, 3))
+        logits = self.classifier(fts)
+        fts = self.head_emb(fts)
         return logits, fts 
