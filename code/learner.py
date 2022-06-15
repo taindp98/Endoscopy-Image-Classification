@@ -396,15 +396,15 @@ class CoMatch:
             # (inputs_u_w, inputs_u_s_0, inputs_u_s_1)= next(dl_u)
 
             try:
-                inputs_x, targets_x = labeled_iter.next()
+                inputs_x, targets_x = dl_x.next()
             except:
-                labeled_iter = iter(self.train_labeled_dl)
-                inputs_x, targets_x = labeled_iter.next()
+                dl_x = iter(self.train_labeled_dl)
+                inputs_x, targets_x = dl_x.next()
             try:
-                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = unlabeled_iter.next()
+                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = dl_u.next()
             except:
-                unlabeled_iter = iter(self.train_unlabeled_dl)
-                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = unlabeled_iter.next()
+                dl_u = iter(self.train_unlabeled_dl)
+                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = dl_u.next()
 
             # bs_lb = inputs_x.size[0]
             bt = inputs_x.size(0)
