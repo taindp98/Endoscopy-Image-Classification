@@ -372,7 +372,7 @@ class CoMatch:
             self.class_weights = None
         
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
-        
+
         self.low_dim = 64
         self.queue_size = self.queue_batch*(self.config.DATA.MU+1)*self.config.DATA.BATCH_SIZE
         self.queue_feats = torch.zeros(self.queue_size, self.low_dim).to(self.device)
@@ -392,19 +392,19 @@ class CoMatch:
 
         for batch_idx, _ in enumerate(tk0):
 
-            inputs_x, targets_x = next(dl_x)
-            (inputs_u_w, inputs_u_s_0, inputs_u_s_1)= next(dl_u)
+            # inputs_x, targets_x = next(dl_x)
+            # (inputs_u_w, inputs_u_s_0, inputs_u_s_1)= next(dl_u)
 
-            # try:
-            #     inputs_x, targets_x = labeled_iter.next()
-            # except:
-            #     labeled_iter = iter(self.train_labeled_dl)
-            #     inputs_x, targets_x = labeled_iter.next()
-            # try:
-            #     (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = unlabeled_iter.next()
-            # except:
-            #     unlabeled_iter = iter(self.train_unlabeled_dl)
-            #     (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = unlabeled_iter.next()
+            try:
+                inputs_x, targets_x = labeled_iter.next()
+            except:
+                labeled_iter = iter(self.train_labeled_dl)
+                inputs_x, targets_x = labeled_iter.next()
+            try:
+                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = unlabeled_iter.next()
+            except:
+                unlabeled_iter = iter(self.train_unlabeled_dl)
+                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = unlabeled_iter.next()
 
             # bs_lb = inputs_x.size[0]
             bt = inputs_x.size(0)
