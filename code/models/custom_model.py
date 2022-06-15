@@ -108,3 +108,20 @@ class ModelMargin(nn.Module):
         self.fc = self.model.fc
     def forward(self, x):
         return self.model(x)
+
+class ModelCoMatch(nn.Module):
+    def __init__(self, model_name, pretrained, num_classes):
+        super().__init__()
+        ## load pre-trained weight abnormality classification
+        self.model = timm.create_model(model_name, num_classes = 2)
+        self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
+        self.model.load_state_dict(self.checkpoint['model_state_dict'])
+        ## transfer
+        in_fts = self.model.classifier.in_features
+        self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
+        self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+        self.fc = self.model.classifier
+    def forward(self, x):
+        fts = self.backbone(x)
+        logits = self.fc(fts)
+        return logits, fts 

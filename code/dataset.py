@@ -47,7 +47,36 @@ class TransformFixMatch(object):
         strong = self.strong(x)
         return self.normalize(weak), self.normalize(strong)
 
-def get_transform(config, is_train = False, is_labeled = True):
+class TransformCoMatch(object):
+    def __init__(self, config, mean, std):
+        self.weak = transforms.Compose([
+            # transforms.CenterCrop(config.DATA.IMG_SIZE),
+            transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+            transforms.CenterCrop(config.DATA.IMG_SIZE)])
+            # transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            # transforms.RandomHorizontalFlip()])
+            # transforms.RandomCrop(size=config.DATA.IMG_SIZE,
+                                #   padding=int(config.DATA.IMG_SIZE*0.125),
+                                #   padding_mode='reflect')])
+        
+        self.strong = transforms.Compose([
+            transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop(size=config.DATA.IMG_SIZE,
+                                  padding=int(config.DATA.IMG_SIZE*0.125),
+                                  padding_mode='reflect'),
+            RandAugmentMC(n=2, m=10)])
+        self.normalize = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std)])
+
+    def __call__(self, x):
+        weak = self.weak(x)
+        strong_0 = self.strong(x)
+        strong_1 = self.strong(x)
+        return self.normalize(weak), self.normalize(strong_0), self.normalize(strong_1)
+
+def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixMatch'):
     if is_train:
         if is_labeled:
             trf_aug = transforms.Compose([
@@ -63,7 +92,11 @@ def get_transform(config, is_train = False, is_labeled = True):
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)])
         else:
-            trf_aug = TransformFixMatch(config, mean, std)
+            if type_semi == 'FixMatch':
+                trf_aug = TransformFixMatch(config, mean, std)
+            else:
+                trf_aug = TransformCoMatch(config, mean, std)
+
     else:
         trf_aug = transforms.Compose([
             # transforms.Resize((272,272)),
@@ -127,7 +160,7 @@ class GIDataset(torch.utils.data.Dataset):
         #     y = torch.tensor(vec, dtype=torch.long)
             return x, y
 
-def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False):
+def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False, type_semi = 'FixMatch'):
     """
     get training, validation, testing set
     """
@@ -137,11 +170,12 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
     if not is_full_sup:
         if config.TRAIN.IS_SSL:
             if config.DATA.MOCKUP_SSL:
+                # print(type_semi)
                 df_labeled = df_train[df_train['is_labeled']==True]
                 df_unlabeled = df_train[df_train['is_labeled']==False]
                 # df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
                 train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True))
-                train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False), is_unanno = True)
+                train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
                 train_labeled_dl = DataLoader(train_labeled_ds, 
                                             sampler=RandomSampler(train_labeled_ds),
                                             batch_size = config.DATA.BATCH_SIZE, 
@@ -164,7 +198,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
             ## else for real unlabeled data
             else:
                 train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True))
-                train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False), is_unanno = True)
+                train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
                 train_labeled_dl = DataLoader(train_labeled_ds, 
                                             sampler=RandomSampler(train_labeled_ds),
                                             batch_size = config.DATA.BATCH_SIZE, 

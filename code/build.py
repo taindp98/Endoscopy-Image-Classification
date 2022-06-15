@@ -8,7 +8,7 @@
 # from models.swin_transformer import SwinTransformer
 # from models.swin_mlp import SwinMLP
 # from models.coat_net import CoAtNet
-from models.custom_model import ModelMargin
+from models.custom_model import ModelMargin, ModelCoMatch
 from pydantic import create_model
 import torch.nn as nn
 from torch.nn import DataParallel
@@ -123,7 +123,8 @@ def build_model(config, is_pathology = True):
                         num_heads=6, 
                         mlp_ratio=4, 
                         qkv_bias=True)
-
+    elif config.MODEL.TYPE_SEMI == 'CoMatch':
+        model = ModelCoMatch(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
     else:
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
