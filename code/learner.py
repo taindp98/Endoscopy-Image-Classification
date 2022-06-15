@@ -455,9 +455,10 @@ class CoMatch:
                 
                 # update memory bank
                 n = bt+btu   
-                self.queue_feats[self.queue_ptr:self.queue_ptr + n,:] = feats_w
-                self.queue_probs[self.queue_ptr:self.queue_ptr + n,:] = probs_w      
-                self.queue_ptr = (self.queue_ptr+n) % self.queue_size
+                if n == self.queue_size:
+                    self.queue_feats[self.queue_ptr:self.queue_ptr + n,:] = feats_w
+                    self.queue_probs[self.queue_ptr:self.queue_ptr + n,:] = probs_w      
+                    self.queue_ptr = (self.queue_ptr+n) % self.queue_size
 
                 
             # embedding similarity
