@@ -110,10 +110,10 @@ def build_model(config, is_pathology = True):
                 model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
             num_ftrs_trans = model.trans_cls_head.in_features
-            model.conv_cls_head = build_head(num_ftrs_conv, config.MODEL.NUM_CLASSES)
-            model.trans_cls_head = build_head(num_ftrs_trans, config.MODEL.NUM_CLASSES)
-            # model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
-            # model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+            # model.conv_cls_head = build_head(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            # model.trans_cls_head = build_head(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+            model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
         else:
             model = Conformer(patch_size=16, 
                         num_classes = config.MODEL.NUM_CLASSES,
