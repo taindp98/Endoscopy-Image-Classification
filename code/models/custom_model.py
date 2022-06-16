@@ -10,6 +10,8 @@ import numpy as np
 # from pytorch_grad_cam import GradCAM, ScoreCAM, GradCAMPlusPlus, AblationCAM, XGradCAM, EigenCAM, FullGrad
 import cv2
 from torchvision import transforms
+from models.conformer import Conformer
+
 
 # def reshape_transform(tensor, height=7, width=7):
 #     result = tensor.reshape(tensor.size(0),
@@ -147,4 +149,46 @@ class ModelCoMatch(nn.Module):
         # fts = torch.mean(fts, dim=(2, 3))
         logits = self.classifier(fts)
         fts = self.head_emb(fts)
+        return logits, fts 
+
+
+class CoMatchConformer(nn.Module):
+    def __init__(self, config, is_pathology):
+        self.model = Conformer(patch_size=16, 
+                        num_classes = 1000,
+                        channel_ratio=1, 
+                        embed_dim=384, 
+                        depth=12,
+                        num_heads=6, 
+                        mlp_ratio=4, 
+                        qkv_bias=True)
+
+        self.config = config
+        self.k = 2
+        self.low_dim = 64
+        if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+            checkpoint = torch.load(self.config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+            if is_pathology:
+                num_ftrs_conv = self.model.conv_cls_head.in_features
+                num_ftrs_trans = self.model.trans_cls_head.in_features
+                self.model.conv_cls_head = nn.Linear(num_ftrs_conv, 2)
+                self.model.trans_cls_head = nn.Linear(num_ftrs_trans, 2)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+            else:
+                self.model.load_state_dict(checkpoint)
+            num_ftrs_conv = self.model.conv_cls_head.in_features
+            num_ftrs_trans = self.model.trans_cls_head.in_features
+            self.model.conv_cls_head = nn.Linear(num_ftrs_conv, self.config.MODEL.NUM_CLASSES)
+            self.model.trans_cls_head = nn.Linear(num_ftrs_trans, self.config.MODEL.NUM_CLASSES)
+
+
+            self.head_emb = nn.Sequential(
+                nn.Linear(num_ftrs_conv+num_ftrs_trans, 64 * self.k),
+                nn.LeakyReLU(inplace=True, negative_slope=0.1),
+                nn.Linear(64 * self.k, self.low_dim), 
+                Normalize(2))
+
+    def forward(self, x):
+        logits, fts = self.model(x)
+        fts = self.head_emb(fts[0]+fts[1])
         return logits, fts 

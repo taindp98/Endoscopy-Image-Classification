@@ -112,7 +112,6 @@ class FixMatch:
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
                 lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
-                
                 # lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
                 # lu = lu_conv + lu_trans
             else:
