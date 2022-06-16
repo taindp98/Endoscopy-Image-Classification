@@ -8,7 +8,7 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 2
- NAME: 'densenet161'
+ NAME: 'conformer'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
