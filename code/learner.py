@@ -99,7 +99,10 @@ class FixMatch:
                 # outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
                 # outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
                 # outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
+
+                ## use strong augment from convolution branch
                 outputs_u_s_conv = out_conv[bs_lb:]
+                ## use strong augment from transformer branch
                 # outputs_u_s_trans = out_trans[bs_lb:]
 
                 # outputs_u_w = output_pseudo_branch[0]
