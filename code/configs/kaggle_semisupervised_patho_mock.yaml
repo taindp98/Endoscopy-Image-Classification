@@ -10,9 +10,9 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 12
- NAME: 'densenet161'
+ NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/densenet161_abnormalies.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
 TRAIN:
