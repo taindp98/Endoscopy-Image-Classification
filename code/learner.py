@@ -81,7 +81,6 @@ class FixMatch:
             ## semi-supervised branch
             # inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
             # print(inputs_x.shape, inputs_u_s.shape)
-            inputs_semi_branch = torch.cat((inputs_x, inputs_u_s)).to(self.device, non_blocking=True)
             # input_pseudo_branch =  inputs_u_w
             targets_x = targets_x.to(self.device, non_blocking=True)
             
@@ -93,31 +92,32 @@ class FixMatch:
                 # output_pseudo_branch = self.model(inputs_u_w.to(self.device))
             if self.config.MODEL.NAME == 'conformer':
                 ## out_conv and out_trans
-                out_conv, out_trans = self.model(inputs_semi_branch)
-
+                inputs = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
+                out_conv, out_trans = self.model(inputs)
                 outputs_x = out_trans[:bs_lb] + out_conv[:bs_lb]
-                # outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
-                # outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
-                # outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
+                outputs_u_w = out_conv[bs_lb:].chunk(2)[0]
+                outputs_u_s_conv = out_conv[bs_lb:].chunk(2)[1]
+                outputs_u_s_trans = out_trans[bs_lb:].chunk(2)[1]
 
                 ## use strong augment from convolution branch
-                outputs_u_s_conv = out_conv[bs_lb:]
+                # outputs_u_s_conv = out_conv[bs_lb:]
                 ## use strong augment from transformer branch
-                outputs_u_s_trans = out_trans[bs_lb:]
+                # outputs_u_s_trans = out_trans[bs_lb:]
 
                 # outputs_u_w = output_pseudo_branch[0]
-                if self.config.TRAIN.USE_EMA:
-                    outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))[0]
-                else:
-                    outputs_u_w = self.model(inputs_u_w.to(self.device))[0]
+                # if self.config.TRAIN.USE_EMA:
+                    # outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))[0]
+                # else:
+                    # outputs_u_w = self.model(inputs_u_w.to(self.device))[0]
 
-                del inputs_semi_branch
+                # del inputs_semi_branch
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
                 lu_conv, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
                 lu_trans, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
                 lu = lu_conv + lu_trans
             else:
+                inputs_semi_branch = torch.cat((inputs_x, inputs_u_s)).to(self.device, non_blocking=True)
                 if self.config.MODEL.MARGIN != 'None':
                     fts = self.model.backbone(inputs_semi_branch)
                     fts_x, fts_s = fts[:bs_lb], fts[bs_lb:]
