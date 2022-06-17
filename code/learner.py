@@ -339,7 +339,7 @@ class CoMatch:
         # number of batches stored in memory bank
         self.queue_batch = 5
         self.alpha = 0.9
-        self.thr = 0.95
+        # self.thr = 0.95
         
         # softmax temperature
         self.temperature = 0.2
@@ -449,7 +449,7 @@ class CoMatch:
                     probs = self.alpha*probs + (1-self.alpha)*torch.mm(A, self.queue_probs)               
                 
                 scores, lbs_u_guess = torch.max(probs, dim=1)
-                mask = scores.ge(self.thr).float() 
+                mask = scores.ge(self.config.TRAIN.THRES).float() 
                     
                 feats_w = torch.cat([feats_u_w,feats_x],dim=0)   
                 onehot = torch.zeros(bt,self.config.MODEL.NUM_CLASSES).to(self.device).scatter(1,targets_x.view(-1,1),1)
