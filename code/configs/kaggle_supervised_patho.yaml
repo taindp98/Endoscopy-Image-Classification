@@ -10,7 +10,7 @@ MODEL:
  NUM_CLASSES: 12
  NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
