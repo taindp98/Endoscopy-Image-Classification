@@ -88,9 +88,19 @@ def build_model(config, is_pathology = True):
     
     elif model_name == 'conformer':
         if config.MODEL.PRE_TRAIN:
+            ## tiny
+            # model = Conformer(patch_size=16, 
+            #             num_classes = 1000,
+            #             channel_ratio=1, 
+            #             embed_dim=384, 
+            #             depth=12,
+            #             num_heads=6, 
+            #             mlp_ratio=4, 
+            #             qkv_bias=True)
+            ## small patch 16
             model = Conformer(patch_size=16, 
                         num_classes = 1000,
-                        channel_ratio=1, 
+                        channel_ratio=4, 
                         embed_dim=384, 
                         depth=12,
                         num_heads=6, 
