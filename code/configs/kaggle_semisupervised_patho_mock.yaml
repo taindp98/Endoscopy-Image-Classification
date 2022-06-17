@@ -1,7 +1,7 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
  ANNO: '../resource/hyper_kvasir/df_pathologies_mock_9_1.csv'
- IMG_SIZE: 96
+ IMG_SIZE: 224
  BATCH_SIZE: 16
  NUM_WORKERS: 2
  MOCKUP_SSL: True
@@ -12,7 +12,7 @@ MODEL:
  NUM_CLASSES: 12
  NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
 TRAIN:
