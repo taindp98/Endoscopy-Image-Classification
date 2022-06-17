@@ -103,7 +103,7 @@ class FixMatch:
                 ## use strong augment from convolution branch
                 outputs_u_s_conv = out_conv[bs_lb:]
                 ## use strong augment from transformer branch
-                # outputs_u_s_trans = out_trans[bs_lb:]
+                outputs_u_s_trans = out_trans[bs_lb:]
 
                 # outputs_u_w = output_pseudo_branch[0]
                 if self.config.TRAIN.USE_EMA:
@@ -114,9 +114,9 @@ class FixMatch:
                 del inputs_semi_branch
 
                 lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-                lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
-                # lu_trans, mask_trans = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES)
-                # lu = lu_conv + lu_trans
+                lu_conv, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_conv, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                lu_trans, mask_mean = consistency_loss(outputs_u_w, outputs_u_s_trans, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+                lu = lu_conv + lu_trans
             else:
                 if self.config.MODEL.MARGIN != 'None':
                     fts = self.model.backbone(inputs_semi_branch)
