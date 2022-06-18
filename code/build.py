@@ -115,7 +115,7 @@ def build_model(config, is_pathology = True):
                 num_ftrs_trans = model.trans_cls_head.in_features
                 model.conv_cls_head = nn.Linear(num_ftrs_conv, 2)
                 model.trans_cls_head = nn.Linear(num_ftrs_trans, 2)
-                if type(checkpoint) is dict:
+                if 'model_state_dict' in checkpoint.keys():
                     model.load_state_dict(checkpoint['model_state_dict'])
                 else:
                     model.load_state_dict(checkpoint)
