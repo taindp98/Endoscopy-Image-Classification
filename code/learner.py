@@ -268,7 +268,7 @@ class FixMatch:
         h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+2
         h[0] = str(h_offset)
         h = '_'.join(h)
-        filename = d +'_'+h
+        filename =  d +'_' + h + '_epoch_' + str(self.epoch)
 
         checkpoint['epoch'] = self.epoch
         checkpoint['best_valid_perf'] = self.best_valid_perf
@@ -581,7 +581,7 @@ class CoMatch:
         h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+2
         h[0] = str(h_offset)
         h = '_'.join(h)
-        filename = d +'_'+h
+        filename =  d +'_' + h + '_epoch_' + str(self.epoch)
 
         checkpoint['epoch'] = self.epoch
         checkpoint['best_valid_perf'] = self.best_valid_perf
@@ -801,7 +801,7 @@ class SupLearning:
         h_offset = int(datetime.now().strftime("%H_%M_%S").split('_')[0])+2
         h[0] = str(h_offset)
         h = '_'.join(h)
-        filename = d +'_'+h
+        filename =  d +'_' + h + '_epoch_' + str(self.epoch)
 
         checkpoint['epoch'] = self.epoch
         checkpoint['best_valid_perf'] = self.best_valid_perf
