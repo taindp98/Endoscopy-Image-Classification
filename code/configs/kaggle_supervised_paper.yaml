@@ -6,11 +6,12 @@ DATA:
  NUM_WORKERS: 2
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
+ IS_CROP: False
 MODEL:
  NUM_CLASSES: 23
- NAME: 'conformer'
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_small_patch16.pth'
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
 TRAIN:
  IS_SSL: False
