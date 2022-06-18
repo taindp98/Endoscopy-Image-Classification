@@ -87,7 +87,7 @@ def build_model(config, is_pathology = True):
     #                     block_types=['C', 'C', 'T', 'T'])
     
     elif model_name == 'conformer':
-        if config.MODEL.PRE_TRAIN:
+        if config.MODEL.PRE_TRAIN != 'None':
             ## tiny
             # model = Conformer(patch_size=16, 
             #             num_classes = 1000,
@@ -115,7 +115,10 @@ def build_model(config, is_pathology = True):
                 num_ftrs_trans = model.trans_cls_head.in_features
                 model.conv_cls_head = nn.Linear(num_ftrs_conv, 2)
                 model.trans_cls_head = nn.Linear(num_ftrs_trans, 2)
-                model.load_state_dict(checkpoint['model_state_dict'])
+                if type(checkpoint) is dict:
+                    model.load_state_dict(checkpoint['model_state_dict'])
+                else:
+                    model.load_state_dict(checkpoint)
             else:
                 model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
@@ -127,7 +130,7 @@ def build_model(config, is_pathology = True):
         else:
             model = Conformer(patch_size=16, 
                         num_classes = config.MODEL.NUM_CLASSES,
-                        channel_ratio=1, 
+                        channel_ratio=4, 
                         embed_dim=384, 
                         depth=12,
                         num_heads=6, 
