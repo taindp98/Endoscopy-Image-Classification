@@ -1,11 +1,11 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
  ANNO: '../resource/hyper_kvasir/df_split_mock_1_9.csv'
- IMG_SIZE: 112
+ IMG_SIZE: 224
  BATCH_SIZE: 16
  NUM_WORKERS: 2
  MOCKUP_SSL: True
- MU: 6
+ MU: 2
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
  IS_CROP: False
