@@ -15,7 +15,7 @@ MODEL:
  PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
- TYPE_SEMI: 'FixMatch'
+ TYPE_SEMI: 'CoMatch'
 TRAIN:
  IS_SSL: True
  EPOCHS: 150
@@ -37,6 +37,6 @@ TRAIN:
  CLS_WEIGHT: True
  THRES: 0.95
  T: 1.0
- LAMBDA_U: 1.
- LAMBDA_C: 1.
+ LAMBDA_U: 1.5
+ LAMBDA_C: 1.5
  SAVE_CP: '/kaggle/working/'
