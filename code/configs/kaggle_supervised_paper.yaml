@@ -8,9 +8,9 @@ DATA:
  TARGET_NAME: 'target'
 MODEL:
  NUM_CLASSES: 23
- NAME: 'densenet161'
+ NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: 'None'
+ PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_small_patch16.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
