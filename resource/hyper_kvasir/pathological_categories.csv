@@ -1,0 +1,7 @@
+target,pathologies,samples,old_target
+0,polyps,1028,4
+1,ulcerative-colitis-grade-2,443,6
+2,esophagitis-a,403,9
+3,esophagitis-b-d,260,11
+4,ulcerative-colitis-grade-1,201,3
+5,ulcerative-colitis-grade-3,133,1
