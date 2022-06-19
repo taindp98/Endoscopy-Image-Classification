@@ -1,17 +1,21 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_pathologies_mock_9_1.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_mock_2_8.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
+ MOCKUP_SSL: True
+ MU: 6
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
+ IS_CROP: False
 MODEL:
- NUM_CLASSES: 12
- NAME: 'conformer'
+ NUM_CLASSES: 23
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
  MARGIN: None
+ TYPE_SEMI: 'FixMatch'
 TRAIN:
  IS_SSL: False
  EPOCHS: 100
@@ -27,9 +31,12 @@ TRAIN:
  FREQ_EVAL: 5
  SCH_NAME: 'step'
  LR_DECAY: 0.8 
- USE_EMA: False
+ USE_EMA: True
  EMA_DECAY: 0.999
- EVAL_STEP: 512
+ EVAL_STEP: 256
  CLS_WEIGHT: True
- RESUME: False
+ THRES: 0.9
+ T: 1.0
+ LAMBDA_U: 1.
+ LAMBDA_C: 1.
  SAVE_CP: '/kaggle/working/'
