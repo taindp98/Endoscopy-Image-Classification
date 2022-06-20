@@ -228,7 +228,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                 # num_unl_samples_per_batch = len(df_unlabeled)//(config.DATA.BATCH_SIZE*config.DATA.MU)
                 # df_unlabeled = df_unlabeled.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
                 # df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
-                train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True))
+                train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
                 train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
                 train_labeled_dl = DataLoader(train_labeled_ds, 
                                             sampler=RandomSampler(train_labeled_ds),
@@ -251,7 +251,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
             ## else for real unlabeled data
             else:
-                train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True))
+                train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
                 # num_unl_samples_per_batch = len(df_unanno)//(config.DATA.BATCH_SIZE*config.DATA.MU)
                 # df_unanno = df_unanno.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
                 train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
@@ -274,7 +274,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                         break
                     show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
         else:
-            train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config, is_train=True))
+            train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
             train_dl = DataLoader(train_ds, 
                             sampler=RandomSampler(train_ds),
                             batch_size = config.DATA.BATCH_SIZE, 
