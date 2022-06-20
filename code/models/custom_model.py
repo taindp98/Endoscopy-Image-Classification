@@ -123,7 +123,7 @@ class Normalize(nn.Module):
         return out
 
 class ModelwEmb(nn.Module):
-    def __init__(self, model_name, pretrained, num_classes, low_dim = 64):
+    def __init__(self, model_name, pretrained, num_classes, low_dim = 256):
         super().__init__()
         ## load pre-trained weight abnormality classification
         self.model = timm.create_model(model_name, num_classes = 2)
