@@ -1,5 +1,5 @@
 DATA:
- PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
+ PATH: 'D:\data\endoscopic\hyper_kvasir\labeled_images'
  ANNO: '../resource/hyper_kvasir/df_6_pathologies_mock_2_8.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
@@ -10,10 +10,10 @@ DATA:
  TARGET_NAME: 'target'
  IS_CROP: False
 MODEL:
- NUM_CLASSES: 23
+ NUM_CLASSES: 7
  NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
+ PRE_TRAIN_PATH: 'D:\model\endoscopy\hyper_kvasir\sup_abnormal\sup_densenet161_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: True

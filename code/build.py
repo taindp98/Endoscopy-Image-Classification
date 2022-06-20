@@ -8,7 +8,7 @@
 # from models.swin_transformer import SwinTransformer
 # from models.swin_mlp import SwinMLP
 # from models.coat_net import CoAtNet
-from models.custom_model import ModelMargin, ModelCoMatch
+from models.custom_model import ModelMargin, ModelwEmb
 from pydantic import create_model
 import torch.nn as nn
 from torch.nn import DataParallel
@@ -140,8 +140,8 @@ def build_model(config, is_pathology = True):
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
         elif config.TRAIN.IS_SSL:
-            if config.MODEL.TYPE_SEMI == 'CoMatch':
-                model = ModelCoMatch(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
+            if config.MODEL.TYPE_SEMI == 'CoMatch' :
+                model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
             else:
                 if config.MODEL.PRE_TRAIN_PATH != 'None':
                     model = timm.create_model(model_name, pretrained=True, num_classes = 2)
@@ -152,7 +152,8 @@ def build_model(config, is_pathology = True):
                     model.classifier = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
                 else:
                     model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
-
+        elif config.MODEL.IS_TRIPLET:
+            model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
         else:
             if config.MODEL.PRE_TRAIN_PATH != 'None':
                 model = timm.create_model(model_name, pretrained=True, num_classes = 2)

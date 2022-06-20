@@ -1,3 +1,4 @@
+from tkinter import N
 from torchvision import transforms
 import numpy as np
 import torch
@@ -139,7 +140,7 @@ def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixM
     return trf_aug
 
 class GIDataset(torch.utils.data.Dataset):
-    def __init__(self, df, config, transforms=None, is_unanno = False):
+    def __init__(self, df, config, transforms=None, is_unanno = False, is_triplet = False):
         self.df = df
         self.transforms = transforms
         self.len = df.shape[0]
@@ -147,22 +148,23 @@ class GIDataset(torch.utils.data.Dataset):
         self.input_name = config.DATA.INPUT_NAME
         self.target_name = config.DATA.TARGET_NAME
         self.is_unanno = is_unanno
+        self.is_triplet = is_triplet
+
     def __len__(self):
         return self.len
 
+    def get_labeled_data(self, img_name, target):
+        x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
+        x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
+        x = Image.fromarray(x)
+        if self.transforms:
+            x = self.transforms(x)
+        y = torch.tensor(target, dtype=torch.long)
+        return x,y
+
     def __getitem__(self, index):
-        row = self.df.iloc[index]
-        img_name = row[self.input_name]
-        # if self.config.TRAIN.IS_SSL:
-        #     if self.config.DATA.MOCKUP_SSL:
-                # x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
-                # x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-                # x = Image.fromarray(x)
-                # if self.transforms:
-                #     x = self.transforms(x)
-                # vec = np.array(row[self.target_name], dtype=float)
-                # y = torch.tensor(vec, dtype=torch.long)
-            # else:
+        
+        img_name = self.df.iloc[index][self.input_name]
         if self.is_unanno:
             if self.config.DATA.MOCKUP_SSL:
                 data_dir = self.config.DATA.PATH
@@ -175,21 +177,42 @@ class GIDataset(torch.utils.data.Dataset):
                 x = self.transforms(x)
             return x
         else:
-            x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
-            x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-            x = Image.fromarray(x)
-            if self.transforms:
-                x = self.transforms(x)
-            vec = np.array(row[self.target_name], dtype=float)
-            y = torch.tensor(vec, dtype=torch.long)
-        # else:
-        #     x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
-        #     x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-        #     x = Image.fromarray(x)
-        #     if self.transforms:
-        #         x = self.transforms(x)
-        #     vec = np.array(row[self.target_name], dtype=float)
-        #     y = torch.tensor(vec, dtype=torch.long)
+            if self.is_triplet:
+                list_unique_cls = list(set(list(self.df[self.target_name])))
+                anchor_img_name = self.df.iloc[index][self.input_name]
+                anchor_cls = self.df.iloc[index][self.target_name]
+
+                pos_img_name = anchor_img_name
+                pos_cls = None
+
+                neg_img_name = None
+                neg_cls = anchor_cls
+
+                while (pos_img_name == anchor_img_name) | (pos_cls != anchor_cls):
+                    df_pos = self.df.sample(1).iloc[0]
+                    pos_img_name = df_pos[self.input_name]
+                    pos_cls = df_pos[self.target_name]
+
+                while (neg_img_name == anchor_img_name) | (neg_cls == anchor_cls):
+                    df_neg = self.df.sample(1).iloc[0]
+                    neg_img_name = df_neg[self.input_name]
+                    neg_cls = df_neg[self.target_name]
+
+
+                anchor_x, anchor_y = self.get_labeled_data(img_name = anchor_img_name, target = anchor_cls)
+                pos_x, pos_y = self.get_labeled_data(img_name = pos_img_name, target = pos_cls)
+                neg_x, neg_y = self.get_labeled_data(img_name = neg_img_name, target = neg_cls)
+
+                x = tuple([anchor_x, pos_x, neg_x])
+                y = tuple([anchor_y, pos_y, neg_y])
+
+            else:
+
+                x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
+                vec = np.array(self.df.iloc[index][self.target_name], dtype=float)
+
+                x, y = self.get_labeled_data(img_name = x, target = vec)
+
             return x, y
 
 def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False, type_semi = 'FixMatch'):
@@ -275,7 +298,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                             num_workers = config.DATA.NUM_WORKERS)
 
     else:
-        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True))
+        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
         train_dl = DataLoader(train_ds, 
                         sampler=RandomSampler(train_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
@@ -283,7 +306,12 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
         if is_visual:
             for x, y in train_dl:
                 break
-            show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+            ## if triplet show 3, else show 4
+            if config.MODEL.IS_TRIPLET:
+                #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
+                show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
+            else:
+                show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
 
         valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
         valid_dl = DataLoader(valid_ds, 
@@ -292,3 +320,4 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                             num_workers = config.DATA.NUM_WORKERS)
         
     return train_dl, valid_dl
+

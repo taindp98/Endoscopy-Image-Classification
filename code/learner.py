@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -671,6 +671,7 @@ class SupLearning:
             self.class_weights = None
 
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
+        self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
 
     def train_one(self, epoch):
         self.model.train()
@@ -682,21 +683,32 @@ class SupLearning:
         num_steps = len(self.train_dl)
 
         for step, (images, targets) in enumerate(tk0):
-            images = images.to(self.device, non_blocking=True)
-            targets = targets.to(self.device, non_blocking=True)
-            
-            if self.config.MODEL.NAME == 'conformer':
-                ## out_conv and out_trans
-                out_conv, out_trans = self.model(images)
-                outputs = out_trans + out_conv
-                losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
+            if self.config.MODEL.IS_TRIPLET:
+                anchors, poss, negs = images
+                targets = targets[0].to(self.device, non_blocking=True)
+                imgs = torch.cat([anchors, poss, negs], dim=0).to(self.device, non_blocking=True)
+                logits, features = self.model(imgs)
+                anchor_logits = logits[:self.config.DATA.BATCH_SIZE]
+                anchor_fts, pos_fts, neg_fts = features[:self.config.DATA.BATCH_SIZE], features[self.config.DATA.BATCH_SIZE:2*self.config.DATA.BATCH_SIZE], features[2*self.config.DATA.BATCH_SIZE:]
+                triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
+                ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
+                losses = ce_losses + triplet_losses
             else:
-                if self.config.MODEL.MARGIN != 'None':
-                    fts = self.model.backbone(images)
-                    losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
-                else:
-                    outputs = self.model(images)
+                images = images.to(self.device, non_blocking=True)
+                targets = targets.to(self.device, non_blocking=True)
+                
+                if self.config.MODEL.NAME == 'conformer':
+                    ## out_conv and out_trans
+                    out_conv, out_trans = self.model(images)
+                    outputs = out_trans + out_conv
                     losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
+                else:
+                    if self.config.MODEL.MARGIN != 'None':
+                        fts = self.model.backbone(images)
+                        losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
+                    else:
+                        outputs = self.model(images)
+                        losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
             
             self.optimizer.zero_grad()
 
