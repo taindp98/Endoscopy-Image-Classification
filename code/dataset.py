@@ -207,11 +207,8 @@ class GIDataset(torch.utils.data.Dataset):
                 y = tuple([anchor_y, pos_y, neg_y])
 
             else:
-
-                x = cv2.imread(os.path.join(self.config.DATA.PATH, img_name))
                 vec = np.array(self.df.iloc[index][self.target_name], dtype=float)
-
-                x, y = self.get_labeled_data(img_name = x, target = vec)
+                x, y = self.get_labeled_data(img_name = img_name, target = vec)
 
             return x, y
 
@@ -303,8 +300,18 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                         sampler=RandomSampler(train_ds),
                         batch_size = config.DATA.BATCH_SIZE, 
                         num_workers = config.DATA.NUM_WORKERS)
+        
+
+        valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
+        valid_dl = DataLoader(valid_ds, 
+                            sampler=SequentialSampler(valid_ds),
+                            batch_size = config.DATA.BATCH_SIZE, 
+                            num_workers = config.DATA.NUM_WORKERS)
         if is_visual:
             for x, y in train_dl:
+                break
+
+            for x_vl, y_vl in valid_dl:
                 break
             ## if triplet show 3, else show 4
             if config.MODEL.IS_TRIPLET:
@@ -312,12 +319,8 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                 show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
             else:
                 show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+            
+            show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
 
-        valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
-        valid_dl = DataLoader(valid_ds, 
-                            sampler=SequentialSampler(valid_ds),
-                            batch_size = config.DATA.BATCH_SIZE, 
-                            num_workers = config.DATA.NUM_WORKERS)
-        
     return train_dl, valid_dl
 
