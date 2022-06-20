@@ -23,11 +23,11 @@ class TransformFixMatch(object):
     def __init__(self, config, mean, std):
         if config.DATA.IS_CROP:
             self.weak = transforms.Compose([
-                    transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+                    # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
                     transforms.CenterCrop(config.DATA.IMG_SIZE)])
                     
             self.strong = transforms.Compose([
-                transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
+                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomCrop(size=config.DATA.IMG_SIZE,
@@ -57,11 +57,11 @@ class TransformCoMatch(object):
     def __init__(self, config, mean, std):
         if config.DATA.IS_CROP:
             self.weak = transforms.Compose([
-                    transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+                    # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
                     transforms.CenterCrop(config.DATA.IMG_SIZE)])
                     
             self.strong = transforms.Compose([
-                transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
+                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomCrop(size=config.DATA.IMG_SIZE,
@@ -94,7 +94,7 @@ def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixM
             if config.DATA.IS_CROP:
                 trf_aug = transforms.Compose([
                     # transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+                    # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
                     # transforms.Resize((272,272)),
                     transforms.RandomHorizontalFlip(p=0.3),
                     transforms.RandomVerticalFlip(p=0.3),
@@ -125,7 +125,7 @@ def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixM
         if config.DATA.IS_CROP:
             trf_aug = transforms.Compose([
                 # transforms.Resize((272,272)),
-                transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)])
