@@ -34,7 +34,7 @@ class FixMatch:
 
     def get_config(self, config):
         self.config = config
-        self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
+        # self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
