@@ -754,6 +754,8 @@ class SupLearning:
                         ## out_conv and out_trans
                         out_conv, out_trans = eval_model(images)
                         outputs = out_trans + out_conv
+                    elif self.config.MODEL.IS_TRIPLET:
+                        outputs, _ = eval_model(images)
                     else:
                         outputs = eval_model(images)
                     losses = ce_loss(outputs, targets, reduction='mean')            
