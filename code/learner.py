@@ -689,7 +689,10 @@ class SupLearning:
                 imgs = torch.cat([anchors, poss, negs], dim=0).to(self.device, non_blocking=True)
                 logits, features = self.model(imgs)
                 anchor_logits = logits[:self.config.DATA.BATCH_SIZE]
-                anchor_fts, pos_fts, neg_fts = features[:self.config.DATA.BATCH_SIZE], features[self.config.DATA.BATCH_SIZE:2*self.config.DATA.BATCH_SIZE], features[2*self.config.DATA.BATCH_SIZE:]
+                anchor_fts = features[:self.config.DATA.BATCH_SIZE]
+
+                pos_fts, neg_fts = torch.split(features[self.config.DATA.BATCH_SIZE:], self.config.DATA.BATCH_SIZE)
+
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
                 ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
                 losses = ce_losses + triplet_losses
