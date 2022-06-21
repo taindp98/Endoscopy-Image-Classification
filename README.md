@@ -2,7 +2,7 @@
 
 • In progress building up a deep learning model using the PyTorch framework to classify the abnormalities in endoscopic images.
 
-• Dealing with the lack of labeled images which is a challenge in medical image analysis by applying Semi-supervised learning.
+• Dealing with the lack of labeled images which is a challenge in medical image analysis by applying Semi-supervised learning (FixMatch and CoMatch).
 
 ## Image Labels
 Hyper-Kvasir includes the follow image labels for the labeled part of the dataset:
