@@ -219,43 +219,6 @@ class FixMatch:
                 show_cfs_matrix(list_targets, list_outputs)
             return summary_loss, metric
 
-    
-
-    # def test_one(self, metric = False, report = False, cm = False):
-    #     if self.config.TRAIN.USE_EMA:
-    #         eval_model = self.ema_model.ema
-    #     else:
-    #         eval_model = self.model
-
-    #     eval_model.eval()
-
-    #     list_outputs = []
-    #     list_targets = []
-    #     with torch.no_grad():
-            
-    #         for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
-    #             images = images.to(device, non_blocking=True)
-    #             targets = targets.to(device, non_blocking=True)
-                
-    #             outputs = eval_model(images)
-    #             targets = targets.cpu().numpy()
-    #             outputs = F.softmax(outputs, dim=1)
-    #             outputs = outputs.cpu().numpy()
-    #             list_outputs += list(outputs)
-    #             list_targets += list(targets)
-    #         list_outputs = np.array(list_outputs)
-    #         list_outputs = np.argmax(list_outputs, axis=1)
-    #         list_targets = np.array(list_targets)
-    #         if metric:
-    #             metric = calculate_metrics(list_outputs, list_targets)
-    #             print('Metric:')
-    #             print(f'\t{0}'.format(metric))
-    #         elif type_observer == 'report':
-    #             report = classification_report(list_targets, list_outputs)
-    #             print('Classification Report:')
-    #             print(f'\t{0}'.format(report))
-    #         elif type_observer == ''
-    #     return list_outputs, list_targets
 
     def save_checkpoint(self, foldname):
         checkpoint = {}
@@ -781,34 +744,6 @@ class SupLearning:
                     show_cfs_matrix(list_targets, list_outputs)
                 return summary_loss, metric
 
-    
-
-
-    # def test_one(self):
-    #     if self.config.TRAIN.USE_EMA:
-    #         eval_model = self.ema_model.ema
-    #     else:
-    #         eval_model = self.model
-
-    #     eval_model.eval()
-
-    #     list_outputs = []
-    #     list_targets = []
-    #     with torch.no_grad():
-            
-    #         for step, (images, targets) in tqdm(enumerate(self.valid_dl), total=len(self.valid_dl)):
-    #             images = images.to(self.device, non_blocking=True)
-    #             targets = targets.to(self.device, non_blocking=True)
-                
-    #             outputs = eval_model(images)
-    #             targets = targets.cpu().numpy()
-    #             outputs = F.softmax(outputs, dim=1)
-    #             outputs = outputs.cpu().numpy()
-    #             list_outputs += list(outputs)
-    #             list_targets += list(targets)
-    #     list_outputs = [np.argmax(item) for item in list_outputs]
-        
-    #     return list_outputs, list_targets
 
     def save_checkpoint(self, foldname):
         checkpoint = {}
