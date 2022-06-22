@@ -87,7 +87,7 @@ def build_model(config, is_pathology = True):
     #                     block_types=['C', 'C', 'T', 'T'])
     
     elif model_name == 'conformer':
-        if config.MODEL.PRE_TRAIN != 'None':
+        if config.MODEL.PRE_TRAIN:
             ## tiny
             # model = Conformer(patch_size=16, 
             #             num_classes = 1000,
