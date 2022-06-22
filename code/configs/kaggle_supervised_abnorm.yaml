@@ -14,7 +14,7 @@ MODEL:
  NUM_CLASSES: 2
  NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_small_patch16.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
  MARGIN: None
 TRAIN:
  IS_SSL: False
