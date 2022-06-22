@@ -212,122 +212,133 @@ class GIDataset(torch.utils.data.Dataset):
 
             return x, y
 
-def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False, type_semi = 'FixMatch'):
+def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False, type_semi = 'FixMatch', predict = False):
     """
     get training, validation, testing set
     """
     df_train = df_anno[df_anno['is_valid']==False]
     df_valid = df_anno[df_anno['is_valid']==True]
     ## break down into labeled and unlabeled set
-    if not is_full_sup:
-        if config.TRAIN.IS_SSL:
-            if config.DATA.MOCKUP_SSL:
-                # print(type_semi)
-                df_labeled = df_train[df_train['is_labeled']==True]
-                df_unlabeled = df_train[df_train['is_labeled']==False]
-                # num_unl_samples_per_batch = len(df_unlabeled)//(config.DATA.BATCH_SIZE*config.DATA.MU)
-                # df_unlabeled = df_unlabeled.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
-                # df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
-                train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
-                train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
-                train_labeled_dl = DataLoader(train_labeled_ds, 
-                                            sampler=RandomSampler(train_labeled_ds),
-                                            batch_size = config.DATA.BATCH_SIZE, 
-                                            num_workers = config.DATA.NUM_WORKERS)
 
-                train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
-                                            sampler=RandomSampler(train_unlabeled_ds),
-                                            batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
-                                            num_workers = config.DATA.NUM_WORKERS)
-                train_dl = (train_labeled_dl, train_unlabeled_dl)
+    if predict:
+        train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
+        
+        train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
+                                    sampler=RandomSampler(train_unlabeled_ds),
+                                    batch_size = config.DATA.BATCH_SIZE, 
+                                    num_workers = config.DATA.NUM_WORKERS)
 
-                if is_visual:
-                    for x1, y1 in train_labeled_dl:
-                        # print(x.shape)
-                        # print(y)
-                        break
-                    for x2 in train_unlabeled_dl:
-                        break
-                    show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
-            ## else for real unlabeled data
+        return train_unlabeled_dl
+    else:
+        if not is_full_sup:
+            if config.TRAIN.IS_SSL:
+                if config.DATA.MOCKUP_SSL:
+                    # print(type_semi)
+                    df_labeled = df_train[df_train['is_labeled']==True]
+                    df_unlabeled = df_train[df_train['is_labeled']==False]
+                    # num_unl_samples_per_batch = len(df_unlabeled)//(config.DATA.BATCH_SIZE*config.DATA.MU)
+                    # df_unlabeled = df_unlabeled.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
+                    # df_labeled, df_unlabeled = train_test_split(df_train, test_size = config.DATA.MOCKUP_SIZE, random_state = 0)
+                    train_labeled_ds = GIDataset(df = df_labeled, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+                    train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
+                    train_labeled_dl = DataLoader(train_labeled_ds, 
+                                                sampler=RandomSampler(train_labeled_ds),
+                                                batch_size = config.DATA.BATCH_SIZE, 
+                                                num_workers = config.DATA.NUM_WORKERS)
+
+                    train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
+                                                sampler=RandomSampler(train_unlabeled_ds),
+                                                batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
+                                                num_workers = config.DATA.NUM_WORKERS)
+                    train_dl = (train_labeled_dl, train_unlabeled_dl)
+
+                    if is_visual:
+                        for x1, y1 in train_labeled_dl:
+                            # print(x.shape)
+                            # print(y)
+                            break
+                        for x2 in train_unlabeled_dl:
+                            break
+                        show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
+                ## else for real unlabeled data
+                else:
+                    train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+                    # num_unl_samples_per_batch = len(df_unanno)//(config.DATA.BATCH_SIZE*config.DATA.MU)
+                    # df_unanno = df_unanno.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
+                    train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
+                    train_labeled_dl = DataLoader(train_labeled_ds, 
+                                                sampler=RandomSampler(train_labeled_ds),
+                                                batch_size = config.DATA.BATCH_SIZE, 
+                                                num_workers = config.DATA.NUM_WORKERS)
+
+                    train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
+                                                sampler=RandomSampler(train_unlabeled_ds),
+                                                batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
+                                                num_workers = config.DATA.NUM_WORKERS)
+                    train_dl = (train_labeled_dl, train_unlabeled_dl)
+                    if is_visual:
+                        for x1, y1 in train_labeled_dl:
+                            # print(x.shape)
+                            # print(y)
+                            break
+                        for x2 in train_unlabeled_dl:
+                            break
+                        show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
             else:
-                train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
-                # num_unl_samples_per_batch = len(df_unanno)//(config.DATA.BATCH_SIZE*config.DATA.MU)
-                # df_unanno = df_unanno.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
-                train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
-                train_labeled_dl = DataLoader(train_labeled_ds, 
-                                            sampler=RandomSampler(train_labeled_ds),
-                                            batch_size = config.DATA.BATCH_SIZE, 
-                                            num_workers = config.DATA.NUM_WORKERS)
+                train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+                train_dl = DataLoader(train_ds, 
+                                sampler=RandomSampler(train_ds),
+                                batch_size = config.DATA.BATCH_SIZE, 
+                                num_workers = config.DATA.NUM_WORKERS)
+                
 
-                train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
-                                            sampler=RandomSampler(train_unlabeled_ds),
-                                            batch_size = config.DATA.BATCH_SIZE*config.DATA.MU, 
-                                            num_workers = config.DATA.NUM_WORKERS)
-                train_dl = (train_labeled_dl, train_unlabeled_dl)
-                if is_visual:
-                    for x1, y1 in train_labeled_dl:
-                        # print(x.shape)
-                        # print(y)
-                        break
-                    for x2 in train_unlabeled_dl:
-                        break
-                    show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
+            
+            valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
+            valid_dl = DataLoader(valid_ds, 
+                                sampler=SequentialSampler(valid_ds),
+                                batch_size = config.DATA.BATCH_SIZE, 
+                                num_workers = config.DATA.NUM_WORKERS)
+            if is_visual:
+                for x, y in train_dl:
+                    break
+
+                for x_vl, y_vl in valid_dl:
+                    break
+                ## if triplet show 3, else show 4
+                if config.MODEL.IS_TRIPLET:
+                    #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
+                    show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
+                else:
+                    show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+                
+                show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
         else:
-            train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+            train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
             train_dl = DataLoader(train_ds, 
                             sampler=RandomSampler(train_ds),
                             batch_size = config.DATA.BATCH_SIZE, 
                             num_workers = config.DATA.NUM_WORKERS)
             
 
-        
-        valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
-        valid_dl = DataLoader(valid_ds, 
-                            sampler=SequentialSampler(valid_ds),
-                            batch_size = config.DATA.BATCH_SIZE, 
-                            num_workers = config.DATA.NUM_WORKERS)
-        if is_visual:
-            for x, y in train_dl:
-                break
+            valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
+            valid_dl = DataLoader(valid_ds, 
+                                sampler=SequentialSampler(valid_ds),
+                                batch_size = config.DATA.BATCH_SIZE, 
+                                num_workers = config.DATA.NUM_WORKERS)
+            if is_visual:
+                for x, y in train_dl:
+                    break
 
-            for x_vl, y_vl in valid_dl:
-                break
-            ## if triplet show 3, else show 4
-            if config.MODEL.IS_TRIPLET:
-                #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
-                show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
-            else:
-                show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
-            
-            show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
-    else:
-        train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
-        train_dl = DataLoader(train_ds, 
-                        sampler=RandomSampler(train_ds),
-                        batch_size = config.DATA.BATCH_SIZE, 
-                        num_workers = config.DATA.NUM_WORKERS)
-        
-
-        valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
-        valid_dl = DataLoader(valid_ds, 
-                            sampler=SequentialSampler(valid_ds),
-                            batch_size = config.DATA.BATCH_SIZE, 
-                            num_workers = config.DATA.NUM_WORKERS)
-        if is_visual:
-            for x, y in train_dl:
-                break
-
-            for x_vl, y_vl in valid_dl:
-                break
-            ## if triplet show 3, else show 4
-            if config.MODEL.IS_TRIPLET:
-                #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
-                show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
-            else:
-                show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
-            
-            show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
+                for x_vl, y_vl in valid_dl:
+                    break
+                ## if triplet show 3, else show 4
+                if config.MODEL.IS_TRIPLET:
+                    #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
+                    show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
+                else:
+                    show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+                
+                show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
 
     return train_dl, valid_dl
 

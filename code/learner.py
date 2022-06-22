@@ -744,6 +744,40 @@ class SupLearning:
                     show_cfs_matrix(list_targets, list_outputs)
                 return summary_loss, metric
 
+    def inference(self, df_test):
+
+            if self.config.TRAIN.USE_EMA:
+                eval_model = self.ema_model.ema
+            else:
+                eval_model = self.model
+
+            eval_model.eval()
+            
+            list_outputs = []
+            with torch.no_grad():
+                
+                tk0 = tqdm(df_test, total=len(df_test))
+                for step, images in enumerate(tk0):
+                    images = images.to(self.device, non_blocking=True)
+                    
+                    if self.config.MODEL.NAME == 'conformer':
+                        ## out_conv and out_trans
+                        out_conv, out_trans = eval_model(images)
+                        outputs = out_trans + out_conv
+                    elif self.config.MODEL.IS_TRIPLET:
+                        outputs, _ = eval_model(images)
+                    else:
+                        outputs = eval_model(images)
+                    
+                    outputs = F.softmax(outputs, dim=1)
+                    outputs = outputs.cpu().numpy()
+                    list_outputs += list(outputs)
+                    
+                list_outputs = np.array(list_outputs)
+                list_outputs = np.argmax(list_outputs, axis=1)
+        df_test['pred'] = list_outputs
+        return df_test
+
 
     def save_checkpoint(self, foldname):
         checkpoint = {}
