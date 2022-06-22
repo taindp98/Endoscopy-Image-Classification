@@ -235,6 +235,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
             if config.TRAIN.IS_SSL:
                 if config.DATA.MOCKUP_SSL:
                     # print(type_semi)
+                    print('Training mode: Mock labeled and unlabeled data')
                     df_labeled = df_train[df_train['is_labeled']==True]
                     df_unlabeled = df_train[df_train['is_labeled']==False]
                     # num_unl_samples_per_batch = len(df_unlabeled)//(config.DATA.BATCH_SIZE*config.DATA.MU)
@@ -263,6 +264,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                         show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
                 ## else for real unlabeled data
                 else:
+                    print('Training mode: Full labeled and unlabeled data')
                     train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
                     # num_unl_samples_per_batch = len(df_unanno)//(config.DATA.BATCH_SIZE*config.DATA.MU)
                     # df_unanno = df_unanno.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
