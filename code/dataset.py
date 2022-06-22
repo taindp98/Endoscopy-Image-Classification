@@ -291,8 +291,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                         for x2 in train_unlabeled_dl:
                             break
 
-                        # show_grid([x1[0,:,:]])
-                        # show_grid([x2[0][0,:,:,:]])
+                        show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
             else:
                 train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
                 train_dl = DataLoader(train_ds, 
