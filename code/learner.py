@@ -745,7 +745,7 @@ class SupLearning:
                 show_cfs_matrix(list_targets, list_outputs)
             return summary_loss, metric
 
-    def inference(self, df_test):
+    def inference(self, dl_test):
 
         if self.config.TRAIN.USE_EMA:
             eval_model = self.ema_model.ema
@@ -757,7 +757,7 @@ class SupLearning:
         list_outputs = []
         with torch.no_grad():
             
-            tk0 = tqdm(df_test, total=len(df_test))
+            tk0 = tqdm(dl_test, total=len(dl_test))
             for step, images in enumerate(tk0):
                 images = images.to(self.device, non_blocking=True)
                 
@@ -776,7 +776,7 @@ class SupLearning:
                 
             list_outputs = np.array(list_outputs)
             list_outputs = np.argmax(list_outputs, axis=1)
-        df_test['pred'] = list_outputs
+        dl_test.dataset.df['pred'] = list_outputs
         return df_test
 
 
