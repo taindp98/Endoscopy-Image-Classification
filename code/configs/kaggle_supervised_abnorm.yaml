@@ -12,7 +12,7 @@ DATA:
  IS_CROP: False
 MODEL:
  NUM_CLASSES: 2
- NAME: 'conformer'
+ NAME: 'densenet161'
  PRE_TRAIN: False
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
