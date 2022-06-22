@@ -5,7 +5,8 @@ DATA:
  UNANNO: '../resource/hyper_kvasir/full_unlabeled.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
- NUM_WORKERS: 2
+ NUM_WORKERS: 2 
+ MOCKUP_SSL: False
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
  IS_CROP: False
