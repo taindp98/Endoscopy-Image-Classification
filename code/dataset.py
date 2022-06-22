@@ -123,7 +123,7 @@ def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixM
                 trf_aug = TransformCoMatch(config, mean, std)
 
     else:
-        print('Validation transform')
+        # print('Validation transform')
         if config.DATA.IS_CROP:
             trf_aug = transforms.Compose([
                 # transforms.Resize((272,272)),
@@ -268,7 +268,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
                     # num_unl_samples_per_batch = len(df_unanno)//(config.DATA.BATCH_SIZE*config.DATA.MU)
                     # df_unanno = df_unanno.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
-                    df_unlabeled = df_unanno[df_unanno['target']==1]
+                    df_unlabeled = df_unanno[df_unanno['pred']==1]
                     train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
                     train_labeled_dl = DataLoader(train_labeled_ds, 
                                                 sampler=RandomSampler(train_labeled_ds),
