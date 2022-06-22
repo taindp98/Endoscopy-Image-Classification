@@ -90,39 +90,40 @@ class TransformCoMatch(object):
         return self.normalize(weak), self.normalize(strong_0), self.normalize(strong_1)
 
 def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixMatch'):
-    if is_train:
-        if is_labeled:
-            if config.DATA.IS_CROP:
-                trf_aug = transforms.Compose([
-                    # transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
-                    # transforms.Resize((272,272)),
-                    transforms.RandomHorizontalFlip(p=0.3),
-                    transforms.RandomVerticalFlip(p=0.3),
-                    transforms.RandomRotation(20),
-                    transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
-                    # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean, std)])
-            else:
-                trf_aug = transforms.Compose([
-                    transforms.Resize((int(config.DATA.IMG_SIZE),int(config.DATA.IMG_SIZE))),
-                    transforms.RandomHorizontalFlip(p=0.3),
-                    transforms.RandomVerticalFlip(p=0.3),
-                    transforms.RandomRotation(20),
-                    transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
-                    # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean, std)])
+    if is_train & is_labeled:
+        # if is_labeled:
+        if config.DATA.IS_CROP:
+            trf_aug = transforms.Compose([
+                # transforms.CenterCrop(config.DATA.IMG_SIZE),
+                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+                # transforms.Resize((272,272)),
+                transforms.RandomHorizontalFlip(p=0.3),
+                transforms.RandomVerticalFlip(p=0.3),
+                transforms.RandomRotation(20),
+                transforms.CenterCrop(config.DATA.IMG_SIZE),
+                transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
+                # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std)])
         else:
-            if type_semi == 'FixMatch':
-                trf_aug = TransformFixMatch(config, mean, std)
-            else:
-                trf_aug = TransformCoMatch(config, mean, std)
+            trf_aug = transforms.Compose([
+                transforms.Resize((int(config.DATA.IMG_SIZE),int(config.DATA.IMG_SIZE))),
+                transforms.RandomHorizontalFlip(p=0.3),
+                transforms.RandomVerticalFlip(p=0.3),
+                transforms.RandomRotation(20),
+                transforms.CenterCrop(config.DATA.IMG_SIZE),
+                transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
+                # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std)])
+    if is_train & not is_labeled:
+        
+        if type_semi == 'FixMatch':
+            trf_aug = TransformFixMatch(config, mean, std)
+        else:
+            trf_aug = TransformCoMatch(config, mean, std)
 
-    else:
+    if !is_train:
         if config.DATA.IS_CROP:
             trf_aug = transforms.Compose([
                 # transforms.Resize((272,272)),
