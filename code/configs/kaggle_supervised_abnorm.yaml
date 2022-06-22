@@ -13,7 +13,7 @@ DATA:
 MODEL:
  NUM_CLASSES: 2
  NAME: 'conformer'
- PRE_TRAIN: True
+ PRE_TRAIN: False
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
  IS_TRIPLET: False

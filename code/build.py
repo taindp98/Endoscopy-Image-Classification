@@ -107,8 +107,6 @@ def build_model(config, is_pathology = True):
                         mlp_ratio=4, 
                         qkv_bias=True)
 
-            
-
             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
             if is_pathology:
                 num_ftrs_conv = model.conv_cls_head.in_features
