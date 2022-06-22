@@ -306,20 +306,20 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                                 sampler=SequentialSampler(valid_ds),
                                 batch_size = config.DATA.BATCH_SIZE, 
                                 num_workers = config.DATA.NUM_WORKERS)
-            if is_visual:
-                for x, y in train_dl:
-                    break
+            # if is_visual:
+            #     for x, y in train_dl:
+            #         break
 
-                for x_vl, y_vl in valid_dl:
-                    break
-                ## if triplet show 3, else show 4
-                if config.MODEL.IS_TRIPLET:
-                    #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
-                    show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
-                else:
-                    show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+            #     for x_vl, y_vl in valid_dl:
+            #         break
+            #     ## if triplet show 3, else show 4
+            #     if config.MODEL.IS_TRIPLET:
+            #         #x[0] is batch anchor, x[1] is batch pos, x[2] is batch neg
+            #         show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
+            #     else:
+            #         show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
                 
-                show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
+            #     show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
         else:
             train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
             train_dl = DataLoader(train_ds, 
