@@ -109,6 +109,7 @@ def build_model(config, is_pathology = True):
 
             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
             if is_pathology:
+                ## load checkpoint from abnormal training to train pathologies
                 num_ftrs_conv = model.conv_cls_head.in_features
                 num_ftrs_trans = model.trans_cls_head.in_features
                 model.conv_cls_head = nn.Linear(num_ftrs_conv, 2)
@@ -118,6 +119,7 @@ def build_model(config, is_pathology = True):
                 else:
                     model.load_state_dict(checkpoint)
             else:
+                ## load checkpoint ImageNet to train abnormal
                 model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
             num_ftrs_trans = model.trans_cls_head.in_features
