@@ -16,6 +16,7 @@ MODEL:
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
  MARGIN: None
+ IS_TRIPLET: False
 TRAIN:
  IS_SSL: False
  EPOCHS: 100
