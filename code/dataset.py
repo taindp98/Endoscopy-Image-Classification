@@ -221,14 +221,14 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
     ## break down into labeled and unlabeled set
 
     if predict:
-        train_unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
+        unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=False, is_labeled=False, type_semi = type_semi), is_unanno = True)
         
-        train_unlabeled_dl = DataLoader(train_unlabeled_ds, 
-                                    sampler=RandomSampler(train_unlabeled_ds),
+        unlabeled_dl = DataLoader(unlabeled_ds, 
+                                    sampler=RandomSampler(unlabeled_ds),
                                     batch_size = config.DATA.BATCH_SIZE, 
                                     num_workers = config.DATA.NUM_WORKERS)
 
-        return train_unlabeled_dl
+        return unlabeled_dl
     else:
         if not is_full_sup:
             if config.TRAIN.IS_SSL:
