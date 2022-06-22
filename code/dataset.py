@@ -118,8 +118,10 @@ def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixM
                     transforms.Normalize(mean, std)])
         else:
             if type_semi == 'FixMatch':
+                print('Semi Transform mode: FixMatch')
                 trf_aug = TransformFixMatch(config, mean, std)
             else:
+                print('Semi Transform mode: CoMatch')
                 trf_aug = TransformCoMatch(config, mean, std)
 
     else:
@@ -269,7 +271,10 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     # num_unl_samples_per_batch = len(df_unanno)//(config.DATA.BATCH_SIZE*config.DATA.MU)
                     # df_unanno = df_unanno.sample(num_unl_samples_per_batch*config.DATA.BATCH_SIZE*config.DATA.MU, random_state=1)
                     df_unlabeled = df_unanno[df_unanno['pred']==1]
-                    train_unlabeled_ds = GIDataset(df = df_unlabeled, config = config, transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), is_unanno = True)
+                    train_unlabeled_ds = GIDataset(df = df_unlabeled, 
+                                                    config = config, 
+                                                    transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), 
+                                                    is_unanno = True)
                     train_labeled_dl = DataLoader(train_labeled_ds, 
                                                 sampler=RandomSampler(train_labeled_ds),
                                                 batch_size = config.DATA.BATCH_SIZE, 
@@ -282,8 +287,6 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     train_dl = (train_labeled_dl, train_unlabeled_dl)
                     if is_visual:
                         for x1, y1 in train_labeled_dl:
-                            # print(x.shape)
-                            # print(y)
                             break
                         for x2 in train_unlabeled_dl:
                             break
