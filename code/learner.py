@@ -776,8 +776,8 @@ class SupLearning:
                 
             list_outputs = np.array(list_outputs)
             list_outputs = np.argmax(list_outputs, axis=1)
-        dl_test.dataset.df['pred'] = list_outputs
-        return df_test
+        # dl_test.dataset.df['pred'] = list_outputs
+        return list_outputs
 
 
     def save_checkpoint(self, foldname):
