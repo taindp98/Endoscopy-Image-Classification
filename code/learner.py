@@ -457,7 +457,8 @@ class CoMatch:
             #     outputs_u_w = self.model(inputs_u_w.to(self.device))
             # # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
-            # # del inputs
+            # # del inputs# config = get_config('./configs/kaggle_supervised.yaml')
+
             # del outputs
 
             # lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
@@ -696,85 +697,85 @@ class SupLearning:
 
     def evaluate_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
 
-            if self.config.TRAIN.USE_EMA:
-                eval_model = self.ema_model.ema
-            else:
-                eval_model = self.model
+        if self.config.TRAIN.USE_EMA:
+            eval_model = self.ema_model.ema
+        else:
+            eval_model = self.model
 
-            eval_model.eval()
+        eval_model.eval()
+        
+        summary_loss = AverageMeter()
+        list_outputs = []
+        list_targets = []
+        with torch.no_grad():
             
-            summary_loss = AverageMeter()
-            list_outputs = []
-            list_targets = []
-            with torch.no_grad():
+            tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
+            for step, (images, targets) in enumerate(tk0):
+                images = images.to(self.device, non_blocking=True)
+                targets = targets.to(self.device, non_blocking=True)
                 
-                tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
-                for step, (images, targets) in enumerate(tk0):
-                    images = images.to(self.device, non_blocking=True)
-                    targets = targets.to(self.device, non_blocking=True)
-                    
-                    if self.config.MODEL.NAME == 'conformer':
-                        ## out_conv and out_trans
-                        out_conv, out_trans = eval_model(images)
-                        outputs = out_trans + out_conv
-                    elif self.config.MODEL.IS_TRIPLET:
-                        outputs, _ = eval_model(images)
-                    else:
-                        outputs = eval_model(images)
-                    losses = ce_loss(outputs, targets, reduction='mean')            
-                    summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
-                    tk0.set_postfix(loss=summary_loss.avg)
-                    targets = targets.cpu().numpy()
-                    outputs = F.softmax(outputs, dim=1)
-                    outputs = outputs.cpu().numpy()
-                    list_outputs += list(outputs)
-                    list_targets += list(targets)
-                list_outputs = np.array(list_outputs)
-                list_outputs = np.argmax(list_outputs, axis=1)
-                list_targets = np.array(list_targets)
-                metric = calculate_metrics(list_outputs, list_targets)
-                if show_metric:
-                    print('Metric:')
-                    print(metric)
-                if show_report:
-                    report = classification_report(list_targets, list_outputs)
-                    print('Classification Report:')
-                    print(report)
-                if show_cf_matrix:
-                    show_cfs_matrix(list_targets, list_outputs)
-                return summary_loss, metric
+                if self.config.MODEL.NAME == 'conformer':
+                    ## out_conv and out_trans
+                    out_conv, out_trans = eval_model(images)
+                    outputs = out_trans + out_conv
+                elif self.config.MODEL.IS_TRIPLET:
+                    outputs, _ = eval_model(images)
+                else:
+                    outputs = eval_model(images)
+                losses = ce_loss(outputs, targets, reduction='mean')            
+                summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
+                tk0.set_postfix(loss=summary_loss.avg)
+                targets = targets.cpu().numpy()
+                outputs = F.softmax(outputs, dim=1)
+                outputs = outputs.cpu().numpy()
+                list_outputs += list(outputs)
+                list_targets += list(targets)
+            list_outputs = np.array(list_outputs)
+            list_outputs = np.argmax(list_outputs, axis=1)
+            list_targets = np.array(list_targets)
+            metric = calculate_metrics(list_outputs, list_targets)
+            if show_metric:
+                print('Metric:')
+                print(metric)
+            if show_report:
+                report = classification_report(list_targets, list_outputs)
+                print('Classification Report:')
+                print(report)
+            if show_cf_matrix:
+                show_cfs_matrix(list_targets, list_outputs)
+            return summary_loss, metric
 
     def inference(self, df_test):
 
-            if self.config.TRAIN.USE_EMA:
-                eval_model = self.ema_model.ema
-            else:
-                eval_model = self.model
+        if self.config.TRAIN.USE_EMA:
+            eval_model = self.ema_model.ema
+        else:
+            eval_model = self.model
 
-            eval_model.eval()
+        eval_model.eval()
+        
+        list_outputs = []
+        with torch.no_grad():
             
-            list_outputs = []
-            with torch.no_grad():
+            tk0 = tqdm(df_test, total=len(df_test))
+            for step, images in enumerate(tk0):
+                images = images.to(self.device, non_blocking=True)
                 
-                tk0 = tqdm(df_test, total=len(df_test))
-                for step, images in enumerate(tk0):
-                    images = images.to(self.device, non_blocking=True)
-                    
-                    if self.config.MODEL.NAME == 'conformer':
-                        ## out_conv and out_trans
-                        out_conv, out_trans = eval_model(images)
-                        outputs = out_trans + out_conv
-                    elif self.config.MODEL.IS_TRIPLET:
-                        outputs, _ = eval_model(images)
-                    else:
-                        outputs = eval_model(images)
-                    
-                    outputs = F.softmax(outputs, dim=1)
-                    outputs = outputs.cpu().numpy()
-                    list_outputs += list(outputs)
-                    
-                list_outputs = np.array(list_outputs)
-                list_outputs = np.argmax(list_outputs, axis=1)
+                if self.config.MODEL.NAME == 'conformer':
+                    ## out_conv and out_trans
+                    out_conv, out_trans = eval_model(images)
+                    outputs = out_trans + out_conv
+                elif self.config.MODEL.IS_TRIPLET:
+                    outputs, _ = eval_model(images)
+                else:
+                    outputs = eval_model(images)
+                
+                outputs = F.softmax(outputs, dim=1)
+                outputs = outputs.cpu().numpy()
+                list_outputs += list(outputs)
+                
+            list_outputs = np.array(list_outputs)
+            list_outputs = np.argmax(list_outputs, axis=1)
         df_test['pred'] = list_outputs
         return df_test
 
