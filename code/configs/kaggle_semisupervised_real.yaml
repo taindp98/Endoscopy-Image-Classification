@@ -17,7 +17,7 @@ MODEL:
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
  MARGIN: None
- TYPE_SEMI: 'FixMatch'
+ TYPE_SEMI: 'CoMatch'
  IS_TRIPLET: False
 TRAIN:
  IS_SSL: True
