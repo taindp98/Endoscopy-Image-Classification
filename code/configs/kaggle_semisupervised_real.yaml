@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_mock_5_5.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies.csv'
  UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
  IMG_SIZE: 112
