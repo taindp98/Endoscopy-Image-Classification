@@ -153,9 +153,11 @@ def build_model(config, is_pathology = True):
                 else:
                     model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
         elif config.MODEL.IS_TRIPLET:
+            print(f'Selected model: {str(model_name)} w/ Triplet')
             model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
         else:
             if config.MODEL.PRE_TRAIN_PATH != 'None':
+                print(f'Selected model: {str(model_name)} w pretrained-weight')
                 model = timm.create_model(model_name, pretrained=True, num_classes = 2)
                 checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
                 model.load_state_dict(checkpoint['model_state_dict'])
@@ -163,6 +165,7 @@ def build_model(config, is_pathology = True):
                 in_fts = model.classifier.in_features
                 model.classifier = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
             else:
+                print(f'Selected model: {str(model_name)} w/o pretrained-weight')
                 model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
 
     return model

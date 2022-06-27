@@ -89,57 +89,83 @@ class TransformCoMatch(object):
         strong_1 = self.strong(x)
         return self.normalize(weak), self.normalize(strong_0), self.normalize(strong_1)
 
-def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixMatch'):
+def reproduce_transform(is_train = False):
     if is_train:
-        if is_labeled:
+        trf_aug = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(256),
+            transforms.Resize(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
+            transforms.RandomRotation(90),
+            transforms.ToTensor(),
+            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+        ])
+    else:
+        trf_aug = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(256),
+            transforms.Resize(224),
+            transforms.ToTensor(),
+            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+        ])
+    return trf_aug
+
+def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixMatch', is_reprod = False):
+    if is_reprod:
+        print('Transforms mode: Re-produce paper')
+        trf_aug = reproduce_transform(is_train = is_train)
+    else:
+        if is_train:
+            if is_labeled:
+                if config.DATA.IS_CROP:
+                    trf_aug = transforms.Compose([
+                        # transforms.CenterCrop(config.DATA.IMG_SIZE),
+                        # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
+                        # transforms.Resize((272,272)),
+                        transforms.RandomHorizontalFlip(p=0.3),
+                        transforms.RandomVerticalFlip(p=0.3),
+                        transforms.RandomRotation(20),
+                        transforms.CenterCrop(config.DATA.IMG_SIZE),
+                        transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
+                        # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean, std)])
+                else:
+                    trf_aug = transforms.Compose([
+                        transforms.Resize((int(config.DATA.IMG_SIZE),int(config.DATA.IMG_SIZE))),
+                        transforms.RandomHorizontalFlip(p=0.3),
+                        transforms.RandomVerticalFlip(p=0.3),
+                        transforms.RandomRotation(20),
+                        transforms.CenterCrop(config.DATA.IMG_SIZE),
+                        transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
+                        # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean, std)])
+            else:
+                if type_semi == 'FixMatch':
+                    print('Semi Transform mode: FixMatch')
+                    trf_aug = TransformFixMatch(config, mean, std)
+                else:
+                    print('Semi Transform mode: CoMatch')
+                    trf_aug = TransformCoMatch(config, mean, std)
+
+        else:
+            # print('Validation transform')
             if config.DATA.IS_CROP:
                 trf_aug = transforms.Compose([
-                    # transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
                     # transforms.Resize((272,272)),
-                    transforms.RandomHorizontalFlip(p=0.3),
-                    transforms.RandomVerticalFlip(p=0.3),
-                    transforms.RandomRotation(20),
+                    # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
                     transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
-                    # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
                     transforms.ToTensor(),
                     transforms.Normalize(mean, std)])
             else:
                 trf_aug = transforms.Compose([
+                    # transforms.Resize((272,272)),
                     transforms.Resize((int(config.DATA.IMG_SIZE),int(config.DATA.IMG_SIZE))),
-                    transforms.RandomHorizontalFlip(p=0.3),
-                    transforms.RandomVerticalFlip(p=0.3),
-                    transforms.RandomRotation(20),
                     transforms.CenterCrop(config.DATA.IMG_SIZE),
-                    transforms.ColorJitter(brightness = 0.2, contrast = 0.2, saturation = 0.2),
-                    # transforms.RandomResizedCrop(config.DATA.IMG_SIZE, scale=(0.63, 1)),
                     transforms.ToTensor(),
                     transforms.Normalize(mean, std)])
-        else:
-            if type_semi == 'FixMatch':
-                print('Semi Transform mode: FixMatch')
-                trf_aug = TransformFixMatch(config, mean, std)
-            else:
-                print('Semi Transform mode: CoMatch')
-                trf_aug = TransformCoMatch(config, mean, std)
-
-    else:
-        # print('Validation transform')
-        if config.DATA.IS_CROP:
-            trf_aug = transforms.Compose([
-                # transforms.Resize((272,272)),
-                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
-                transforms.CenterCrop(config.DATA.IMG_SIZE),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std)])
-        else:
-            trf_aug = transforms.Compose([
-                # transforms.Resize((272,272)),
-                transforms.Resize((int(config.DATA.IMG_SIZE),int(config.DATA.IMG_SIZE))),
-                transforms.CenterCrop(config.DATA.IMG_SIZE),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std)])
     return trf_aug
 
 class GIDataset(torch.utils.data.Dataset):
@@ -215,7 +241,7 @@ class GIDataset(torch.utils.data.Dataset):
 
             return x, y
 
-def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False, type_semi = 'FixMatch', predict = False):
+def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=False, type_semi = 'FixMatch', predict = False, is_reprod = False):
     """
     get training, validation, testing set
     """
@@ -224,7 +250,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
     ## break down into labeled and unlabeled set
 
     if predict:
-        unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config, is_train=False, is_labeled=False, type_semi = type_semi), is_unanno = True)
+        unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config = config, is_train=False, is_labeled=False, type_semi = type_semi, is_reprod = is_reprod), is_unanno = True)
         
         unlabeled_dl = DataLoader(unlabeled_ds, 
                                     sampler=RandomSampler(unlabeled_ds),
@@ -293,28 +319,29 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
 
                         show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
             else:
-                train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+                train_ds = GIDataset(df_train[df_train['is_labeled']==True], config = config, transforms = get_transform(config = config, is_train=True, is_reprod = is_reprod), is_triplet = config.MODEL.IS_TRIPLET)
                 train_dl = DataLoader(train_ds, 
                                 sampler=RandomSampler(train_ds),
                                 batch_size = config.DATA.BATCH_SIZE, 
                                 num_workers = config.DATA.NUM_WORKERS)
 
             
-            valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
+            valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config = config, is_reprod = is_reprod))
             valid_dl = DataLoader(valid_ds, 
                                 sampler=SequentialSampler(valid_ds),
                                 batch_size = config.DATA.BATCH_SIZE, 
                                 num_workers = config.DATA.NUM_WORKERS)
 
         else:
-            train_ds = GIDataset(df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+            print('Training mode: Full labeled supervised learning')
+            train_ds = GIDataset(df_train, config = config, transforms = get_transform(config = config, is_train=True, is_reprod = is_reprod), is_triplet = config.MODEL.IS_TRIPLET)
             train_dl = DataLoader(train_ds, 
                             sampler=RandomSampler(train_ds),
                             batch_size = config.DATA.BATCH_SIZE, 
                             num_workers = config.DATA.NUM_WORKERS)
             
 
-            valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config))
+            valid_ds = GIDataset(df_valid , config = config, transforms = get_transform(config = config, is_reprod = is_reprod))
             valid_dl = DataLoader(valid_ds, 
                                 sampler=SequentialSampler(valid_ds),
                                 batch_size = config.DATA.BATCH_SIZE, 

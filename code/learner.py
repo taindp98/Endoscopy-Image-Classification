@@ -35,7 +35,7 @@ class FixMatch:
     def get_config(self, config):
         self.config = config
         # self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
-
+        print('Training mode: FixMatch')
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
@@ -319,6 +319,7 @@ class CoMatch:
     def get_config(self, config):
         self.config = config
         # self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
+        print('Training mode: CoMatch')
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
@@ -619,6 +620,7 @@ class SupLearning:
 
     def get_config(self, config):
         self.config = config
+        print('Training mode: Supervised Learning')
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
