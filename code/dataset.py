@@ -91,6 +91,7 @@ class TransformCoMatch(object):
 
 def reproduce_transform(is_train = False):
     if is_train:
+        print('Transforms mode: Re-produce paper')
         trf_aug = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(256),
@@ -113,7 +114,7 @@ def reproduce_transform(is_train = False):
 
 def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixMatch', is_reprod = False):
     if is_reprod:
-        print('Transforms mode: Re-produce paper')
+        
         trf_aug = reproduce_transform(is_train = is_train)
     else:
         if is_train:
