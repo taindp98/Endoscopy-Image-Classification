@@ -1,11 +1,11 @@
-from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, classification_report
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, classification_report, precision_recall_fscore_support
 from tqdm import tqdm
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
 import torch
 import torch.nn.functional as F
-
+import pandas as pd
 import torch.nn as nn
 from datetime import datetime,date
 import os
@@ -35,15 +35,23 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-def calculate_metrics(pred, target):
+def calculate_metrics(pred, target, config):
     # pred = np.argmax(pred, axis=1)
 #     target = np.argmax(target, axis=1)
+    res = []
+    for l in range(config.MODEL.NUM_CLASSES):
+        prec, recall, _, _ = precision_recall_fscore_support(np.array(target)==l, np.array(pred)==l, pos_label=True,average=None)
+        res.append([l, recall[0], recall[1]])
+
+    df_sen_spec = pd.DataFrame(res,columns = ['class','sensitivity','specificity'])
+
     return {'micro/precision': precision_score(y_true=target, y_pred=pred, average='micro'),
             'micro/recall': recall_score(y_true=target, y_pred=pred, average='micro'),
             'micro/f1': f1_score(y_true=target, y_pred=pred, average='micro'),
             'macro/precision': precision_score(y_true=target, y_pred=pred, average='macro'),
             'macro/recall': recall_score(y_true=target, y_pred=pred, average='macro'),
-            'macro/f1': f1_score(y_true=target, y_pred=pred, average='macro')
+            'macro/f1': f1_score(y_true=target, y_pred=pred, average='macro'),
+            'sen/spec': df_sen_spec
            }
     
 

@@ -13,7 +13,7 @@ from datetime import datetime,date
 import os
 import numpy as np
 from sklearn.utils import class_weight
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
 
 class FixMatch:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -207,7 +207,7 @@ class FixMatch:
             list_outputs = np.array(list_outputs)
             list_outputs = np.argmax(list_outputs, axis=1)
             list_targets = np.array(list_targets)
-            metric = calculate_metrics(list_outputs, list_targets)
+            metric = calculate_metrics(list_outputs, list_targets, self.config)
             if show_metric:
                 print('Metric:')
                 print(metric)
@@ -522,7 +522,7 @@ class CoMatch:
             list_outputs = np.array(list_outputs)
             list_outputs = np.argmax(list_outputs, axis=1)
             list_targets = np.array(list_targets)
-            metric = calculate_metrics(list_outputs, list_targets)
+            metric = calculate_metrics(list_outputs, list_targets, self.config)
             if show_metric:
                 print('Metric:')
                 print(metric)
@@ -735,7 +735,7 @@ class SupLearning:
             list_outputs = np.array(list_outputs)
             list_outputs = np.argmax(list_outputs, axis=1)
             list_targets = np.array(list_targets)
-            metric = calculate_metrics(list_outputs, list_targets)
+            metric = calculate_metrics(list_outputs, list_targets, self.config)
             if show_metric:
                 print('Metric:')
                 print(metric)
