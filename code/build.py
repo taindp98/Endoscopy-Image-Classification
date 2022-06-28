@@ -141,7 +141,8 @@ def build_model(config, is_pathology = True):
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
         elif config.TRAIN.IS_SSL:
             if config.MODEL.TYPE_SEMI == 'CoMatch' :
-                model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
+                print(f'Selected model: CoMatch')
+                model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES, low_dim = 64)
             else:
                 if config.MODEL.PRE_TRAIN_PATH != 'None':
                     model = timm.create_model(model_name, pretrained=True, num_classes = 2)
