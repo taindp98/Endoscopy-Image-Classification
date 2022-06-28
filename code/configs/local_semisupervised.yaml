@@ -1,6 +1,6 @@
 DATA:
  PATH: 'D:\data\endoscopic\hyper_kvasir\labeled_images'
- ANNO: '../resource/hyper_kvasir/df_split_mock_1_9.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 8
  NUM_WORKERS: 2
