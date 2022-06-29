@@ -144,24 +144,6 @@ def _int_parameter(v, max_v):
     return int(v * max_v / PARAMETER_MAX)
 
 
-# def fixmatch_augment_pool():
-#     # FixMatch paper
-#     augs = [(AutoContrast, None, None),
-#             (Brightness, 0.9, 0.05),
-#             (Color, 0.9, 0.05),
-#             (Contrast, 0.9, 0.05),
-#             (Equalize, None, None),
-#             (Identity, None, None),
-#             (Posterize, 4, 4),
-#             (Rotate, 30, 0),
-#             (Sharpness, 0.9, 0.05),
-#             (ShearX, 0.3, 0),
-#             (ShearY, 0.3, 0),
-#             (Solarize, 256, 0),
-#             (TranslateX, 0.3, 0),
-#             (TranslateY, 0.3, 0)]
-#     return augs
-
 def fixmatch_augment_pool():
     # FixMatch paper
     augs = [(AutoContrast, None, None),
@@ -173,12 +155,14 @@ def fixmatch_augment_pool():
             (Posterize, 4, 4),
             (Rotate, 30, 0),
             (Sharpness, 0.9, 0.05),
-            # (ShearX, 0.3, 0),
-            # (ShearY, 0.3, 0),
-            (Solarize, 256, 0)]
-            # (TranslateX, 0.3, 0),
-            # (TranslateY, 0.3, 0)]
+            (ShearX, 0.3, 0),
+            (ShearY, 0.3, 0),
+            (Solarize, 256, 0),
+            (TranslateX, 0.3, 0),
+            (TranslateY, 0.3, 0)]
     return augs
+
+
 
 
 def my_augment_pool():
