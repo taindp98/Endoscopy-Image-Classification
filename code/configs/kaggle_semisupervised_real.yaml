@@ -10,7 +10,7 @@ DATA:
  MU: 4
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
- IS_CROP: False
+ IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
  NAME: 'densenet161'
