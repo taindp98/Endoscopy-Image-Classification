@@ -36,6 +36,6 @@ TRAIN:
  EMA_DECAY: 0.999
  EVAL_STEP: 512
  CLS_WEIGHT: False
- THRES: 0.9
+ THRES: 0.95
  RESUME: False
  SAVE_CP: '/kaggle/working/'
