@@ -777,9 +777,12 @@ class SupLearning:
                 list_outputs += list(outputs)
                 
             list_outputs = np.array(list_outputs)
-            list_outputs = np.argmax(list_outputs, axis=1)
+            list_max_value = np.max(list_outputs, axis=1)
+            list_max_cond = np.where(list_max_value > self.config.TRAIN.THRES, 1, 0)
+            list_max_idx = np.argmax(list_outputs, axis=1)
+            list_preds = list_max_idx * list_max_cond
         # dl_test.dataset.df['pred'] = list_outputs
-        return list_outputs
+        return list_preds
 
 
     def save_checkpoint(self, foldname):

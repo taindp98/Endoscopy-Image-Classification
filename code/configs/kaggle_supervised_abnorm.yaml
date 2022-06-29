@@ -12,9 +12,9 @@ DATA:
  IS_CROP: False
 MODEL:
  NUM_CLASSES: 2
- NAME: 'conformer'
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/conformer/conformer_small_patch16.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
  MARGIN: None
  IS_TRIPLET: False
 TRAIN:
@@ -36,5 +36,6 @@ TRAIN:
  EMA_DECAY: 0.999
  EVAL_STEP: 512
  CLS_WEIGHT: False
+ THRES: 0.9
  RESUME: False
  SAVE_CP: '/kaggle/working/'
