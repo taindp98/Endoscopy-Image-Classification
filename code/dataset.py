@@ -28,7 +28,7 @@ class TransformFixMatch(object):
                     transforms.CenterCrop(config.DATA.IMG_SIZE)])
                     
             self.strong = transforms.Compose([
-                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
+                transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomCrop(size=config.DATA.IMG_SIZE,
@@ -62,7 +62,7 @@ class TransformCoMatch(object):
                     transforms.CenterCrop(config.DATA.IMG_SIZE)])
                     
             self.strong = transforms.Compose([
-                # transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
+                transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomCrop(size=config.DATA.IMG_SIZE,
