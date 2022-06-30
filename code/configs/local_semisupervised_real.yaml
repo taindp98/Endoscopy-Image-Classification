@@ -1,7 +1,7 @@
 DATA:
- PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
+ PATH: 'D:\data\endoscopic\hyper_kvasir\labeled_images'
  ANNO: '../resource/hyper_kvasir/df_6_pathologies.csv'
- UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
+ UNANNO_PATH: 'D:\data\endoscopic\hyper_kvasir\unlabeled-images-deform'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
  IMG_SIZE: 112
  BATCH_SIZE: 24
