@@ -72,7 +72,6 @@ class TransformCoMatch(object):
             self.strong_1 = transforms.Compose([
                 transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
-                transforms.RandomResizedCrop(224, scale=(0.2, 1.)),                
                 transforms.RandomApply([
                     transforms.ColorJitter(0.4, 0.4, 0.4, 0.1) 
                 ], p=0.8),
