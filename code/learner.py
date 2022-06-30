@@ -220,18 +220,18 @@ class FixMatch:
                 if self.config.MODEL.NAME == 'conformer':
                     ## out_conv and out_trans
                     out_conv, out_trans = outputs
-                    del outputs
-                    outputs = out_conv + out_trans 
-                    # loss_conv = ce_loss(out_conv, targets, reduction='mean')            
-                    # loss_trans = ce_loss(out_trans, targets, reduction='mean')            
-                    # losses = loss_conv + loss_trans
+                    # del outputs
+                    # outputs = out_conv + out_trans 
+                    loss_conv = ce_loss(out_conv, targets, reduction='mean')            
+                    loss_trans = ce_loss(out_trans, targets, reduction='mean')            
+                    losses = loss_conv + loss_trans
                 
                 losses = ce_loss(outputs, targets, reduction='mean')            
 
                 summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
                 tk0.set_postfix(loss=summary_loss.avg)
                 targets = targets.cpu().numpy()
-                outputs = F.softmax(outputs, dim=1)
+                outputs = F.softmax(outputs[0]+outputs[1], dim=1)
                 outputs = outputs.cpu().numpy()
                 list_outputs += list(outputs)
                 list_targets += list(targets)
