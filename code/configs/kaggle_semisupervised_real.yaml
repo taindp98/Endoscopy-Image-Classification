@@ -13,11 +13,11 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'conformer'
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
  MARGIN: None
- TYPE_SEMI: 'FixMatch'
+ TYPE_SEMI: 'CoMatch'
  IS_TRIPLET: False
 TRAIN:
  IS_SSL: True
@@ -27,7 +27,7 @@ TRAIN:
  WEIGHT_DECAY: 0.00001
  WARMUP_EPOCHS: 5  
  DECAY_EPOCHS: 5
- OPT_NAME: 'Adam'
+ OPT_NAME: 'SGD'
  EPS: 0.00000001
  BETAS: [0.9, 0.999]
  MOMENTUM: 0.9
@@ -42,5 +42,5 @@ TRAIN:
  THRES: 0.95
  T: 1.0
  LAMBDA_U: 1
- LAMBDA_C: 1
+ LAMBDA_C: 4
  SAVE_CP: '/kaggle/working/'

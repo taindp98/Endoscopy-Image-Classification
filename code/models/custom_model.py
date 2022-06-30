@@ -127,7 +127,7 @@ class ModelwEmb(nn.Module):
         super().__init__()
         ## load pre-trained weight abnormality classification
         self.model = timm.create_model(model_name, num_classes = 2)
-        self.k = 2
+        self.k = 3
 
         if pretrained != 'None':
             self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})

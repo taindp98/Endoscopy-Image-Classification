@@ -480,23 +480,6 @@ class CoMatch:
 
             losses = loss_x + self.config.TRAIN.LAMBDA_U * loss_u + self.config.TRAIN.LAMBDA_C * loss_contrast
 
-            # outputs = self.model(inputs_semi_branch)
-            # outputs_x = outputs[:bs_lb]
-            # outputs_u_s = outputs[bs_lb:]
-            # if self.config.TRAIN.USE_EMA:
-            #     outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
-            # else:
-            #     outputs_u_w = self.model(inputs_u_w.to(self.device))
-            # # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
-
-            # # del inputs# config = get_config('./configs/kaggle_supervised.yaml')
-
-            # del outputs
-
-            # lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
-            
-            # losses = lx + self.config.TRAIN.LAMBDA_U * lu
-
             self.optimizer.zero_grad()
 
             losses.backward()

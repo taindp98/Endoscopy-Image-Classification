@@ -59,34 +59,53 @@ class TransformCoMatch(object):
         if config.DATA.IS_CROP:
             self.weak = transforms.Compose([
                     transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),
-                    transforms.CenterCrop(config.DATA.IMG_SIZE)])
+                    transforms.CenterCrop(config.DATA.IMG_SIZE),
+                    transforms.RandomHorizontalFlip()])
                     
-            self.strong = transforms.Compose([
+            self.strong_0 = transforms.Compose([
+                transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
+                transforms.CenterCrop(config.DATA.IMG_SIZE),                      
+                transforms.RandomHorizontalFlip(),
+                RandAugmentMC(n=2, m=10)
+                ])
+
+            self.strong_1 = transforms.Compose([
                 transforms.Resize((int(config.DATA.IMG_SIZE*1.2),int(config.DATA.IMG_SIZE*1.2))),    
                 transforms.CenterCrop(config.DATA.IMG_SIZE),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomCrop(size=config.DATA.IMG_SIZE,
-                                    padding=int(config.DATA.IMG_SIZE*0.125),
-                                    padding_mode='reflect'),
-                RandAugmentMC(n=2, m=10)])
+                transforms.RandomResizedCrop(224, scale=(0.2, 1.)),                
+                transforms.RandomApply([
+                    transforms.ColorJitter(0.4, 0.4, 0.4, 0.1) 
+                ], p=0.8),
+                transforms.RandomGrayscale(p=0.2),                         
+                transforms.RandomHorizontalFlip()
+                ])
         else:
             self.weak = transforms.Compose([
-                transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE))])
-            self.strong = transforms.Compose([
                 transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+                transforms.RandomHorizontalFlip()])
+            
+            
+            self.strong_0 = transforms.Compose([
+                transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),                       
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomCrop(size=config.DATA.IMG_SIZE,
-                                    padding=int(config.DATA.IMG_SIZE*0.125),
-                                    padding_mode='reflect'),
-                RandAugmentMC(n=2, m=10)])
+                RandAugmentMC(n=2, m=10)
+                ])
+
+            self.strong_1 = transforms.Compose([
+                transforms.Resize((config.DATA.IMG_SIZE,config.DATA.IMG_SIZE)),
+                transforms.RandomApply([
+                    transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+                transforms.RandomGrayscale(p=0.2),                         
+                transforms.RandomHorizontalFlip()
+                ])
         self.normalize = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std)])
 
     def __call__(self, x):
         weak = self.weak(x)
-        strong_0 = self.strong(x)
-        strong_1 = self.strong(x)
+        strong_0 = self.strong_0(x)
+        strong_1 = self.strong_1(x)
         return self.normalize(weak), self.normalize(strong_0), self.normalize(strong_1)
 
 def reproduce_transform(is_train = False):
