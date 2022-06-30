@@ -3,6 +3,7 @@
 attention-guided. extract the attention map to highlight the important area
 """
 # from pydantic import create_model
+from cmath import e
 import torch.nn as nn
 import timm
 import torch
@@ -128,15 +129,21 @@ class ModelwEmb(nn.Module):
         ## load pre-trained weight abnormality classification
         self.model = timm.create_model(model_name, num_classes = 2)
         self.k = 3
-
+        self.model_name = model_name
         if pretrained != 'None':
             self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
             self.model.load_state_dict(self.checkpoint['model_state_dict'])
         ## transfer
-        in_fts = self.model.classifier.in_features
-        self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
-        self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
-        self.classifier = self.model.classifier
+        if model_name == 'densenet161':
+            in_fts = self.model.classifier.in_features
+            self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
+            self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+            self.classifier = self.model.classifier
+        else:
+            in_fts = self.model.fc.in_features
+            self.model.fc = nn.Linear(in_fts, num_classes, bias=False)
+            self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+            self.fc = self.model.fc
 
         self.head_emb = nn.Sequential(
             nn.Linear(in_fts, 64 * self.k),
@@ -147,7 +154,10 @@ class ModelwEmb(nn.Module):
     def forward(self, x):
         fts = self.backbone(x)
         # fts = torch.mean(fts, dim=(2, 3))
-        logits = self.classifier(fts)
+        if self.model_name == 'densenet161':
+            logits = self.classifier(fts)
+        else:
+            logits = self.fc(fts)
         fts = self.head_emb(fts)
         return logits, fts 
 
