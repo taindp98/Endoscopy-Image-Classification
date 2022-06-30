@@ -225,8 +225,8 @@ class FixMatch:
                     loss_conv = ce_loss(out_conv, targets, reduction='mean')            
                     loss_trans = ce_loss(out_trans, targets, reduction='mean')            
                     losses = loss_conv + loss_trans
-                
-                losses = ce_loss(outputs, targets, reduction='mean')            
+                else:
+                    losses = ce_loss(outputs, targets, reduction='mean')            
 
                 summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
                 tk0.set_postfix(loss=summary_loss.avg)
