@@ -370,7 +370,7 @@ class CoMatch:
         
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
 
-        self.low_dim = 64
+        self.low_dim = self.config.MODEL.LOW_DIM
         self.queue_size = self.queue_batch*(self.config.DATA.MU+1)*self.config.DATA.BATCH_SIZE
         self.queue_feats = torch.zeros(self.queue_size, self.low_dim).to(self.device)
         self.queue_probs = torch.zeros(self.queue_size, self.config.MODEL.NUM_CLASSES).to(self.device)
