@@ -68,7 +68,8 @@ class CoMatch:
                 self.model.classifier.requires_grad_(True)
             else:
                 self.model.fc.requires_grad_(True)
-        
+            self.model.head_emb.requires_grad_(True)
+
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = config.TRAIN.EVAL_STEP)
