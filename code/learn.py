@@ -38,7 +38,7 @@ def main():
         device = torch.device('cpu')
 
     for idx, config in enumerate(list_configs):
-        img_size = str(config['DATA']['IMG_SIZE'])
+        img_size = config['DATA']['IMG_SIZE']
         print(f'### Training w/ {img_size} ###')
 
         config = get_config(config)
