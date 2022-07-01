@@ -162,8 +162,8 @@ def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixM
                         transforms.ToTensor(),
                         transforms.Normalize(mean, std)])
             else:
-                if type_semi == 'FixMatch':
-                    print('Semi Transform mode: FixMatch')
+                if type_semi in ['FixMatch', 'SemiFormer']:
+                    print(f'Semi Transform mode: {type_semi}')
                     trf_aug = TransformFixMatch(config, mean, std)
                 else:
                     print('Semi Transform mode: CoMatch')
@@ -329,7 +329,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                             break
                         for x2, _ in train_unlabeled_dl:
                             break
-                        if type_semi == 'FixMatch':
+                        if type_semi in ['FixMatch', 'SemiFormer']:
                             show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
                         else:
                             show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:], x2[2][0,:,:]])
