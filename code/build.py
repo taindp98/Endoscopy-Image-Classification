@@ -149,8 +149,13 @@ def build_model(config, is_pathology = True):
                     checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
                     model.load_state_dict(checkpoint['model_state_dict'])
                     print('Loaded checkpoint abnormal')
-                    in_fts = model.classifier.in_features
-                    model.classifier = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
+                    if model_name == 'densenet161':
+                        in_fts = model.classifier.in_features
+                        model.classifier = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
+                    else:
+                        in_fts = model.fc.in_features
+                        model.fc = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
+
                 else:
                     model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)
         elif config.MODEL.IS_TRIPLET:
