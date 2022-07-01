@@ -40,7 +40,7 @@ class SemiFormer:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
         ## accelerate the computational time
-        if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+        if self.config.TRAIN.IS_FREEZE:            
             ## transfer learning & freeze the CNN backbone
             print('Freeze backbone')
             for parameter in self.model.parameters():

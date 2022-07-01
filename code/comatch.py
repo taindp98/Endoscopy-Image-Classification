@@ -59,7 +59,7 @@ class CoMatch:
         """
 
         ## accelerate the computational time
-        if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+        if self.config.TRAIN.IS_FREEZE:            
             ## transfer learning & freeze the CNN backbone
             print('Freeze backbone')
             for parameter in self.model.parameters():
