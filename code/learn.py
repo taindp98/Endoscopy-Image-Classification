@@ -38,7 +38,7 @@ def main():
         device = torch.device('cpu')
 
     for idx, config in enumerate(list_configs):
-        print(f'Training w/ {config}')
+        print(f'### Training w/ {config} ###')
 
         config = get_config(config)
         df_anno = pd.read_csv(config['DATA']['ANNO'])
@@ -51,6 +51,7 @@ def main():
                                     is_visual=True, 
                                     type_semi = config.MODEL.TYPE_SEMI)
         if idx == 0:
+            print('Build up model')
             model = build_model(config, is_pathology = True)
 
         if config.TRAIN.IS_SSL:
