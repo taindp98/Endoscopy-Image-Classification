@@ -38,7 +38,8 @@ def main():
         device = torch.device('cpu')
 
     for idx, config in enumerate(list_configs):
-        print(f'### Training w/ {config} ###')
+        img_size = str(config['DATA']['IMG_SIZE'])
+        print(f'### Training w/ {img_size} ###')
 
         config = get_config(config)
         df_anno = pd.read_csv(config['DATA']['ANNO'])
