@@ -39,6 +39,15 @@ class SemiFormer:
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
+        ## accelerate the computational time
+        if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+            ## transfer learning & freeze the CNN backbone
+            print('Freeze backbone')
+            for parameter in self.model.parameters():
+                parameter.requires_grad = False
+            self.model.conv_cls_head.requires_grad_(True)
+            self.model.trans_cls_head.requires_grad_(True)
+
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
 
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = config.TRAIN.EVAL_STEP)
