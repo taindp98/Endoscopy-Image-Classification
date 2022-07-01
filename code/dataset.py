@@ -223,7 +223,7 @@ class GIDataset(torch.utils.data.Dataset):
             x = Image.fromarray(x)
             if self.transforms:
                 x = self.transforms(x)
-            return x
+            return x, index
         else:
             if self.is_triplet:
                 list_unique_cls = list(set(list(self.df[self.target_name])))
@@ -302,7 +302,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                             # print(x.shape)
                             # print(y)
                             break
-                        for x2 in train_unlabeled_dl:
+                        for x2, _ in train_unlabeled_dl:
                             break
                         show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])
                 ## else for real unlabeled data
@@ -327,7 +327,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     if is_visual:
                         for x1, y1 in train_labeled_dl:
                             break
-                        for x2 in train_unlabeled_dl:
+                        for x2, _ in train_unlabeled_dl:
                             break
                         if type_semi == 'FixMatch':
                             show_grid([x1[0,:,:], x2[0][0,:,:], x2[1][0,:,:]])

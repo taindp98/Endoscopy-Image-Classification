@@ -124,10 +124,10 @@ class FixMatch:
                     labeled_iter = iter(self.train_labeled_dl)
                     inputs_x, targets_x = labeled_iter.next()
                 try:
-                    (inputs_u_w, inputs_u_s) = unlabeled_iter.next()
+                    (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
                 except:
                     unlabeled_iter = iter(self.train_unlabeled_dl)
-                    (inputs_u_w, inputs_u_s) = unlabeled_iter.next()
+                    (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
 
                 bs_lb = inputs_x.shape[0]
                 targets_x = targets_x.to(self.device, non_blocking=True)
@@ -398,10 +398,10 @@ class CoMatch:
                 dl_x = iter(self.train_labeled_dl)
                 inputs_x, targets_x = dl_x.next()
             try:
-                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = dl_u.next()
+                (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ = dl_u.next()
             except:
                 dl_u = iter(self.train_unlabeled_dl)
-                (inputs_u_w, inputs_u_s_0, inputs_u_s_1) = dl_u.next()
+                (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ = dl_u.next()
 
             # bs_lb = inputs_x.size[0]
             bt = inputs_x.size(0)
@@ -771,10 +771,11 @@ class SupLearning:
         eval_model.eval()
         
         list_outputs = []
+        list_index = []
         with torch.no_grad():
             
             tk0 = tqdm(dl_test, total=len(dl_test))
-            for step, images in enumerate(tk0):
+            for step, (images, index) in enumerate(tk0):
                 images = images.to(self.device, non_blocking=True)
                 
                 if self.config.MODEL.NAME == 'conformer':
@@ -789,14 +790,14 @@ class SupLearning:
                 outputs = F.softmax(outputs, dim=1)
                 outputs = outputs.cpu().numpy()
                 list_outputs += list(outputs)
-                
+                list_index += list(index)
             list_outputs = np.array(list_outputs)
             list_max_value = np.max(list_outputs, axis=1)
             list_max_cond = np.where(list_max_value > self.config.TRAIN.THRES, 1, 0)
             list_max_idx = np.argmax(list_outputs, axis=1)
-            list_preds = list_max_idx * list_max_cond
-        # dl_test.dataset.df['pred'] = list_outputs
-        return list_preds
+            list_preds = list(list_max_idx * list_max_cond)
+        dict_preds = dict(zip(list_index, list_preds))
+        return dict_preds
 
 
     def save_checkpoint(self, foldname):
