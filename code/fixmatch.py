@@ -36,6 +36,16 @@ class FixMatch:
         self.config = config
         # self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
         print('Training mode: FixMatch')
+        if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+            ## transfer learning & freeze the CNN backbone
+            print('Freeze backbone')
+            for parameter in self.model.parameters():
+                parameter.requires_grad = False
+            if self.config.MODEL.NAME == 'densenet161':
+                self.model.classifier.requires_grad_(True)
+            else:
+                self.model.fc.requires_grad_(True)
+
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
