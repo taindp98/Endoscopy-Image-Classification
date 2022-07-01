@@ -790,7 +790,7 @@ class SupLearning:
                 outputs = F.softmax(outputs, dim=1)
                 outputs = outputs.cpu().numpy()
                 list_outputs += list(outputs)
-                list_index += list(index)
+                list_index += np.array(index).tolist()
             list_outputs = np.array(list_outputs)
             list_max_value = np.max(list_outputs, axis=1)
             list_max_cond = np.where(list_max_value > self.config.TRAIN.THRES, 1, 0)
