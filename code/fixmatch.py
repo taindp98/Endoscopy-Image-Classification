@@ -36,7 +36,8 @@ class FixMatch:
         self.config = config
         # self.config.TRAIN.EVAL_STEP = len(self.train_unlabeled_dl)
         print('Training mode: FixMatch')
-        if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+        # if self.config.MODEL.PRE_TRAIN_PATH != 'None':
+        if self.config.TRAIN.IS_FREEZE:
             ## transfer learning & freeze the CNN backbone
             print('Freeze backbone')
             for parameter in self.model.parameters():

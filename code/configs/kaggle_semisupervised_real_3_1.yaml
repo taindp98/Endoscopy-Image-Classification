@@ -3,7 +3,7 @@ DATA:
  ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_3.csv'
  UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
- IMG_SIZE: 224
+ IMG_SIZE: 112
  BATCH_SIZE: 32
  NUM_WORKERS: 2
  MOCKUP_SSL: False
@@ -21,9 +21,9 @@ MODEL:
  IS_TRIPLET: False
  LOW_DIM: 128
 TRAIN:
- IS_FREEZE: True
+ IS_FREEZE: False
  IS_SSL: True
- EPOCHS: 150
+ EPOCHS: 2
  BASE_LR: 0.001
  WARMUP_LR: 0.0005
  WEIGHT_DECAY: 0.00001
