@@ -87,38 +87,38 @@ class FixMatch:
             bs_lb = inputs_x.shape[0]
             targets_x = targets_x.to(self.device, non_blocking=True)
             
-            inputs_semi_branch = torch.cat((inputs_x, inputs_u_s)).to(self.device, non_blocking=True)
-            if self.config.MODEL.MARGIN != 'None':
-                fts = self.model.backbone(inputs_semi_branch)
-                fts_x, fts_s = fts[:bs_lb], fts[bs_lb:]
-                lx = self.loss_fc(fts_x, targets_x, self.model.fc, self.class_weights)
-                # outputs = self.model(inputs_semi_branch)
-                # outputs_x = outputs[:bs_lb]
-                # outputs_u_s = outputs[bs_lb:]
-                if self.config.TRAIN.USE_EMA:
-                    outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
-                else:
-                    outputs_u_w = self.model(inputs_u_w.to(self.device))
-                del fts
-                lu, mask_mean = consistency_loss(outputs_u_w, self.model.fc(fts_s), T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
-                # lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
-                # print('mask_mean:', mask_mean)
-            else:
-                outputs = self.model(inputs_semi_branch)
-                outputs_x = outputs[:bs_lb]
-                outputs_u_s = outputs[bs_lb:]
-                if self.config.TRAIN.USE_EMA:
-                    outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
-                else:
-                    outputs_u_w = self.model(inputs_u_w.to(self.device))
-                # outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
+            inputs_semi_branch = torch.cat((inputs_x, inputs_u_w, inputs_u_s)).to(self.device, non_blocking=True)
+            # if self.config.MODEL.MARGIN != 'None':
+            #     fts = self.model.backbone(inputs_semi_branch)
+            #     fts_x, fts_s = fts[:bs_lb], fts[bs_lb:]
+            #     lx = self.loss_fc(fts_x, targets_x, self.model.fc, self.class_weights)
+            #     # outputs = self.model(inputs_semi_branch)
+            #     # outputs_x = outputs[:bs_lb]
+            #     # outputs_u_s = outputs[bs_lb:]
+            #     # if self.config.TRAIN.USE_EMA:
+            #     #     outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
+            #     # else:
+            #     #     outputs_u_w = self.model(inputs_u_w.to(self.device))
+            #     del fts
+            #     lu, mask_mean = consistency_loss(outputs_u_w, self.model.fc(fts_s), T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+            #     # lu = consistency_loss(outputs_u_w, fts_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device, loss_fc = self.loss_fc, fc = self.model.fc)
+            #     # print('mask_mean:', mask_mean)
+            # else:
+            outputs = self.model(inputs_semi_branch)
+            outputs_x = outputs[:bs_lb]
+            # outputs_u_s = outputs[bs_lb:]
+            # if self.config.TRAIN.USE_EMA:
+                # outputs_u_w = self.ema_model.ema(inputs_u_w.to(self.device))
+            # else:
+                # outputs_u_w = self.model(inputs_u_w.to(self.device))
+            outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
-                # del inputs
-                del outputs
+            # del inputs
+            del outputs
 
-                lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-                lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
-    
+            lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
+            lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
+
             losses = lx + self.config.TRAIN.LAMBDA_U * lu
 
             self.optimizer.zero_grad()
