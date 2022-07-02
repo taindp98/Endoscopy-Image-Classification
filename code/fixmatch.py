@@ -243,23 +243,26 @@ class FixMatch:
         
         del checkpoint
     def fit(self):
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
-            self.epoch = epoch
-            if self.best_valid_perf:
-                print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {float(self.best_valid_perf):.3f}')
-            else:
-                print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: inf')
-
-            train_loss = self.train_one(self.epoch)
-            print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one()
+        if self.epoch_start == self.config.TRAIN.EPOCHS:
+            pass
+        else:
+            for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
+                self.epoch = epoch
                 if self.best_valid_perf:
-                    if self.best_valid_perf > valid_loss.avg:
-                        self.best_valid_perf = valid_loss.avg
-                        # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                    print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: {float(self.best_valid_perf):.3f}')
                 else:
-                    self.best_valid_perf = valid_loss.avg
-                self.save_checkpoint(self.config.TRAIN.SAVE_CP)
-                print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                print(f'\tMetric: {valid_metric}')
+                    print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f} | The best loss: inf')
+
+                train_loss = self.train_one(self.epoch)
+                print(f'\tTrain Loss: {train_loss.avg:.3f}')
+                if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+                    valid_loss, valid_metric = self.evaluate_one()
+                    if self.best_valid_perf:
+                        if self.best_valid_perf > valid_loss.avg:
+                            self.best_valid_perf = valid_loss.avg
+                            # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                    else:
+                        self.best_valid_perf = valid_loss.avg
+                    self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                    print(f'\tValid Loss: {valid_loss.avg:.3f}')
+                    print(f'\tMetric: {valid_metric}')

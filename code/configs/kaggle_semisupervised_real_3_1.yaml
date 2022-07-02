@@ -4,7 +4,7 @@ DATA:
  UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
  IMG_SIZE: 112
- BATCH_SIZE: 32
+ BATCH_SIZE: 64
  NUM_WORKERS: 2
  MOCKUP_SSL: False
  MU: 7
@@ -39,11 +39,11 @@ TRAIN:
  LR_DECAY: 0.8 
  USE_EMA: True
  EMA_DECAY: 0.999
- EVAL_STEP: 512
+ EVAL_STEP: 256
  EVAL_STEP_SUP: 15
  CLS_WEIGHT: True
  THRES: 0.95
  T: 1.0
- LAMBDA_U: 1
+ LAMBDA_U: 2
  LAMBDA_C: 4
  SAVE_CP: '/kaggle/working/'
