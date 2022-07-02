@@ -8,7 +8,7 @@
 # from models.swin_transformer import SwinTransformer
 # from models.swin_mlp import SwinMLP
 # from models.coat_net import CoAtNet
-from models.custom_model import ModelMargin, ModelwEmb
+from models.custom_model import ModelMargin, ModelwEmb, build_head
 from pydantic import create_model
 import torch.nn as nn
 from torch.nn import DataParallel
@@ -108,10 +108,11 @@ def build_model(config, is_pathology = True):
                 model.load_state_dict(checkpoint)
             num_ftrs_conv = model.conv_cls_head.in_features
             num_ftrs_trans = model.trans_cls_head.in_features
-            # model.conv_cls_head = build_head(num_ftrs_conv, config.MODEL.NUM_CLASSES)
-            # model.trans_cls_head = build_head(num_ftrs_trans, config.MODEL.NUM_CLASSES)
-            model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
-            model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+            print('Build up new head MLP')
+            model.conv_cls_head = build_head(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            model.trans_cls_head = build_head(num_ftrs_trans, config.MODEL.NUM_CLASSES)
+            # model.conv_cls_head = nn.Linear(num_ftrs_conv, config.MODEL.NUM_CLASSES)
+            # model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
         else:
             model = Conformer(patch_size=16, 
                         num_classes = config.MODEL.NUM_CLASSES,
@@ -136,10 +137,14 @@ def build_model(config, is_pathology = True):
                     print('Loaded checkpoint abnormal')
                     if model_name == 'densenet161':
                         in_fts = model.classifier.in_features
-                        model.classifier = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
+                        print('Build up new head MLP')
+                        model.classifier = build_head(in_fts, config.MODEL.NUM_CLASSES)
+                        # model.classifier = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
                     else:
                         in_fts = model.fc.in_features
-                        model.fc = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
+                        print('Build up new head MLP')
+                        model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+                        # model.fc = torch.nn.Linear(in_features= in_fts, out_features= config.MODEL.NUM_CLASSES, bias= True)
 
                 else:
                     model = timm.create_model(model_name, pretrained=True, num_classes = config.MODEL.NUM_CLASSES)

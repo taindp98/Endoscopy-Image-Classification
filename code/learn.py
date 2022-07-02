@@ -40,7 +40,7 @@ def main():
     for idx, config_file in enumerate(list_configs):
         config = get_config(config_file)
         img_size = config['DATA']['IMG_SIZE']
-        print('#'*50,f' Training w/ image size: {img_size} ', '#'*50)
+        print('#'*20,f' Training w/ image size: {img_size} ', '#'*20)
         df_anno = pd.read_csv(config['DATA']['ANNO'])
         df_unanno = pd.read_csv(config['DATA']['UNANNO'])
 
