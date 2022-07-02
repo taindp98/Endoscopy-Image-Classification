@@ -7,14 +7,14 @@ DATA:
  BATCH_SIZE: 32
  NUM_WORKERS: 2
  MOCKUP_SSL: False
- MU: 6
+ MU: 5
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
  NAME: 'resnet50'
- PRE_TRAIN: False
+ PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  PRE_TRAIN_RESUME: '/kaggle/input/temp-cp/07_02_2022_11_40_36_epoch_10_size_224_ite_3.pth'
  MARGIN: None
