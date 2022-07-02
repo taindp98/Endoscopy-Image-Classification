@@ -244,7 +244,9 @@ class FixMatch:
         del checkpoint
     def fit(self):
         if self.epoch_start == self.config.TRAIN.EPOCHS:
-            pass
+            valid_loss, valid_metric = self.evaluate_one()
+            print(f'\tValid Loss: {valid_loss.avg:.3f}')
+            print(f'\tMetric: {valid_metric}')
         else:
             for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
                 self.epoch = epoch
