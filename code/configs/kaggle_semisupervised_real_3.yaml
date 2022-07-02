@@ -7,7 +7,7 @@ DATA:
  BATCH_SIZE: 32
  NUM_WORKERS: 2
  MOCKUP_SSL: False
- MU: 5
+ MU: 7
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
  IS_CROP: True
