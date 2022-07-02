@@ -237,6 +237,7 @@ class FixMatch:
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
         
+        del checkpoint
     def fit(self):
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
             self.epoch = epoch
