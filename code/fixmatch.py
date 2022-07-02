@@ -45,6 +45,10 @@ class FixMatch:
                 self.model.classifier.requires_grad_(True)
             else:
                 self.model.fc.requires_grad_(True)
+        else:
+            print('Unfreeze backbone')
+            for parameter in self.model.parameters():
+                parameter.requires_grad = True
 
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)

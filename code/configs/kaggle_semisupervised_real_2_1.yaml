@@ -1,48 +1,49 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_2.csv'
  UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
- IMG_SIZE: 224
- BATCH_SIZE: 32
+ IMG_SIZE: 112
+ BATCH_SIZE: 24
  NUM_WORKERS: 2
  MOCKUP_SSL: False
- MU: 7
+ MU: 6
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50'
+ NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
+ PRE_TRAIN_RESUME: 'None'
  MARGIN: None
- TYPE_SEMI: 'CoMatch'
+ TYPE_SEMI: 'SemiFormer'
  IS_TRIPLET: False
- LOW_DIM: 64
+ LOW_DIM: 128
 TRAIN:
- IS_FREEZE: True
+ IS_FREEZE: False
  IS_SSL: True
- EPOCHS: 10
+ EPOCHS: 100
  BASE_LR: 0.001
  WARMUP_LR: 0.0005
  WEIGHT_DECAY: 0.00001
  WARMUP_EPOCHS: 5  
  DECAY_EPOCHS: 10
- OPT_NAME: 'SGD'
+ OPT_NAME: 'Adam'
  EPS: 0.00000001
  BETAS: [0.9, 0.999]
  MOMENTUM: 0.9
  FREQ_EVAL: 5
  SCH_NAME: 'step'
- LR_DECAY: 0.9
+ LR_DECAY: 0.8 
  USE_EMA: True
  EMA_DECAY: 0.999
  EVAL_STEP: 512
  EVAL_STEP_SUP: 15
  CLS_WEIGHT: True
- THRES: 0.9
+ THRES: 0.95
  T: 1.0
  LAMBDA_U: 1
- LAMBDA_C: 2
+ LAMBDA_C: 4
  SAVE_CP: '/kaggle/working/'
