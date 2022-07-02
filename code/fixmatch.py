@@ -210,8 +210,17 @@ class FixMatch:
     
         self.model.load_state_dict(checkpoint['model_state_dict'])
         if is_train:
-            for parameter in self.model.parameters():
-                parameter.requires_grad = True
+            if self.config.TRAIN.IS_FREEZE:
+                print('Freeze backbone')
+                for parameter in self.model.parameters():
+                    parameter.requires_grad = False
+                if self.config.MODEL.NAME == 'densenet161':
+                    self.model.classifier.requires_grad_(True)
+                else:
+                    self.model.fc.requires_grad_(True)
+            else:
+                for parameter in self.model.parameters():
+                    parameter.requires_grad = True
         else:
             for parameter in self.model.parameters():
                 parameter.requires_grad = False
