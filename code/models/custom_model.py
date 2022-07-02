@@ -97,6 +97,15 @@ from models.conformer import Conformer
 #             x_local_cls = self.model_swin(x_crop)
 #             return x_global_cls, x_local_cls
 
+def build_head(in_fts, out_fts):
+    head = nn.Sequential(nn.Linear(in_fts, in_fts//4), 
+                        nn.ReLU(), 
+                        nn.Dropout(0.2), 
+                        nn.BatchNorm1d(in_fts//4), 
+                        nn.Linear(in_fts//4, out_fts)
+                        )   
+
+    return head
 
 class ModelMargin(nn.Module):
     def __init__(self, model_name, pretrained, num_classes):
@@ -136,12 +145,14 @@ class ModelwEmb(nn.Module):
         ## transfer
         if model_name == 'densenet161':
             in_fts = self.model.classifier.in_features
-            self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
+            # self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
+            self.model.classifier = build_head(in_fts, num_classes)
             self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
             self.classifier = self.model.classifier
         else:
             in_fts = self.model.fc.in_features
-            self.model.fc = nn.Linear(in_fts, num_classes, bias=False)
+            # self.model.fc = nn.Linear(in_fts, num_classes, bias=False)
+            self.model.fc = build_head(in_fts, num_classes)
             self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
             self.fc = self.model.fc
 

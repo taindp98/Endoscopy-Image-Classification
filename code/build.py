@@ -20,21 +20,6 @@ from torchvision import models
 from fastai.layers import PooledSelfAttention2d
 
 
-def build_head(in_fts, out_fts):
-    head = nn.Sequential(
-                        # PooledSelfAttention2d(in_fts), 
-                        # nn.AdaptiveAvgPool2d(1), 
-                        # nn.Flatten(),
-                        # nn.Dropout(0.5), 
-                        nn.Linear(in_fts, in_fts//4), 
-                        nn.ReLU(), 
-                        nn.Dropout(0.25), 
-                        nn.BatchNorm1d(in_fts//4), 
-                        nn.Linear(in_fts//4, out_fts)
-                        )   
-
-    return head
-
 
 def build_model(config, is_pathology = True):
     model_name = config.MODEL.NAME

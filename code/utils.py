@@ -133,3 +133,6 @@ def resize_aspect_ratio(img, size, interp=cv2.INTER_LINEAR):
         new_h = size
         new_w = w*new_h//h
     return cv2.resize(img, (new_w, new_h), interpolation=interp)
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)

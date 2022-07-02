@@ -13,7 +13,7 @@ import timm
 import argparse
 import torch.nn.functional as F
 
-from utils import show_batch, AverageMeter, show_grid, get_config
+from utils import show_batch, AverageMeter, show_grid, get_config, count_parameters
 from fixmatch import FixMatch
 from comatch import CoMatch
 from supervised import SupLearning
@@ -53,6 +53,8 @@ def main():
         if idx == 0:
             print('Build up model')
             model = build_model(config, is_pathology = True)
+
+        print(f"Total Trainable Params: {count_parameters(model)}")
 
         if config.TRAIN.IS_SSL:
             if config.MODEL.TYPE_SEMI == 'FixMatch':
