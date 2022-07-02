@@ -16,6 +16,7 @@ MODEL:
  NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
+ PRE_TRAIN_RESUME: '/kaggle/input/temp-cp/07_02_2022_11_40_36_epoch_10_size_224_ite_3.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: False
@@ -23,7 +24,7 @@ MODEL:
 TRAIN:
  IS_FREEZE: True
  IS_SSL: True
- EPOCHS: 150
+ EPOCHS: 20
  BASE_LR: 0.001
  WARMUP_LR: 0.0005
  WEIGHT_DECAY: 0.00001

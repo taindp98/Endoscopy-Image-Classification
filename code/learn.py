@@ -76,7 +76,9 @@ def main():
         
         classifier.get_dataloader(train_dl, valid_dl)
         classifier.get_config(config)
-
+        if config.TRAIN.PRE_TRAIN_RESUME != 'None':
+            print('Resume training')
+            classifier.load_checkpoint(config.TRAIN.PRE_TRAIN_RESUME, is_train = True)
         classifier.fit()
 
 if __name__ == '__main__':
