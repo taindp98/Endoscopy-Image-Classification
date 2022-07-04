@@ -78,9 +78,24 @@ def show_batch(inp, title=None):
         plt.title(title)
     plt.pause(0.001)
 
+def show_imgs(list_fnames):
+    fig=plt.figure(figsize=(20,7))
+    rows = 2
+    columns = len(list_fnames)//rows
+    k = 0
+    for i in range(0, rows):
+        for j in range(0, columns):
+            img = cv2.imread(list_fnames[k])
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+            fig.add_subplot(rows, columns, k+1)
+            plt.imshow(img)
+            plt.axis('off')
+            k += 1
+
 def show_grid(list_imgs):
     fig=plt.figure(figsize=(20,7))
-    rows = 1
+    rows = 2
     columns = len(list_imgs)//rows
     k = 0
     for i in range(0, rows):
