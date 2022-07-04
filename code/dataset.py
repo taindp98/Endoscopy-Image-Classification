@@ -310,7 +310,6 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     print('Training mode: Full labeled and unlabeled data')
                     train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
                     ## dataframe unlabeled
-                    df_unlabeled = df_unanno[df_unanno['pred']==1].sample(n=10000, random_state = 42)
                     train_unlabeled_ds = GIDataset(df = df_unlabeled, 
                                                     config = config, 
                                                     transforms = get_transform(config, is_train=True, is_labeled=False, type_semi = type_semi), 
