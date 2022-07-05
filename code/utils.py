@@ -95,7 +95,7 @@ def show_imgs(list_fnames):
 
 def show_grid(list_imgs):
     fig=plt.figure(figsize=(20,7))
-    rows = 2
+    rows = 1
     columns = len(list_imgs)//rows
     k = 0
     for i in range(0, rows):

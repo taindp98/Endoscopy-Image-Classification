@@ -24,11 +24,11 @@ class SupLearning:
         ## init
         self.epoch_start = 1
         self.best_valid_perf = None
-    def get_dataloader(self, train_dl, valid_dl, test_dl = None):
+    def get_dataloader(self, train_dl, valid_dl, mixup_fn, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
         self.test_dl = test_dl
-
+        self.mixup_fn = mixup_fn
     def get_config(self, config):
         self.config = config
         print('Training mode: Supervised Learning')
@@ -77,6 +77,8 @@ class SupLearning:
                 ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
                 losses = ce_losses + triplet_losses
             else:
+                if self.mixup_fn is not None:
+                    images, targets = self.mixup_fn(images, targets)
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 

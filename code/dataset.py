@@ -1,4 +1,3 @@
-from tkinter import N
 from torchvision import transforms
 import numpy as np
 import torch
@@ -16,6 +15,8 @@ import os
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from utils import show_grid, show_batch
+from timm.data import Mixup
+
 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -268,6 +269,16 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
     df_valid = df_anno[df_anno['is_valid']==True]
     ## break down into labeled and unlabeled set
 
+    mixup_fn = None
+    if config.TRAIN.CUTMIX_MINMAX == 'None':
+        config.TRAIN.CUTMIX_MINMAX = None
+    mixup_active = config.TRAIN.MIXUP > 0 or config.TRAIN.CUTMIX > 0. or config.TRAIN.CUTMIX_MINMAX is not None
+    if mixup_active:
+        mixup_fn = Mixup(
+            mixup_alpha=config.TRAIN.MIXUP, cutmix_alpha=config.TRAIN.CUTMIX, cutmix_minmax=config.TRAIN.CUTMIX_MINMAX,
+            prob=config.TRAIN.MIXUP_PROB, switch_prob=config.TRAIN.MIXUP_SWITCH_PROB, mode=config.TRAIN.MIXUP_MODE,
+            label_smoothing=config.TRAIN.LABEL_SMOOTHING, num_classes=config.MODEL.NUM_CLASSES)
+
     if predict:
         unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config = config, is_train=False, is_labeled=False, type_semi = type_semi, is_reprod = is_reprod), is_unanno = True)
         
@@ -309,6 +320,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                 else:
                     print('Training mode: Full labeled and unlabeled data')
                     train_labeled_ds = GIDataset(df = df_train, config = config, transforms = get_transform(config, is_train=True), is_triplet = config.MODEL.IS_TRIPLET)
+                    
                     df_unlabeled = df_unanno[df_unanno['pred']==1]
                     train_unlabeled_ds = GIDataset(df = df_unlabeled, 
                                                     config = config, 
@@ -374,8 +386,10 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
                     show_grid([x[0][0,:,:], x[1][0,:,:], x[2][0,:,:]])
                 else:
                     show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
-                
-                show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])
+                    if mixup_fn is not None:
+                        x,y = mixup_fn(x,y)
+                    show_grid([x[0,:,:], x[1,:,:], x[2,:,:], x[3,:,:]])
+                # show_grid([x_vl[0,:,:], x_vl[1,:,:], x_vl[2,:,:], x_vl[3,:,:]])    
 
-    return train_dl, valid_dl
+    return train_dl, valid_dl, mixup_fn
 
