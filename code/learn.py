@@ -44,7 +44,7 @@ def main():
         df_anno = pd.read_csv(config['DATA']['ANNO'])
         df_unanno = pd.read_csv(config['DATA']['UNANNO'])
 
-        train_dl, valid_dl = get_data(config, 
+        train_dl, valid_dl, mixup_fn = get_data(config, 
                                     df_anno, 
                                     df_unanno, 
                                     is_full_sup = False, 
