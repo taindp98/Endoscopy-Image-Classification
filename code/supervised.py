@@ -132,6 +132,57 @@ class SupLearning:
         list_outputs = []
         list_targets = []
 
+        with torch.no_grad():
+            
+            tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
+            for step, (images, targets) in enumerate(tk0):
+                images = images.to(self.device, non_blocking=True)
+                targets = targets.to(self.device, non_blocking=True)
+                
+                if self.config.MODEL.NAME == 'conformer':
+                    ## out_conv and out_trans
+                    out_conv, out_trans = eval_model(images)
+                    outputs = out_trans + out_conv
+                elif self.config.MODEL.IS_TRIPLET:
+                    outputs, _ = eval_model(images)
+                else:
+                    outputs = eval_model(images)
+                losses = ce_loss(outputs, targets, reduction='mean')            
+                summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
+                tk0.set_postfix(loss=summary_loss.avg)
+                targets = targets.cpu().numpy()
+                outputs = F.softmax(outputs, dim=1)
+                outputs = outputs.cpu().numpy()
+                list_outputs += list(outputs)
+                list_targets += list(targets)
+            arr_outputs = np.array(list_outputs)
+            arr_outputs = np.argmax(arr_outputs, axis=1)
+            arr_targets = np.array(list_targets)
+            metric = calculate_metrics(arr_outputs, arr_targets, self.config)
+            if show_metric:
+                print('Metric:')
+                print(metric)
+            if show_report:
+                report = classification_report(arr_targets, arr_outputs)
+                print('Classification Report:')
+                print(report)
+            if show_cf_matrix:
+                show_cfs_matrix(arr_targets, arr_outputs)
+            return summary_loss, metric
+
+    def test_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
+
+        if self.config.TRAIN.USE_EMA:
+            eval_model = self.ema_model.ema
+        else:
+            eval_model = self.model
+
+        eval_model.eval()
+        
+        summary_loss = AverageMeter()
+        list_outputs = []
+        list_targets = []
+
         incorrect_examples = []
         incorrect_labels = []
         incorrect_pred = []
@@ -162,24 +213,7 @@ class SupLearning:
             arr_outputs = np.array(list_outputs)
             arr_outputs = np.argmax(arr_outputs, axis=1)
             arr_targets = np.array(list_targets)
-            metric = calculate_metrics(arr_outputs, arr_targets, self.config)
             idxs_mask = ((torch.tensor(arr_outputs) == torch.tensor(arr_targets).view_as(torch.tensor(arr_outputs)))==False).view(-1)
-            # if idxs_mask.numel():
-            #     incorrect_examples = list(images[idxs_mask])
-            #     incorrect_labels = list(arr_targets[idxs_mask]) #the corresponding target to the misclassified image
-            #     incorrect_pred = list(arr_outputs[idxs_mask]) #the corresponiding predicted class of the misclassified image
-            # list_titles = list(zip(incorrect_labels,incorrect_pred))       
-            # show_grid(incorrect_examples[:10], list_titles[:10])
-            if show_metric:
-                print('Metric:')
-                print(metric)
-            if show_report:
-                report = classification_report(arr_targets, arr_outputs)
-                print('Classification Report:')
-                print(report)
-            if show_cf_matrix:
-                show_cfs_matrix(arr_targets, arr_outputs)
-            # return summary_loss, metric
             return idxs_mask
 
     def inference(self, dl_test):
