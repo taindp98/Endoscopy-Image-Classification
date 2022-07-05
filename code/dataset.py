@@ -272,7 +272,7 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
     mixup_fn = None
     if config.TRAIN.CUTMIX_MINMAX == 'None':
         config.TRAIN.CUTMIX_MINMAX = None
-    mixup_active = config.TRAIN.MIXUP > 0 or config.TRAIN.CUTMIX > 0. or config.TRAIN.CUTMIX_MINMAX is not None
+    mixup_active = config.TRAIN.MIXUP > 0. or config.TRAIN.CUTMIX > 0. or config.TRAIN.CUTMIX_MINMAX is not None
     if mixup_active:
         mixup_fn = Mixup(
             mixup_alpha=config.TRAIN.MIXUP, cutmix_alpha=config.TRAIN.CUTMIX, cutmix_minmax=config.TRAIN.CUTMIX_MINMAX,
