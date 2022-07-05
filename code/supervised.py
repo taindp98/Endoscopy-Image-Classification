@@ -55,7 +55,7 @@ class SupLearning:
          # smoothing is handled with mixup label transform
             self.criterion = SoftTargetCrossEntropy()
         elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingCrossEntropy(smoothing=config.TRAIN.LABEL_SMOOTHING)
+            self.criterion = LabelSmoothingCrossEntropy(config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
             self.criterion = torch.nn.CrossEntropyLoss()
         print('Loss fnc: ', self.criterion)
