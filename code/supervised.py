@@ -14,6 +14,7 @@ import os
 import numpy as np
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
+from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 
 class SupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -49,6 +50,14 @@ class SupLearning:
 
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
         self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
+
+        if self.config.TRAIN.MIXUP > 0.:
+         # smoothing is handled with mixup label transform
+            self.criterion = SoftTargetCrossEntropy()
+        elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
+            self.criterion = LabelSmoothingCrossEntropy(smoothing=config.MODEL.LABEL_SMOOTHING)
+        else:
+            self.criterion = torch.nn.CrossEntropyLoss()
 
     def train_one(self, epoch):
         self.model.train()
@@ -93,7 +102,7 @@ class SupLearning:
                         losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
                     else:
                         outputs = self.model(images)
-                        losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
+                        losses = self.criterion(outputs, targets)
             
             self.optimizer.zero_grad()
 
