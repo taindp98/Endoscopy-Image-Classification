@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingCrossEntropy
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -15,7 +15,6 @@ import numpy as np
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
 from timm.loss import SoftTargetCrossEntropy
-from fastai.metrics import LabelSmoothingCrossEntropy 
 
 class FixMatch:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
