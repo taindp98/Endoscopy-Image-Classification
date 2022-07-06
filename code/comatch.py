@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -93,6 +93,15 @@ class CoMatch:
         # for distribution alignment
         self.prob_list = []
 
+        if self.config.TRAIN.MIXUP > 0.:
+         # smoothing is handled with mixup label transform
+            self.criterion = SoftTargetCrossEntropy()
+        elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
+            self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
+        else:
+            self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
+        print('Loss fnc: ', self.criterion)
+
     def train_one(self, epoch):
         self.model.train()
         dl_x = iter(self.train_labeled_dl)
@@ -134,7 +143,8 @@ class CoMatch:
             feats_x = features[:bt]
             feats_u_w, feats_u_s0, feats_u_s1 = torch.split(features[bt:], btu)
 
-            loss_x = ce_loss(logits_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
+            # loss_x = ce_loss(logits_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
+            loss_x = self.criterion(logits_x, targets_x)
 
             with torch.no_grad():
                 logits_u_w = logits_u_w.detach()
@@ -230,14 +240,6 @@ class CoMatch:
                 targets = targets.to(self.device, non_blocking=True)
                 
                 outputs, _ = eval_model(images)
-                if self.config.MODEL.NAME == 'conformer':
-                    ## out_conv and out_trans
-                    out_conv, out_trans = outputs
-                    del outputs
-                    outputs = out_conv + out_trans 
-                    # loss_conv = ce_loss(out_conv, targets, reduction='mean')            
-                    # loss_trans = ce_loss(out_trans, targets, reduction='mean')            
-                    # losses = loss_conv + loss_trans
                 
                 losses = ce_loss(outputs, targets, reduction='mean')            
 

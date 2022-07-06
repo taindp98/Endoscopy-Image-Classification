@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
