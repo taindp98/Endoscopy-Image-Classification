@@ -83,7 +83,8 @@ class SupLearning:
                 pos_fts, neg_fts = torch.split(features[bs:], bs)
 
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
-                ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
+                # ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
+                ce_losses = self.criterion(anchor_logits, targets)
                 losses = ce_losses + triplet_losses
             else:
                 if self.mixup_fn is not None:
@@ -91,18 +92,12 @@ class SupLearning:
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
-                if self.config.MODEL.NAME == 'conformer':
-                    ## out_conv and out_trans
-                    out_conv, out_trans = self.model(images)
-                    outputs = out_trans + out_conv
-                    losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean')
+                if self.config.MODEL.MARGIN != 'None':
+                    fts = self.model.backbone(images)
+                    losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
                 else:
-                    if self.config.MODEL.MARGIN != 'None':
-                        fts = self.model.backbone(images)
-                        losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
-                    else:
-                        outputs = self.model(images)
-                        losses = self.criterion(outputs, targets)
+                    outputs = self.model(images)
+                    losses = self.criterion(outputs, targets)
             
             self.optimizer.zero_grad()
 
