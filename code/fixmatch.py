@@ -14,7 +14,8 @@ import os
 import numpy as np
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
-from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
+from timm.loss import SoftTargetCrossEntropy
+from fastai.metrics import LabelSmoothingCrossEntropy 
 
 class FixMatch:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -73,7 +74,7 @@ class FixMatch:
          # smoothing is handled with mixup label transform
             self.criterion = SoftTargetCrossEntropy()
         elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingCrossEntropy(config.TRAIN.LABEL_SMOOTHING)
+            self.criterion = LabelSmoothingCrossEntropy(eps = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weight)
         else:
             self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
         print('Loss fnc: ', self.criterion)
