@@ -74,7 +74,7 @@ class FixMatch:
          # smoothing is handled with mixup label transform
             self.criterion = SoftTargetCrossEntropy()
         elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingCrossEntropy(eps = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weight)
+            self.criterion = LabelSmoothingCrossEntropy(eps = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
             self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
         print('Loss fnc: ', self.criterion)
