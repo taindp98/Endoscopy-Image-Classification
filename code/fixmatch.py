@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingCrossEntropy
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -73,7 +73,7 @@ class FixMatch:
          # smoothing is handled with mixup label transform
             self.criterion = SoftTargetCrossEntropy()
         elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingCrossEntropy(eps = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
+            self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
             self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
         print('Loss fnc: ', self.criterion)

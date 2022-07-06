@@ -2,38 +2,38 @@ import torch.nn.functional as F
 import torch
 import math
 import torch.nn as nn
-from __future__ import annotations
-from fastai.imports import *
-from fastai.torch_imports import *
-from fastai.torch_core import *
-from fastai.layers import *
-#|export
-class LabelSmoothingCrossEntropy(Module):
-    y_int = True # y interpolation
-    def __init__(self, 
-        eps:float=0.1, # The weight for the interpolation formula
-        weight:Tensor=None, # Manual rescaling weight given to each class passed to `F.nll_loss`
-        reduction:str='mean' # PyTorch reduction to apply to the output
-    ): 
-        store_attr()
 
-    def forward(self, output:Tensor, target:Tensor) -> Tensor:
-        "Apply `F.log_softmax` on output then blend the loss/num_classes(`c`) with the `F.nll_loss`"
-        c = output.size()[1]
-        log_preds = F.log_softmax(output, dim=1)
-        if self.reduction=='sum': loss = -log_preds.sum()
-        else:
-            loss = -log_preds.sum(dim=1) #We divide by that size at the return line so sum and not mean
-            if self.reduction=='mean':  loss = loss.mean()
-        return loss*self.eps/c + (1-self.eps) * F.nll_loss(log_preds, target.long(), weight=self.weight, reduction=self.reduction)
+class LabelSmoothingLoss(torch.nn.Module):
+    def __init__(self, epsilon: float = 0.1, 
+                 reduction="mean", weight=None):
+        super(LabelSmoothingLoss, self).__init__()
+        self.epsilon   = epsilon
+        self.reduction = reduction
+        self.weight    = weight
 
-    def activation(self, out:Tensor) -> Tensor: 
-        "`F.log_softmax`'s fused activation function applied to model output"
-        return F.softmax(out, dim=-1)
-    
-    def decodes(self, out:Tensor) -> Tensor:
-        "Converts model output to target format"
-        return out.argmax(dim=-1)
+    def reduce_loss(self, loss):
+        return loss.mean() if self.reduction == 'mean' else loss.sum() \
+         if self.reduction == 'sum' else loss
+
+    def linear_combination(self, i, j):
+        return (1 - self.epsilon) * i + self.epsilon * j
+
+    def forward(self, predict_tensor, target):
+        assert 0 <= self.epsilon < 1
+
+        if self.weight is not None:
+            self.weight = self.weight.to(predict_tensor.device)
+
+        num_classes = predict_tensor.size(-1)
+        
+        log_preds = F.log_softmax(predict_tensor, dim=-1)
+        
+        loss = self.reduce_loss(-log_preds.sum(dim=-1))
+        
+        negative_log_likelihood_loss = F.nll_loss(
+            log_preds, target, reduction=self.reduction, weight=self.weight
+        )
+        return self.linear_combination(negative_log_likelihood_loss, loss / num_classes,)
 
 def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none'):
     """
@@ -55,6 +55,9 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
 def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_hard_labels=True, device = None, loss_fc = None, fc = None):
     assert name in ['ce', 'L2']
     logits_w = logits_w.detach()
+
+    
+    
 
     if loss_fc and fc:
         pseudo_label = torch.softmax(logits_w, dim=-1)
