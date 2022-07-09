@@ -68,7 +68,6 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
     focal_loss = FocalLoss(gamma = 2, class_weights= class_weights, reduction= reduction)
     if use_hard_labels:
         # return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
-        print('Use focal loss: ', focal_loss)
         return focal_loss(logits, targets)
     else:
         assert logits.shape == targets.shape

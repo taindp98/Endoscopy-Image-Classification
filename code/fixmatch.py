@@ -76,7 +76,7 @@ class FixMatch:
             self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
             self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
-        print('Loss fnc: ', self.criterion)
+        print('Labeled data loss fnc: ', self.criterion)
 
     def train_one(self, epoch):
         self.model.train()
