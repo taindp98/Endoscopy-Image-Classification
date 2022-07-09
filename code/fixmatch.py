@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss, FocalLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -75,7 +75,8 @@ class FixMatch:
         elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
             self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
-            self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
+            # self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
+            self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
         print('Labeled data loss fnc: ', self.criterion)
 
     def train_one(self, epoch):
