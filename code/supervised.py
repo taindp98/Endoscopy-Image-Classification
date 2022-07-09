@@ -87,7 +87,7 @@ class SupLearning:
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
                 # ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
                 ce_losses = self.criterion(anchor_logits, targets)
-                losses = ce_losses + triplet_losses
+                losses = ce_losses + 2*triplet_losses
             else:
                 if self.mixup_fn is not None:
                     images, targets = self.mixup_fn(images, targets)
