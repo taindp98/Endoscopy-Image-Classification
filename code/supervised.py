@@ -59,7 +59,7 @@ class SupLearning:
             self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
             # self.criterion = torch.nn.CrossEntropyLoss()
-            self.criterion = FocalLoss(gamma = 2, class_weights= self.class_weights, reduction= 'mean')
+            self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
         print('Loss fnc: ', self.criterion)
     def train_one(self, epoch):
         self.model.train()
