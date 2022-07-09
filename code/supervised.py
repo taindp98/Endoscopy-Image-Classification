@@ -1,10 +1,11 @@
+# from code.loss import FocalLoss
 from utils import AverageMeter, calculate_metrics, AttrDict, show_cfs_matrix, show_batch, show_grid
 from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss, FocalLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -14,7 +15,7 @@ import os
 import numpy as np
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
-from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
+from timm.loss import SoftTargetCrossEntropy
 
 class SupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -55,9 +56,10 @@ class SupLearning:
          # smoothing is handled with mixup label transform
             self.criterion = SoftTargetCrossEntropy()
         elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingCrossEntropy(config.TRAIN.LABEL_SMOOTHING)
+            self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
         else:
-            self.criterion = torch.nn.CrossEntropyLoss()
+            # self.criterion = torch.nn.CrossEntropyLoss()
+            self.criterion = FocalLoss(gamma = 2, class_weights= self.class_weights, reduction= 'mean')
         print('Loss fnc: ', self.criterion)
     def train_one(self, epoch):
         self.model.train()

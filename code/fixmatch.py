@@ -98,6 +98,8 @@ class FixMatch:
                 unlabeled_iter = iter(self.train_unlabeled_dl)
                 (inputs_u_w, inputs_u_s), _ = unlabeled_iter.next()
 
+            
+
             bs_lb = inputs_x.shape[0]
             targets_x = targets_x.to(self.device, non_blocking=True)
             
