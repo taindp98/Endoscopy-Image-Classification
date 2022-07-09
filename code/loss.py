@@ -35,6 +35,27 @@ class LabelSmoothingLoss(torch.nn.Module):
         )
         return self.linear_combination(negative_log_likelihood_loss, loss / num_classes,)
 
+class FocalLoss(nn.Module):
+
+    def __init__(self, gamma=0, eps=1e-7, class_weights = None, reduction = 'none'):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.eps = eps
+        self.reduction = reduction
+        if class_weights != None:
+            self.ce = torch.nn.CrossEntropyLoss(weight=class_weights)
+        else:
+            self.ce = torch.nn.CrossEntropyLoss()
+
+    def forward(self, input, target):
+        logp = self.ce(input, target)
+        p = torch.exp(-logp)
+        loss = (1 - p) ** self.gamma * logp
+        if self.reduction == 'mean':
+            return loss.mean()
+        else:
+            return loss
+
 def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none'):
     """
     wrapper for cross entropy loss in pytorch.
@@ -44,8 +65,11 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
         targets: integer or vector, shape=[Batch size] or [Batch size, # of classes]
         use_hard_labels: If True, targets have [Batch size] shape with int values. If False, the target is vector (default True)
     """
+    focal_loss = FocalLoss(gamma = 2, class_weights= class_weights, reduction= reduction)
     if use_hard_labels:
-        return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
+        # return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
+        print('Use focal loss: ', focal_loss)
+        return focal_loss(logits, targets)
     else:
         assert logits.shape == targets.shape
         log_pred = F.log_softmax(logits, dim=-1)
@@ -56,8 +80,6 @@ def consistency_loss(logits_w, logits_s, name='ce', T=1.0, p_cutoff=0.0, use_har
     assert name in ['ce', 'L2']
     logits_w = logits_w.detach()
 
-    
-    
 
     if loss_fc and fc:
         pseudo_label = torch.softmax(logits_w, dim=-1)
@@ -120,22 +142,7 @@ class TripletLoss(nn.Module):
 
         return losses.sum(), d_p.mean(), d_n.mean()
         
-class FocalLoss(nn.Module):
 
-    def __init__(self, gamma=0, eps=1e-7, class_weights = None):
-        super(FocalLoss, self).__init__()
-        self.gamma = gamma
-        self.eps = eps
-        if class_weights != None:
-            self.ce = torch.nn.CrossEntropyLoss(weight=class_weights)
-        else:
-            self.ce = torch.nn.CrossEntropyLoss()
-
-    def forward(self, input, target):
-        logp = self.ce(input, target)
-        p = torch.exp(-logp)
-        loss = (1 - p) ** self.gamma * logp
-        return loss.mean()
 
 class AngularPenaltySMLoss(nn.Module):
 
