@@ -74,23 +74,23 @@ def build_model(config, is_pathology = True):
     elif model_name == 'conformer':
         if config.MODEL.PRE_TRAIN:
             ## tiny
-            # model = Conformer(patch_size=16, 
-            #             num_classes = 1000,
-            #             channel_ratio=1, 
-            #             embed_dim=384, 
-            #             depth=12,
-            #             num_heads=6, 
-            #             mlp_ratio=4, 
-            #             qkv_bias=True)
-            ## small patch 16
             model = Conformer(patch_size=16, 
                         num_classes = 1000,
-                        channel_ratio=4, 
+                        channel_ratio=1, 
                         embed_dim=384, 
                         depth=12,
                         num_heads=6, 
                         mlp_ratio=4, 
                         qkv_bias=True)
+            ## small patch 16
+            # model = Conformer(patch_size=16, 
+            #             num_classes = 1000,
+            #             channel_ratio=4, 
+            #             embed_dim=384, 
+            #             depth=12,
+            #             num_heads=6, 
+            #             mlp_ratio=4, 
+            #             qkv_bias=True)
 
             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
             if is_pathology:
@@ -115,13 +115,23 @@ def build_model(config, is_pathology = True):
             # model.trans_cls_head = nn.Linear(num_ftrs_trans, config.MODEL.NUM_CLASSES)
         else:
             model = Conformer(patch_size=16, 
-                        num_classes = config.MODEL.NUM_CLASSES,
-                        channel_ratio=4, 
+                        num_classes = 1000,
+                        channel_ratio=1, 
                         embed_dim=384, 
                         depth=12,
                         num_heads=6, 
                         mlp_ratio=4, 
                         qkv_bias=True)
+            ## small
+            # model = Conformer(patch_size=16, 
+            #             num_classes = config.MODEL.NUM_CLASSES,
+            #             channel_ratio=4, 
+            #             embed_dim=384, 
+            #             depth=12,
+            #             num_heads=6, 
+            #             mlp_ratio=4, 
+            #             qkv_bias=True)
+            
     else:
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)
