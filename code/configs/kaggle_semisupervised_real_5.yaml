@@ -13,12 +13,12 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50'
+ NAME: 'conformer'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
- PRE_TRAIN_RESUME: '/kaggle/input/temp-cp/07_02_2022_11_40_36_epoch_10_size_224_ite_3.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_small.pth'
+ PRE_TRAIN_RESUME: 'none'
  MARGIN: None
- TYPE_SEMI: 'CoMatch'
+ TYPE_SEMI: 'SemiFormer'
  IS_TRIPLET: False
  LOW_DIM: 64
 TRAIN:
@@ -53,4 +53,4 @@ TRAIN:
  MIXUP_PROB: 1.0
  MIXUP_SWITCH_PROB: 0.5
  MIXUP_MODE: 'batch'
- LABEL_SMOOTHING: 0.1
+ LABEL_SMOOTHING: 0.0

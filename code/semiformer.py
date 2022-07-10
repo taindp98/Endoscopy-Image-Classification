@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss
+from loss import ce_loss, consistency_loss, AngularPenaltySMLoss, TripletLoss, LabelSmoothingLoss, FocalLoss
 from optimizer import build_optimizer
 from lr_scheduler import build_scheduler
 import numpy as np
@@ -59,9 +59,7 @@ class SemiFormer:
 
             self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
         else:
-            self.class_weights = None
-        
-        self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
+            self.class_weights = None        
 
     def train_one(self, epoch):
         self.model.train()

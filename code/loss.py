@@ -65,7 +65,7 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
         targets: integer or vector, shape=[Batch size] or [Batch size, # of classes]
         use_hard_labels: If True, targets have [Batch size] shape with int values. If False, the target is vector (default True)
     """
-    focal_loss = FocalLoss(gamma = 2, class_weights= class_weights, reduction= reduction)
+    focal_loss = FocalLoss(gamma = 1, class_weights= class_weights, reduction= reduction)
     if use_hard_labels:
         # return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
         return focal_loss(logits, targets)
