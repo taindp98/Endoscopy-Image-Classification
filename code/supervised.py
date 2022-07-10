@@ -52,15 +52,15 @@ class SupLearning:
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
         self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
 
-        if self.config.TRAIN.MIXUP > 0.:
-         # smoothing is handled with mixup label transform
-            self.criterion = SoftTargetCrossEntropy()
-        elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
-        else:
-            # self.criterion = torch.nn.CrossEntropyLoss()
-            self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
-        print('Loss fnc: ', self.criterion)
+        # if self.config.TRAIN.MIXUP > 0.:
+        #  # smoothing is handled with mixup label transform
+        #     self.criterion = SoftTargetCrossEntropy()
+        # elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
+        #     self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
+        # else:
+        #     # self.criterion = torch.nn.CrossEntropyLoss()
+        #     self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
+        # print('Loss fnc: ', self.criterion)
     def train_one(self, epoch):
         self.model.train()
         
@@ -85,8 +85,8 @@ class SupLearning:
                 pos_fts, neg_fts = torch.split(features[bs:], bs)
 
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
-                # ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
-                ce_losses = self.criterion(anchor_logits, targets)
+                ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
+                # ce_losses = self.criterion(anchor_logits, targets)
                 losses = ce_losses + 2*triplet_losses
             else:
                 if self.mixup_fn is not None:
