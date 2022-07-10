@@ -1,6 +1,6 @@
 DATA:
  PATH: 'D:\data\endoscopic\hyper_kvasir\labeled_images'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -11,11 +11,10 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'densenet161'
+ NAME: 'resnet50cbam'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: 'D:\model\endoscopy\hyper_kvasir\sup_abnormal\sup_densenet161_abnormal_224.pth'
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
- TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: False
 TRAIN:
  IS_SSL: False
@@ -41,10 +40,10 @@ TRAIN:
  LAMBDA_U: 1.
  LAMBDA_C: 1.
  SAVE_CP: '/kaggle/working/'
- MIXUP: 0.8
- CUTMIX: 1.0
+ MIXUP: 0.0
+ CUTMIX: 0.0
  CUTMIX_MINMAX: None
- MIXUP_PROB: 1.0
- MIXUP_SWITCH_PROB: 0.5
+ MIXUP_PROB: 0.0
+ MIXUP_SWITCH_PROB: 0.0
  MIXUP_MODE: 'batch'
- LABEL_SMOOTHING: 0.1
+ LABEL_SMOOTHING: 0.0

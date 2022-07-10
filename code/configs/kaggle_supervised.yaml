@@ -11,9 +11,9 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50'
+ NAME: 'resnet50cbam'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: True
