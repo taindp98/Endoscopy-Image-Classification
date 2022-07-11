@@ -69,15 +69,15 @@ class FixMatch:
         
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
 
-        if self.config.TRAIN.MIXUP > 0.:
-         # smoothing is handled with mixup label transform
-            self.criterion = SoftTargetCrossEntropy()
-        elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
-        else:
-            # self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
-            self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
-        print('Labeled data loss fnc: ', self.criterion)
+        # if self.config.TRAIN.MIXUP > 0.:
+        #  # smoothing is handled with mixup label transform
+        #     self.criterion = SoftTargetCrossEntropy()
+        # elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
+        #     self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
+        # else:
+        #     # self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
+        #     self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
+        # print('Labeled data loss fnc: ', self.criterion)
 
     def train_one(self, epoch):
         self.model.train()
@@ -111,8 +111,8 @@ class FixMatch:
             
             outputs_u_w, outputs_u_s = outputs[bs_lb:].chunk(2)
 
-            # lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-            lx = self.criterion(outputs_x, targets_x)
+            lx = ce_loss(outputs_x, targets_x, class_weights = self.class_weights, reduction = 'mean', use_focal = True)
+            # lx = self.criterion(outputs_x, targets_x)
             lu, mask_mean = consistency_loss(outputs_u_w, outputs_u_s, T = self.config.TRAIN.T, p_cutoff = self.config.TRAIN.THRES, device = self.device)
 
             losses = lx + self.config.TRAIN.LAMBDA_U * lu
