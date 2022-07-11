@@ -99,7 +99,7 @@ class SupLearning:
                     losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
                 else:
                     outputs = self.model(images)
-                    losses = self.criterion(outputs, targets)
+                    losses = ce_loss(outputs, targets)
             
             self.optimizer.zero_grad()
 
@@ -136,11 +136,8 @@ class SupLearning:
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
-                if self.config.MODEL.NAME == 'conformer':
-                    ## out_conv and out_trans
-                    out_conv, out_trans = eval_model(images)
-                    outputs = out_trans + out_conv
-                elif self.config.MODEL.IS_TRIPLET:
+                
+                if self.config.MODEL.IS_TRIPLET:
                     outputs, _ = eval_model(images)
                 else:
                     outputs = eval_model(images)
