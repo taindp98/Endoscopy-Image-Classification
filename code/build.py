@@ -132,7 +132,19 @@ def build_model(config, is_pathology = True):
             #             mlp_ratio=4, 
             #             qkv_bias=True)
     elif model_name == 'resnet50cbam':
-        model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
+        if is_pathology:
+            model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", 2, "CBAM")
+            checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+            model.load_state_dict(checkpoint['model_state_dict'])
+            print('Loaded checkpoint abnormal')
+            in_fts = model.fc.in_features
+            print('Build up new head MLP')
+            model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+        else:
+            model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
+            print('Build up new head MLP')
+            model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+
     else:
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)

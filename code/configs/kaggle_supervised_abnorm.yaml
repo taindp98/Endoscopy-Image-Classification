@@ -12,7 +12,7 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 2
- NAME: 'resnet50'
+ NAME: 'resnet50cbam'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
@@ -39,3 +39,10 @@ TRAIN:
  THRES: 0.95
  RESUME: False
  SAVE_CP: '/kaggle/working/'
+ MIXUP: 0.
+ CUTMIX: 0.
+ CUTMIX_MINMAX: None
+ MIXUP_PROB: 1.0
+ MIXUP_SWITCH_PROB: 0.5
+ MIXUP_MODE: 'batch'
+ LABEL_SMOOTHING: 0.0
