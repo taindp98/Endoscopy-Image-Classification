@@ -12,8 +12,8 @@ import numpy as np
 import cv2
 from torchvision import transforms
 from models.conformer import Conformer
-from sasa import ResNetSASA
-from sasa import Bottleneck as BNSASA
+from models.sasa import ResNetSASA
+from models.sasa import Bottleneck as BNSASA
 
 # def reshape_transform(tensor, height=7, width=7):
 #     result = tensor.reshape(tensor.size(0),
