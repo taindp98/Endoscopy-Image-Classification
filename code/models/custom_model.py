@@ -138,7 +138,7 @@ class ModelwEmb(nn.Module):
         super().__init__()
         ## load pre-trained weight abnormality classification
         if model_name == 'resnet50sasa':
-            self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+            self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = 2)
             in_fts = self.model.fc.in_features
             self.model.fc = build_head(in_fts, num_classes)
         else:
