@@ -13,7 +13,7 @@ MODEL:
  NUM_CLASSES: 6
  NAME: 'resnet50cbam'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: 'None'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50cbam_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: False

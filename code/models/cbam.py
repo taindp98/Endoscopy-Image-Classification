@@ -57,7 +57,7 @@ class ChannelGate(nn.Module):
             else:
                 channel_att_sum = channel_att_sum + channel_att_raw
 
-        scale = F.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).expand_as(x)
+        scale = torch.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).expand_as(x)
         return x * scale
 
 def logsumexp_2d(tensor):
@@ -79,7 +79,7 @@ class SpatialGate(nn.Module):
     def forward(self, x):
         x_compress = self.compress(x)
         x_out = self.spatial(x_compress)
-        scale = F.sigmoid(x_out) # broadcasting
+        scale = torch.sigmoid(x_out) # broadcasting
         return x * scale
 
 class CBAM(nn.Module):
@@ -278,21 +278,21 @@ class ResNet(nn.Module):
         x = self.fc(x)
         return x
 
-def ResidualNet(network_type, depth, num_classes, att_type):
+# def ResidualNet(network_type, depth, num_classes, att_type):
 
-    assert network_type in ["ImageNet", "CIFAR10", "CIFAR100"], "network type should be ImageNet or CIFAR10 / CIFAR100"
-    assert depth in [18, 34, 50, 101], 'network depth should be 18, 34, 50 or 101'
+#     assert network_type in ["ImageNet", "CIFAR10", "CIFAR100"], "network type should be ImageNet or CIFAR10 / CIFAR100"
+#     assert depth in [18, 34, 50, 101], 'network depth should be 18, 34, 50 or 101'
 
-    if depth == 18:
-        model = ResNet(BasicBlock, [2, 2, 2, 2], network_type, num_classes, att_type)
+#     if depth == 18:
+#         model = ResNet(BasicBlock, [2, 2, 2, 2], network_type, num_classes, att_type)
 
-    elif depth == 34:
-        model = ResNet(BasicBlock, [3, 4, 6, 3], network_type, num_classes, att_type)
+#     elif depth == 34:
+#         model = ResNet(BasicBlock, [3, 4, 6, 3], network_type, num_classes, att_type)
 
-    elif depth == 50:
-        model = ResNet(Bottleneck, [3, 4, 6, 3], network_type, num_classes, att_type)
+#     elif depth == 50:
+#         model = ResNet(Bottleneck, [3, 4, 6, 3], network_type, num_classes, att_type)
 
-    elif depth == 101:
-        model = ResNet(Bottleneck, [3, 4, 23, 3], network_type, num_classes, att_type)
+#     elif depth == 101:
+#         model = ResNet(Bottleneck, [3, 4, 23, 3], network_type, num_classes, att_type)
 
-    return model
+#     return model
