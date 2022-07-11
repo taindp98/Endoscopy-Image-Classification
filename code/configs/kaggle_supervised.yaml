@@ -16,7 +16,7 @@ MODEL:
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
- IS_TRIPLET: True
+ IS_TRIPLET: False
 TRAIN:
  IS_SSL: False
  EPOCHS: 150
