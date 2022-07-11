@@ -18,7 +18,7 @@ from torch import nn
 from models.conformer import Conformer
 from torchvision import models
 from fastai.layers import PooledSelfAttention2d
-from models.cbam import ResNetCBAM, Bottleneck
+from models.cbam import ResNet, Bottleneck
 
 
 def build_model(config, is_pathology = True):
@@ -132,13 +132,7 @@ def build_model(config, is_pathology = True):
             #             mlp_ratio=4, 
             #             qkv_bias=True)
     elif model_name == 'resnet50cbam':
-        model = ResNetCBAM(block = Bottleneck,
-                           num_blocks=[3,4,6,3],
-                           num_classes=config.MODEL.NUM_CLASSES,
-                           reduction_ratio=1,
-                           kernel_cbam=3,
-                           use_cbam_block = False,
-                           use_cbam_class=False)
+        model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
     else:
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)

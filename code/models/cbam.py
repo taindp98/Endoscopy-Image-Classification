@@ -1,313 +1,298 @@
-'''ResNet in PyTorch.
-
-For Pre-activation ResNet, see 'preact_resnet.py'.
-
-Reference:
-[1] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
-    Deep Residual Learning for Image Recognition. arXiv:1512.03385
-'''
-
-# taken from https://github.com/kuangliu/pytorch-cifar
 import torch
+import math
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import init
 
-# from src.models.models.cbam import CBAM
-
-import torch.nn as nn   
-import torch
-import torch.nn.functional as F
-
-
-
-class CBAM(nn.Module):
-
-    def __init__(self, n_channels_in, reduction_ratio, kernel_size):
-        super(CBAM, self).__init__()
-        self.n_channels_in = n_channels_in
-        self.reduction_ratio = reduction_ratio
-        self.kernel_size = kernel_size
-
-        self.channel_attention = ChannelAttention(n_channels_in, reduction_ratio)
-        self.spatial_attention = SpatialAttention(kernel_size)
-
-    def forward(self, f):
-        chan_att = self.channel_attention(f)
-        # print(chan_att.size())
-        fp = chan_att * f
-        # print(fp.size())
-        spat_att = self.spatial_attention(fp)
-        # print(spat_att.size())
-        fpp = spat_att * fp
-        # print(fpp.size())
-        return fpp
-
-
-class SpatialAttention(nn.Module):
-    def __init__(self, kernel_size):
-        super(SpatialAttention, self).__init__()
-        self.kernel_size = kernel_size
-
-        assert kernel_size % 2 == 1, "Odd kernel size required"
-        self.conv = nn.Conv2d(in_channels = 2, out_channels = 1, kernel_size = kernel_size, padding= int((kernel_size-1)/2))
-        # batchnorm
+class BasicConv(nn.Module):
+    def __init__(self, in_planes, out_planes, kernel_size, stride=1, padding=0, dilation=1, groups=1, relu=True, bn=True, bias=False):
+        super(BasicConv, self).__init__()
+        self.out_channels = out_planes
+        self.conv = nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation, groups=groups, bias=bias)
+        self.bn = nn.BatchNorm2d(out_planes,eps=1e-5, momentum=0.01, affine=True) if bn else None
+        self.relu = nn.ReLU() if relu else None
 
     def forward(self, x):
-        max_pool = self.agg_channel(x, "max")
-        avg_pool = self.agg_channel(x, "avg")
-        pool = torch.cat([max_pool, avg_pool], dim = 1)
-        conv = self.conv(pool)
-        # batchnorm ????????????????????????????????????????????
-        conv = conv.repeat(1,x.size()[1],1,1)
-        att = torch.sigmoid(conv)        
-        return att
-
-    def agg_channel(self, x, pool = "max"):
-        b,c,h,w = x.size()
-        x = x.view(b, c, h*w)
-        x = x.permute(0,2,1)
-        if pool == "max":
-            x = F.max_pool1d(x,c)
-        elif pool == "avg":
-            x = F.avg_pool1d(x,c)
-        x = x.permute(0,2,1)
-        x = x.view(b,1,h,w)
+        x = self.conv(x)
+        if self.bn is not None:
+            x = self.bn(x)
+        if self.relu is not None:
+            x = self.relu(x)
         return x
 
-
-class ChannelAttention(nn.Module):
-    def __init__(self, n_channels_in, reduction_ratio):
-        super(ChannelAttention, self).__init__()
-        self.n_channels_in = n_channels_in
-        self.reduction_ratio = reduction_ratio
-        self.middle_layer_size = int(self.n_channels_in/ float(self.reduction_ratio))
-
-        self.bottleneck = nn.Sequential(
-            nn.Linear(self.n_channels_in, self.middle_layer_size),
-            nn.ReLU(),
-            nn.Linear(self.middle_layer_size, self.n_channels_in)
-        )
-
-
+class Flatten(nn.Module):
     def forward(self, x):
-        kernel = (x.size()[2], x.size()[3])
-        avg_pool = F.avg_pool2d(x, kernel )
-        max_pool = F.max_pool2d(x, kernel)
+        return x.view(x.size(0), -1)
 
-        
-        avg_pool = avg_pool.view(avg_pool.size()[0], -1)
-        max_pool = max_pool.view(max_pool.size()[0], -1)
-        
+class ChannelGate(nn.Module):
+    def __init__(self, gate_channels, reduction_ratio=16, pool_types=['avg', 'max']):
+        super(ChannelGate, self).__init__()
+        self.gate_channels = gate_channels
+        self.mlp = nn.Sequential(
+            Flatten(),
+            nn.Linear(gate_channels, gate_channels // reduction_ratio),
+            nn.ReLU(),
+            nn.Linear(gate_channels // reduction_ratio, gate_channels)
+            )
+        self.pool_types = pool_types
+    def forward(self, x):
+        channel_att_sum = None
+        for pool_type in self.pool_types:
+            if pool_type=='avg':
+                avg_pool = F.avg_pool2d( x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
+                channel_att_raw = self.mlp( avg_pool )
+            elif pool_type=='max':
+                max_pool = F.max_pool2d( x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
+                channel_att_raw = self.mlp( max_pool )
+            elif pool_type=='lp':
+                lp_pool = F.lp_pool2d( x, 2, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
+                channel_att_raw = self.mlp( lp_pool )
+            elif pool_type=='lse':
+                # LSE pool only
+                lse_pool = logsumexp_2d(x)
+                channel_att_raw = self.mlp( lse_pool )
 
-        avg_pool_bck = self.bottleneck(avg_pool)
-        max_pool_bck = self.bottleneck(max_pool)
+            if channel_att_sum is None:
+                channel_att_sum = channel_att_raw
+            else:
+                channel_att_sum = channel_att_sum + channel_att_raw
 
-        pool_sum = avg_pool_bck + max_pool_bck
+        scale = F.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).expand_as(x)
+        return x * scale
 
-        sig_pool = torch.sigmoid(pool_sum)
-        sig_pool = sig_pool.unsqueeze(2).unsqueeze(3)
+def logsumexp_2d(tensor):
+    tensor_flatten = tensor.view(tensor.size(0), tensor.size(1), -1)
+    s, _ = torch.max(tensor_flatten, dim=2, keepdim=True)
+    outputs = s + (tensor_flatten - s).exp().sum(dim=2, keepdim=True).log()
+    return outputs
 
-        out = sig_pool.repeat(1,1,kernel[0], kernel[1])
-        return out
+class ChannelPool(nn.Module):
+    def forward(self, x):
+        return torch.cat( (torch.max(x,1)[0].unsqueeze(1), torch.mean(x,1).unsqueeze(1)), dim=1 )
 
+class SpatialGate(nn.Module):
+    def __init__(self):
+        super(SpatialGate, self).__init__()
+        kernel_size = 7
+        self.compress = ChannelPool()
+        self.spatial = BasicConv(2, 1, kernel_size, stride=1, padding=(kernel_size-1) // 2, relu=False)
+    def forward(self, x):
+        x_compress = self.compress(x)
+        x_out = self.spatial(x_compress)
+        scale = F.sigmoid(x_out) # broadcasting
+        return x * scale
+
+class CBAM(nn.Module):
+    def __init__(self, gate_channels, reduction_ratio=16, pool_types=['avg', 'max'], no_spatial=False):
+        super(CBAM, self).__init__()
+        self.ChannelGate = ChannelGate(gate_channels, reduction_ratio, pool_types)
+        self.no_spatial=no_spatial
+        if not no_spatial:
+            self.SpatialGate = SpatialGate()
+    def forward(self, x):
+        x_out = self.ChannelGate(x)
+        if not self.no_spatial:
+            x_out = self.SpatialGate(x_out)
+        return x_out
+
+
+
+
+
+def conv3x3(in_planes, out_planes, stride=1):
+    "3x3 convolution with padding"
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
+                     padding=1, bias=False)
 
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, in_planes, planes, stride=1, reduction_ratio = 1, kernel_cbam = 3, use_cbam = False):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, use_cbam=False):
         super(BasicBlock, self).__init__()
-        self.use_cbam = use_cbam
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
+        self.downsample = downsample
+        self.stride = stride
 
-        if self.use_cbam:
-            self.cbam = CBAM(n_channels_in = self.expansion*planes, reduction_ratio = reduction_ratio, kernel_size = kernel_cbam)
-
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion*planes)
-            )
-
+        if use_cbam:
+            self.cbam = CBAM( planes, 16 )
+        else:
+            self.cbam = None
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
+        residual = x
 
-        #cbam
-        if self.use_cbam:
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        if not self.cbam is None:
             out = self.cbam(out)
 
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
+        out += residual
+        out = self.relu(out)
 
+        return out
 
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, in_planes, planes, stride=1, reduction_ratio = 1, kernel_cbam = 3, use_cbam = False):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, use_cbam=False):
         super(Bottleneck, self).__init__()
-        self.use_cbam = use_cbam
-
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=1, bias=False)
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, self.expansion*planes, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(self.expansion*planes)
+        self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes * 4)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
 
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion*planes)
-            )
-
-        if self.use_cbam:
-            self.cbam = CBAM(n_channels_in = self.expansion*planes, reduction_ratio = reduction_ratio, kernel_size = kernel_cbam)
+        if use_cbam:
+            self.cbam = CBAM( planes * 4, 16 )
+        else:
+            self.cbam = None
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = F.relu(self.bn2(self.conv2(out)))
-        out = self.bn3(self.conv3(out))
+        residual = x
 
-        #cbam
-        if self.use_cbam:
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        if not self.cbam is None:
             out = self.cbam(out)
 
-        out += self.shortcut(x)
-        out = F.relu(out)
-        
+        out += residual
+        out = self.relu(out)
+
         return out
 
+class ResNet(nn.Module):
+    def __init__(self, block, layers,  network_type, num_classes, att_type=None):
+        self.inplanes = 64
+        super(ResNet, self).__init__()
+        self.network_type = network_type
+        # different model config between ImageNet and CIFAR 
+        if network_type == "ImageNet":
+            self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+            self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            self.avgpool = nn.AvgPool2d(7)
+        else:
+            self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
 
-class ResNetCBAM(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, reduction_ratio = 1, kernel_cbam = 3, use_cbam_block= False, use_cbam_class = False):
-        super(ResNetCBAM, self).__init__()
-        self.in_planes = 64
-        self.reduction_ratio = reduction_ratio
-        self.kernel_cbam = kernel_cbam
-        self.use_cbam_block = use_cbam_block
-        self.use_cbam_class = use_cbam_class
-
-        print(use_cbam_block, use_cbam_class)
-
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
-        self.linear = nn.Linear(512*block.expansion, num_classes)
+        self.relu = nn.ReLU(inplace=True)
 
-        if self.use_cbam_class:
-            self.cbam = CBAM(n_channels_in = 512*block.expansion, reduction_ratio = reduction_ratio, kernel_size = kernel_cbam)
+        if att_type=='BAM':
+            self.bam1 = BAM(64*block.expansion)
+            self.bam2 = BAM(128*block.expansion)
+            self.bam3 = BAM(256*block.expansion)
+        else:
+            self.bam1, self.bam2, self.bam3 = None, None, None
 
+        self.layer1 = self._make_layer(block, 64,  layers[0], att_type=att_type)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, att_type=att_type)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, att_type=att_type)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, att_type=att_type)
 
-    def _make_layer(self, block, planes, num_blocks, stride):
-        strides = [stride] + [1]*(num_blocks-1)
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
+
+        init.kaiming_normal(self.fc.weight)
+        for key in self.state_dict():
+            if key.split('.')[-1]=="weight":
+                if "conv" in key:
+                    init.kaiming_normal(self.state_dict()[key], mode='fan_out')
+                if "bn" in key:
+                    if "SpatialGate" in key:
+                        self.state_dict()[key][...] = 0
+                    else:
+                        self.state_dict()[key][...] = 1
+            elif key.split(".")[-1]=='bias':
+                self.state_dict()[key][...] = 0
+
+    def _make_layer(self, block, planes, blocks, stride=1, att_type=None):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+
         layers = []
-        for stride in strides:
-            layers.append(block(self.in_planes, planes, stride, self.reduction_ratio, self.kernel_cbam, self.use_cbam_block))
-            self.in_planes = planes * block.expansion
+        layers.append(block(self.inplanes, planes, stride, downsample, use_cbam=att_type=='CBAM'))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes, use_cbam=att_type=='CBAM'))
+
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.layer4(out)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.network_type == "ImageNet":
+            x = self.maxpool(x)
 
-        if self.use_cbam_class:
-            out = out  + self.cbam(out)
+        x = self.layer1(x)
+        if not self.bam1 is None:
+            x = self.bam1(x)
 
-        out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
+        x = self.layer2(x)
+        if not self.bam2 is None:
+            x = self.bam2(x)
 
-        out = self.linear(out)
+        x = self.layer3(x)
+        if not self.bam3 is None:
+            x = self.bam3(x)
 
-        return out
+        x = self.layer4(x)
 
+        if self.network_type == "ImageNet":
+            x = self.avgpool(x)
+        else:
+            x = F.avg_pool2d(x, 4)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
 
+def ResidualNet(network_type, depth, num_classes, att_type):
 
+    assert network_type in ["ImageNet", "CIFAR10", "CIFAR100"], "network type should be ImageNet or CIFAR10 / CIFAR100"
+    assert depth in [18, 34, 50, 101], 'network depth should be 18, 34, 50 or 101'
 
-# def ResNet18(reduction_ratio = 1, kernel_cbam = 3, use_cbam_block = False, use_cbam_class = False):
-#     print(kernel_cbam)
-#     return ResNet(
-#                 BasicBlock, 
-#                 [2,2,2,2], 
-#                 reduction_ratio= reduction_ratio,
-#                 kernel_cbam = kernel_cbam,
-#                 use_cbam_block= use_cbam_block,
-#                 use_cbam_class = use_cbam_class
-#                 )
+    if depth == 18:
+        model = ResNet(BasicBlock, [2, 2, 2, 2], network_type, num_classes, att_type)
 
-# def ResNet34(reduction_ratio = 1, kernel_cbam = 3, use_cbam_block = False, use_cbam_class = False):
-#     return ResNet(
-#         BasicBlock,
-#         [3,4,6,3],
-#         reduction_ratio= reduction_ratio, 
-#         kernel_cbam = kernel_cbam, 
-#         use_cbam_block= use_cbam_block,
-#         use_cbam_class = use_cbam_class
-#         )
+    elif depth == 34:
+        model = ResNet(BasicBlock, [3, 4, 6, 3], network_type, num_classes, att_type)
 
-# def ResNet50(reduction_ratio = 1, kernel_cbam = 3, use_cbam_block = False, use_cbam_class = False):
-#     return ResNet(
-#         Bottleneck, 
-#         [3,4,6,3], 
-#         reduction_ratio= reduction_ratio, 
-#         kernel_cbam = kernel_cbam, 
-#         use_cbam_block= use_cbam_block,
-#         use_cbam_class = use_cbam_class
-#         )
+    elif depth == 50:
+        model = ResNet(Bottleneck, [3, 4, 6, 3], network_type, num_classes, att_type)
 
-# def ResNet101(reduction_ratio = 1, kernel_cbam = 3, use_cbam_block = False, use_cbam_class = False):
-#     return ResNet(
-#         Bottleneck, 
-#         [3,4,23,3], 
-#         reduction_ratio= reduction_ratio, 
-#         kernel_cbam = kernel_cbam, 
-#         use_cbam_block= use_cbam_block,
-#         use_cbam_class = use_cbam_class
-#         )
+    elif depth == 101:
+        model = ResNet(Bottleneck, [3, 4, 23, 3], network_type, num_classes, att_type)
 
-# def ResNet152(reduction_ratio = 1, kernel_cbam = 3, use_cbam_block = False, use_cbam_class = False):
-#     return ResNet(
-#         Bottleneck, 
-#         [3,8,36,3], 
-#         reduction_ratio= reduction_ratio, 
-#         kernel_cbam = kernel_cbam, 
-#         use_cbam_block= use_cbam_block,
-#         use_cbam_class = use_cbam_class
-#         )
-
-# def ResNetk(k, reduction_ratio = 1, kernel_cbam = 3, use_cbam_block = False, use_cbam_class = False ):
-#     possible_depth = [18,34,50,101,152]
-#     assert k in possible_depth, "Choose a depth in {}".format(possible_depth)
-
-#     if k == 18:
-#         return ResNet18(reduction_ratio= reduction_ratio, kernel_cbam = kernel_cbam, use_cbam_block= use_cbam_block, use_cbam_class = use_cbam_class)
-#     elif k == 34:
-#         return ResNet34(reduction_ratio= reduction_ratio, kernel_cbam = kernel_cbam, use_cbam_block= use_cbam_block, use_cbam_class = use_cbam_class)
-#     elif k == 50:
-#         return ResNet50(reduction_ratio= reduction_ratio, kernel_cbam = kernel_cbam, use_cbam_block= use_cbam_block, use_cbam_class = use_cbam_class)
-#     elif k == 101:
-#         return ResNet101(reduction_ratio= reduction_ratio, kernel_cbam = kernel_cbam, use_cbam_block= use_cbam_block, use_cbam_class = use_cbam_class)
-#     elif k == 152:
-#         return ResNet152(reduction_ratio= reduction_ratio, kernel_cbam = kernel_cbam, use_cbam_block= use_cbam_block, use_cbam_class = use_cbam_class)
-
-
-# def test():
-#     net = ResNet18()
-#     y = net(torch.randn(1,3,32,32))
-#     print(y.size())
-
-# test()
+    return model
