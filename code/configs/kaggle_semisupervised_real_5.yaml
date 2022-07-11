@@ -16,7 +16,7 @@ MODEL:
  NAME: 'resnet50sasa'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50sasa_abnormal_224.pth'
- PRE_TRAIN_RESUME: 'none'
+ PRE_TRAIN_RESUME: 'None'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: False
