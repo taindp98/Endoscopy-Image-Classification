@@ -99,7 +99,9 @@ from models.sasa import Bottleneck as BNSASA
 #             return x_global_cls, x_local_cls
 
 def build_head(in_fts, out_fts):
-    head = nn.Sequential(nn.Linear(in_fts, in_fts//4), 
+    head = nn.Sequential(
+                        nn.Flatten(),
+                        nn.Linear(in_fts, in_fts//4), 
                         nn.ReLU(), 
                         nn.Dropout(0.2), 
                         nn.BatchNorm1d(in_fts//4), 
@@ -139,16 +141,15 @@ class ModelwEmb(nn.Module):
         ## load pre-trained weight abnormality classification
         if model_name == 'resnet50sasa':
             self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
-            in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2)
         else:
             self.model = timm.create_model(model_name, num_classes = 2)
         self.k = 3
         self.model_name = model_name
         if pretrained != 'None':
+            in_fts = self.model.fc.in_features
+            self.model.fc = build_head(in_fts, 2)
             self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
             self.model.load_state_dict(self.checkpoint['model_state_dict'])
-        self.model.fc = build_head(in_fts, num_classes)
         ## transfer
         # if model_name == 'densenet161':
         #     in_fts = self.model.classifier.in_features
@@ -162,8 +163,9 @@ class ModelwEmb(nn.Module):
         #     self.model.fc = build_head(in_fts, num_classes)
         #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         #     self.fc = self.model.fc
-        self.fc = self.model.fc
+        self.model.fc = build_head(in_fts, num_classes)
         self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+        self.fc = self.model.fc
         self.head_emb = nn.Sequential(
             nn.Linear(in_fts, low_dim * self.k),
             nn.LeakyReLU(inplace=True, negative_slope=0.1),
