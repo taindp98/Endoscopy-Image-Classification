@@ -150,20 +150,24 @@ def build_model(config, is_pathology = True):
             print('Build up new head MLP')
             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
     elif model_name == 'resnet50sasa':
-        if is_pathology:
-            model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
-            checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
-            in_fts = model.fc.in_features
-            print('Build up new head MLP')
-            model.fc = build_head(in_fts, 2)
-            model.load_state_dict(checkpoint['model_state_dict'])
-            print('Loaded checkpoint abnormal')
-            model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+        if config.MODEL.IS_TRIPLET:
+            print(f'Selected model: {str(model_name)} w/ Triplet')
+            model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
         else:
-            model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
-            in_fts = model.fc.in_features
-            print('Build up new head MLP')
-            model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+            if is_pathology:
+                model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+                checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+                in_fts = model.fc.in_features
+                print('Build up new head MLP')
+                model.fc = build_head(in_fts, 2)
+                model.load_state_dict(checkpoint['model_state_dict'])
+                print('Loaded checkpoint abnormal')
+                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+            else:
+                model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
+                in_fts = model.fc.in_features
+                print('Build up new head MLP')
+                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
 
     else:
         if config.MODEL.MARGIN != 'None':

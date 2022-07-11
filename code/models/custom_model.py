@@ -12,7 +12,8 @@ import numpy as np
 import cv2
 from torchvision import transforms
 from models.conformer import Conformer
-
+from sasa import ResNetSASA
+from sasa import Bottleneck as BNSASA
 
 # def reshape_transform(tensor, height=7, width=7):
 #     result = tensor.reshape(tensor.size(0),
@@ -136,26 +137,31 @@ class ModelwEmb(nn.Module):
     def __init__(self, model_name, pretrained, num_classes, low_dim = 256):
         super().__init__()
         ## load pre-trained weight abnormality classification
-        self.model = timm.create_model(model_name, num_classes = 2)
+        if model_name == 'resnet50sasa':
+            self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+            in_fts = self.model.fc.in_features
+            self.model.fc = build_head(in_fts, num_classes)
+        else:
+            self.model = timm.create_model(model_name, num_classes = 2)
         self.k = 3
         self.model_name = model_name
         if pretrained != 'None':
             self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
             self.model.load_state_dict(self.checkpoint['model_state_dict'])
         ## transfer
-        if model_name == 'densenet161':
-            in_fts = self.model.classifier.in_features
-            # self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
-            self.model.classifier = build_head(in_fts, num_classes)
-            self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
-            self.classifier = self.model.classifier
-        else:
-            in_fts = self.model.fc.in_features
-            # self.model.fc = nn.Linear(in_fts, num_classes, bias=False)
-            self.model.fc = build_head(in_fts, num_classes)
-            self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
-            self.fc = self.model.fc
-
+        # if model_name == 'densenet161':
+        #     in_fts = self.model.classifier.in_features
+        #     # self.model.classifier = nn.Linear(in_fts, num_classes, bias=False)
+        #     self.model.classifier = build_head(in_fts, num_classes)
+        #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+        #     self.classifier = self.model.classifier
+        # else:
+        #     in_fts = self.model.fc.in_features
+        #     # self.model.fc = nn.Linear(in_fts, num_classes, bias=False)
+        #     self.model.fc = build_head(in_fts, num_classes)
+        #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
+        #     self.fc = self.model.fc
+        self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         self.head_emb = nn.Sequential(
             nn.Linear(in_fts, low_dim * self.k),
             nn.LeakyReLU(inplace=True, negative_slope=0.1),
@@ -164,10 +170,11 @@ class ModelwEmb(nn.Module):
 
     def forward(self, x):
         fts = self.backbone(x)
-        # fts = torch.mean(fts, dim=(2, 3))
-        if self.model_name == 'densenet161':
-            logits = self.classifier(fts)
-        else:
-            logits = self.fc(fts)
+        # if self.model_name == 'densenet161':
+        #     logits = self.classifier(fts)
+        # else:
+        #     logits = self.fc(fts)
+
+        logits = self.fc(fts)
         fts = self.head_emb(fts)
         return logits, fts 
