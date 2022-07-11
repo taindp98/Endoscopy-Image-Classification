@@ -142,6 +142,7 @@ def build_model(config, is_pathology = True):
             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
         else:
             model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
+            in_fts = model.fc.in_features
             print('Build up new head MLP')
             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
 
