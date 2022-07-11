@@ -13,12 +13,12 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'conformer'
+ NAME: 'resnet50sasa'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_conformer_abnormal_224_tiny.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50sasa_abnormal_224.pth'
  PRE_TRAIN_RESUME: 'none'
  MARGIN: None
- TYPE_SEMI: 'SemiFormer'
+ TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: False
  LOW_DIM: 64
 TRAIN:
@@ -30,7 +30,7 @@ TRAIN:
  WEIGHT_DECAY: 0.00001
  WARMUP_EPOCHS: 5  
  DECAY_EPOCHS: 10
- OPT_NAME: 'Adam'
+ OPT_NAME: 'SGD'
  EPS: 0.00000001
  BETAS: [0.9, 0.999]
  MOMENTUM: 0.9
