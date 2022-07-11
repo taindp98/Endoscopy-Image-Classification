@@ -84,7 +84,8 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
             """
             poly_loss = PolyLoss(softmax = True,
                                 ce_weight = class_weights,
-                                reduction=reduction)
+                                reduction=reduction,
+                                epsilon=2.)
             return poly_loss(logits, targets)
         else:
             return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
