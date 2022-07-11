@@ -11,12 +11,12 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50sasa'
+ NAME: 'vit_lsa'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50sasa_abnormal_224.pth'
+ PRE_TRAIN_PATH: 'None'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
- IS_TRIPLET: True
+ IS_TRIPLET: False
 TRAIN:
  IS_SSL: False
  EPOCHS: 150

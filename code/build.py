@@ -22,11 +22,24 @@ from models.cbam import ResNetCBAM
 from models.cbam import Bottleneck as BNCBAM
 from models.sasa import ResNetSASA
 from models.sasa import Bottleneck as BNSASA
-
+from models.vit_lsa import ViT
 
 def build_model(config, is_pathology = True):
     model_name = config.MODEL.NAME
-    if model_name == 'swin':
+    if model_name == 'vit_lsa':
+        model = ViT(
+                image_size = config.DATA.IMG_SIZE,
+                patch_size = 16,
+                num_classes = config.MODEL.NUM_CLASSES,
+                dim = 1024,
+                depth = 6,
+                heads = 16,
+                mlp_dim = 2048,
+                dropout = 0.1,
+                emb_dropout = 0.1
+                )
+
+    elif model_name == 'swin':
         model = timm.create_model('swin_base_patch4_window7_224', 
                                 pretrained = config.MODEL.PRE_TRAIN, 
                                 num_classes = config.MODEL.NUM_CLASSES)
