@@ -100,7 +100,6 @@ from models.sasa import Bottleneck as BNSASA
 
 def build_head(in_fts, out_fts):
     head = nn.Sequential(
-                        nn.Flatten(),
                         nn.Linear(in_fts, in_fts//4), 
                         nn.ReLU(), 
                         nn.Dropout(0.2), 
@@ -174,6 +173,7 @@ class ModelwEmb(nn.Module):
 
     def forward(self, x):
         fts = self.backbone(x)
+        fts = torch.flatten(fts, 1)
         # if self.model_name == 'densenet161':
         #     logits = self.classifier(fts)
         # else:
