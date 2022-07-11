@@ -138,9 +138,9 @@ class ModelwEmb(nn.Module):
         super().__init__()
         ## load pre-trained weight abnormality classification
         if model_name == 'resnet50sasa':
-            self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = 2)
+            self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
             in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, num_classes)
+            self.model.fc = build_head(in_fts, 2)
         else:
             self.model = timm.create_model(model_name, num_classes = 2)
         self.k = 3
@@ -148,6 +148,7 @@ class ModelwEmb(nn.Module):
         if pretrained != 'None':
             self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
             self.model.load_state_dict(self.checkpoint['model_state_dict'])
+        self.model.fc = build_head(in_fts, num_classes)
         ## transfer
         # if model_name == 'densenet161':
         #     in_fts = self.model.classifier.in_features
