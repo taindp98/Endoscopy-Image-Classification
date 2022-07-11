@@ -18,7 +18,10 @@ from torch import nn
 from models.conformer import Conformer
 from torchvision import models
 from fastai.layers import PooledSelfAttention2d
-from models.cbam import ResNet, Bottleneck
+from models.cbam import ResNetCBAM
+from models.cbam import Bottleneck as BNCBAM
+from models.sasa import ResNetSASA
+from models.sasa import Bottleneck as BNSASA
 
 
 def build_model(config, is_pathology = True):
@@ -133,7 +136,7 @@ def build_model(config, is_pathology = True):
             #             qkv_bias=True)
     elif model_name == 'resnet50cbam':
         if is_pathology:
-            model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
+            model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
             in_fts = model.fc.in_features
             print('Build up new head MLP')
@@ -142,7 +145,22 @@ def build_model(config, is_pathology = True):
             print('Loaded checkpoint abnormal')
             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
         else:
-            model = ResNet(Bottleneck, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
+            model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
+            in_fts = model.fc.in_features
+            print('Build up new head MLP')
+            model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+    elif model_name == 'resnet50sasa':
+        if is_pathology:
+            model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+            checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+            in_fts = model.fc.in_features
+            print('Build up new head MLP')
+            model.fc = build_head(in_fts, 2)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            print('Loaded checkpoint abnormal')
+            model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+        else:
+            model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
             in_fts = model.fc.in_features
             print('Build up new head MLP')
             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)

@@ -189,7 +189,7 @@ class Bottleneck(nn.Module):
 
         return out
 
-class ResNet(nn.Module):
+class ResNetCBAM(nn.Module):
     def __init__(self, block, layers,  network_type, num_classes, att_type=None):
         self.inplanes = 64
         super(ResNet, self).__init__()
