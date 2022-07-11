@@ -85,7 +85,7 @@ class SupLearning:
                 pos_fts, neg_fts = torch.split(features[bs:], bs)
 
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
-                ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean')
+                ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean', use_focal = True)
                 # ce_losses = self.criterion(anchor_logits, targets)
                 losses = ce_losses + 2*triplet_losses
             else:
@@ -99,7 +99,8 @@ class SupLearning:
                     losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
                 else:
                     outputs = self.model(images)
-                    losses = ce_loss(outputs, targets)
+                    losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean', use_focal = True)
+
             
             self.optimizer.zero_grad()
 

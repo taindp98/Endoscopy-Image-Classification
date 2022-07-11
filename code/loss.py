@@ -56,7 +56,7 @@ class FocalLoss(nn.Module):
         else:
             return loss
 
-def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none'):
+def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none', use_focal = False):
     """
     wrapper for cross entropy loss in pytorch.
     
@@ -65,10 +65,12 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
         targets: integer or vector, shape=[Batch size] or [Batch size, # of classes]
         use_hard_labels: If True, targets have [Batch size] shape with int values. If False, the target is vector (default True)
     """
-    focal_loss = FocalLoss(gamma = 1, class_weights= class_weights, reduction= reduction)
     if use_hard_labels:
-        # return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
-        return focal_loss(logits, targets)
+        if use_focal:
+            focal_loss = FocalLoss(gamma = 1, class_weights= class_weights, reduction= reduction)
+            return focal_loss(logits, targets)
+        else:
+            return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
     else:
         assert logits.shape == targets.shape
         log_pred = F.log_softmax(logits, dim=-1)
