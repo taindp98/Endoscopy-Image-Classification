@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_2.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -25,7 +25,7 @@ TRAIN:
  WEIGHT_DECAY: 0.00001
  WARMUP_EPOCHS: 5  
  DECAY_EPOCHS: 5
- OPT_NAME: 'Adam'
+ OPT_NAME: 'SGD'
  EPS: 0.00000001
  BETAS: [0.9, 0.999]
  MOMENTUM: 0.9

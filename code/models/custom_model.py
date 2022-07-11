@@ -11,9 +11,12 @@ import numpy as np
 # from pytorch_grad_cam import GradCAM, ScoreCAM, GradCAMPlusPlus, AblationCAM, XGradCAM, EigenCAM, FullGrad
 import cv2
 from torchvision import transforms
+# from code.models.cbam import ResNetCBAM
 from models.conformer import Conformer
 from models.sasa import ResNetSASA
 from models.sasa import Bottleneck as BNSASA
+from models.cbam import ResNetCBAM
+from models.cbam import Bottleneck as BNCBAM
 
 # def reshape_transform(tensor, height=7, width=7):
 #     result = tensor.reshape(tensor.size(0),
@@ -140,6 +143,8 @@ class ModelwEmb(nn.Module):
         ## load pre-trained weight abnormality classification
         if model_name == 'resnet50sasa':
             self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+        elif model_name == 'resnet50cbam':
+            self.model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
         else:
             self.model = timm.create_model(model_name, num_classes = 2)
         self.k = 3
