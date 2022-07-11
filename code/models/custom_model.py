@@ -162,6 +162,7 @@ class ModelwEmb(nn.Module):
         #     self.model.fc = build_head(in_fts, num_classes)
         #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         #     self.fc = self.model.fc
+        self.fc = self.model.fc
         self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         self.head_emb = nn.Sequential(
             nn.Linear(in_fts, low_dim * self.k),
