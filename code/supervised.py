@@ -305,9 +305,9 @@ class SupLearning:
                 if self.best_valid_perf:
                     if self.best_valid_perf > valid_loss.avg:
                         self.best_valid_perf = valid_loss.avg
-                        self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                        # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
                 else:
                     self.best_valid_perf = valid_loss.avg
-                    self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                self.save_checkpoint(self.config.TRAIN.SAVE_CP)
                 print(f'\tValid Loss: {valid_loss.avg:.3f}')
                 print(f'\tMetric: {valid_metric}')
