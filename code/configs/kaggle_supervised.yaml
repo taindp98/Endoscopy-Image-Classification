@@ -11,21 +11,21 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50sasa'
+ NAME: 'resnet50'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50sasa_abnormal_224.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
- IS_TRIPLET: False
+ IS_TRIPLET: True
 TRAIN:
  IS_SSL: False
  EPOCHS: 150
- BASE_LR: 0.01
+ BASE_LR: 0.001
  WARMUP_LR: 0.0005
  WEIGHT_DECAY: 0.00001
  WARMUP_EPOCHS: 5  
  DECAY_EPOCHS: 10
- OPT_NAME: 'SGD'
+ OPT_NAME: 'Adam'
  EPS: 0.00000001
  BETAS: [0.9, 0.999]
  MOMENTUM: 0.9

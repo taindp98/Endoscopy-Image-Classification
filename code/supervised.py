@@ -51,6 +51,7 @@ class SupLearning:
 
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
         self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
+        self.cls_num_list = self.train_dl.dataset.get_cls_num_list()
 
         # if self.config.TRAIN.MIXUP > 0.:
         #  # smoothing is handled with mixup label transform
@@ -85,7 +86,12 @@ class SupLearning:
                 pos_fts, neg_fts = torch.split(features[bs:], bs)
 
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
-                ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean', type_loss = 'poly')
+                ce_losses = ce_loss(logits = anchor_logits, 
+                                    targets = targets, 
+                                    class_weights = self.class_weights, 
+                                    reduction = 'mean', 
+                                    type_loss = 'ldam',
+                                    cls_num_list=self.cls_num_list)
                 losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
             else:
                 if self.mixup_fn is not None:
