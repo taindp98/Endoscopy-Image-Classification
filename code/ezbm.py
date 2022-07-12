@@ -167,6 +167,11 @@ class EZBM:
             losses.backward()
             self.optimizer.step()
             self.lr_scheduler.step_update(epoch * num_steps + step)
+
+            if self.config.TRAIN.USE_EMA:
+                self.ema_model.update(self.model)
+            self.model.zero_grad()
+
             summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE*self.config.DATA.MU)
             tk1.set_postfix(loss=summary_loss.avg)
 
