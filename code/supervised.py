@@ -40,24 +40,24 @@ class SupLearning:
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl))
-        if self.config.TRAIN.CLS_WEIGHT:
-            if self.config.TRAIN.TRAIN_RULE != 'DRW':
-                self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                            classes  = np.unique(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
-                            y = list(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]))
+        # if self.config.TRAIN.CLS_WEIGHT:
+        #     if self.config.TRAIN.TRAIN_RULE != 'DRW':
+        #         self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
+        #                     classes  = np.unique(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
+        #                     y = list(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]))
 
-                self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
-            else:
-                ## DRW
-                print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
-                idx = self.config.TRAIN.EPOCHS // 160
-                betas = [0, 0.9999]
-                effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
-                per_cls_weights = (1.0 - betas[idx]) / np.array(effective_num)
-                per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
-                self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
-        else:
-            self.class_weights = None
+        #         self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
+        #     else:
+        #         ## DRW
+        #         print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
+        #         idx = self.config.TRAIN.EPOCHS // 160
+        #         betas = [0, 0.9999]
+        #         effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
+        #         per_cls_weights = (1.0 - betas[idx]) / np.array(effective_num)
+        #         per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
+        #         self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
+        # else:
+        #     self.class_weights = None
 
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
         self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
@@ -302,6 +302,17 @@ class SupLearning:
     def fit(self):
         
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
+            if self.config.TRAIN.TRAIN_RULE == 'RDW':
+                idx = self.config.TRAIN.EPOCHS // 25 ## 0/1
+                # print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
+                betas = [0, 0.9999]
+                effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
+                per_cls_weights = (1.0 - betas[idx]) / np.array(effective_num)
+                per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
+                self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
+            else:
+                self.class_weights = None
+
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
