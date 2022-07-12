@@ -342,7 +342,7 @@ class EZBM:
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss_stage_1 = self.train_one_stage_1(self.epoch)
             print(f'\tTrain Loss: {train_loss_stage_1.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0 & epoch!=0:
+            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one()
                 print(f'\tValid Loss: {valid_loss.avg:.3f}')
                 print(f'\tMetric: {valid_metric}')
@@ -361,7 +361,7 @@ class EZBM:
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss_stage_2 = self.train_one_stage_2(self.epoch)
             print(f'\tTrain Loss: {train_loss_stage_2.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0 & epoch!=0:
+            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one()
                 if self.best_valid_perf:
                     if self.best_valid_perf > valid_loss.avg:
