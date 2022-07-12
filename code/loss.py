@@ -62,7 +62,7 @@ class FocalLoss(nn.Module):
         else:
             return loss
 
-def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none', type_loss = 'poly'):
+def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reduction='none', type_loss = 'none'):
     """
     wrapper for cross entropy loss in pytorch.
     

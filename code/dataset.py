@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from utils import show_grid, show_batch
 from timm.data import Mixup
-
+import random
 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -131,6 +131,49 @@ def reproduce_transform(is_train = False):
         ])
     return trf_aug
 
+
+class EmbFeatEZBM(Dataset):
+    def __init__(self, data, target, cls_num_list):
+        self.data = data
+        self.target = target
+        self.class_dict = dict()
+        self.cls_num_list = cls_num_list
+        self.cls_num = len(cls_num_list)
+        self.type = 'balance'
+        for i in range(self.cls_num):
+            idx = torch.where(self.target == i)[0]
+            self.class_dict[i] = idx
+
+        # prob for reverse
+        cls_num_list = np.array(self.cls_num_list)
+        prob = list(cls_num_list / np.sum(cls_num_list))
+        prob.reverse()
+        self.prob = np.array(prob)
+
+    def __len__(self):
+        return len(self.target)
+
+    def __getitem__(self, item):
+        if self.type == 'balance':
+            sample_class = random.randint(0, self.cls_num - 1)
+            sample_indexes = self.class_dict[sample_class]
+            sample_index = random.choice(sample_indexes)
+
+        if self.type == 'reverse':
+            sample_class = np.random.choice(range(self.cls_num), p=self.prob.ravel())
+            sample_indexes = self.class_dict[sample_class]
+            sample_index = random.choice(sample_indexes)
+
+        temp_class = random.randint(0, self.cls_num - 1)
+        temp_indexes = self.class_dict[temp_class]
+        temp_index = random.choice(temp_indexes)
+        item = temp_index
+
+        data, target = self.data[item], self.target[item]
+        data_dual, target_dual = self.data[sample_index], self.target[sample_index]
+
+        return data, target, data_dual, target_dual
+
 def get_transform(config, is_train = False, is_labeled = True, type_semi = 'FixMatch', is_reprod = False):
     if is_reprod:
         
@@ -210,6 +253,13 @@ class GIDataset(torch.utils.data.Dataset):
             x = self.transforms(x)
         y = torch.tensor(target, dtype=torch.long)
         return x,y
+
+    def get_cls_num_list(self):
+        cls_num_list = []
+        for i in range(self.config.MODEL.NUM_CLASSES):
+            num_ex = self.df[self.df['target']==i]
+            cls_num_list.append(len(num_ex))
+        return cls_num_list
 
     def __getitem__(self, index):
         
