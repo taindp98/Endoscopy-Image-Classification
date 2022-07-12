@@ -193,7 +193,7 @@ class EZBM:
                 
                 
                 # if self.config.MODEL.IS_TRIPLET:
-                outputs, _ = eval_model(images)
+                outputs, _, _ = eval_model(images)
                 # else:
                     # outputs = eval_model(images)
                 losses = ce_loss(outputs, targets, reduction='mean')            
