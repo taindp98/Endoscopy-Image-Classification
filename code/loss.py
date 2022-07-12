@@ -114,7 +114,6 @@ def ce_loss(logits, targets, class_weights = None, use_hard_labels=True, reducti
             return poly_loss(logits, targets)
         elif type_loss == 'ldam' and cls_num_list != None:
             ldam_loss = LDAMLoss(cls_num_list=cls_num_list, max_m=0.5, s=30, weight=class_weights)
-            print('Type loss: ', ldam_loss)
             return ldam_loss(logits, targets)
         else:
             return F.cross_entropy(logits, targets, weight=class_weights, reduction=reduction)
