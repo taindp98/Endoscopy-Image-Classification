@@ -341,8 +341,10 @@ class EZBM:
 
     def fit(self):
         print('-'*10, 'Stage 1', '-'*10)
+        print('Freeze head')
+        self.model.fc.requires_grad_(False)
         print(f"Total Trainable Params: {count_parameters(self.model)}")
-        self.config.TRAIN.EPOCHS = 20
+        self.config.TRAIN.EPOCHS = 50
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
