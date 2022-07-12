@@ -34,24 +34,33 @@ class SupLearning:
     def get_config(self, config):
         self.config = config
         print('Training mode: Supervised Learning')
-
+        self.cls_num_list = self.train_dl.dataset.get_cls_num_list()
         if self.config.TRAIN.USE_EMA:
             self.ema_model = ModelEMA(model = self.model, decay = self.config.TRAIN.EMA_DECAY, device = self.device)
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl))
         if self.config.TRAIN.CLS_WEIGHT:
-            self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                        classes  = np.unique(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
-                        y = list(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]))
+            if self.config.TRAIN.TRAIN_RULE != 'DRW':
+                self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
+                            classes  = np.unique(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
+                            y = list(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]))
 
-            self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
+                self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
+            else:
+                ## DRW
+                print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
+                idx = self.config.TRAIN.EPOCHS // 160
+                betas = [0, 0.9999]
+                effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
+                per_cls_weights = (1.0 - betas[idx]) / np.array(effective_num)
+                per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
+                self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
         else:
             self.class_weights = None
 
         self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
         self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
-        self.cls_num_list = self.train_dl.dataset.get_cls_num_list()
 
         # if self.config.TRAIN.MIXUP > 0.:
         #  # smoothing is handled with mixup label transform
@@ -92,6 +101,7 @@ class SupLearning:
                                     reduction = 'mean', 
                                     type_loss = 'ldam',
                                     cls_num_list=self.cls_num_list)
+                
                 losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
             else:
                 if self.mixup_fn is not None:
@@ -104,8 +114,10 @@ class SupLearning:
                     losses = self.loss_fc(fts, targets, self.model.fc, self.class_weights)
                 else:
                     outputs = self.model(images)
-                    losses = ce_loss(outputs, targets, class_weights = self.class_weights, reduction = 'mean', type_loss = 'poly')
-
+                    losses = ce_loss(logits = outputs, 
+                                    targets = targets, 
+                                    class_weights = self.class_weights, 
+                                    reduction = 'mean', type_loss = 'poly')
             
             self.optimizer.zero_grad()
 
