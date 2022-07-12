@@ -163,7 +163,7 @@ class EmbFeatEZBM(Dataset):
             sample_class = np.random.choice(range(self.cls_num), p=self.prob.ravel())
             sample_indexes = self.class_dict[sample_class]
             sample_index = random.choice(sample_indexes)
-
+        ## 0 -5
         temp_class = random.randint(0, self.cls_num - 1)
         temp_indexes = self.class_dict[temp_class]
         temp_index = random.choice(temp_indexes)

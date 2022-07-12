@@ -101,15 +101,17 @@ from models.cbam import Bottleneck as BNCBAM
 #             x_local_cls = self.model_swin(x_crop)
 #             return x_global_cls, x_local_cls
 
-def build_head(in_fts, out_fts):
-    head = nn.Sequential(
+def build_head(in_fts, out_fts, is_complex = False):
+    if is_complex:
+        head = nn.Sequential(
                         nn.Linear(in_fts, in_fts//4), 
                         nn.ReLU(), 
                         nn.Dropout(0.2), 
                         nn.BatchNorm1d(in_fts//4), 
                         nn.Linear(in_fts//4, out_fts)
                         )   
-
+    else:
+        head = nn.Linear(in_fts, out_fts, bias = True)
     return head
 
 class ModelMargin(nn.Module):
@@ -138,18 +140,18 @@ class Normalize(nn.Module):
         return out
 
 class ModelwEmb(nn.Module):
-    def __init__(self, model_name, pretrained, num_classes, low_dim = 256):
+    def __init__(self, model_name, pretrained, num_classes, low_dim = 256, is_complex = False):
         super().__init__()
         ## load pre-trained weight abnormality classification
         if model_name == 'resnet50sasa':
             self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
             in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2)
+            self.model.fc = build_head(in_fts, 2, True)
 
         elif model_name == 'resnet50cbam':
             self.model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
             in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2)
+            self.model.fc = build_head(in_fts, 2, True)
         else:
             self.model = timm.create_model(model_name, num_classes = 2)
             in_fts = self.model.fc.in_features
@@ -172,7 +174,7 @@ class ModelwEmb(nn.Module):
         #     self.model.fc = build_head(in_fts, num_classes)
         #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         #     self.fc = self.model.fc
-        self.model.fc = build_head(in_fts, num_classes)
+        self.model.fc = build_head(in_fts, num_classes, is_complex)
         self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         self.fc = self.model.fc
         self.head_emb = nn.Sequential(
