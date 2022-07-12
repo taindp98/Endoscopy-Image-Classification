@@ -133,13 +133,13 @@ def reproduce_transform(is_train = False):
 
 
 class EmbFeatEZBM(Dataset):
-    def __init__(self, data, target, cls_num_list):
+    def __init__(self, data, target, cls_num_list, type = 'balance'):
         self.data = data
         self.target = target
         self.class_dict = dict()
         self.cls_num_list = cls_num_list
         self.cls_num = len(cls_num_list)
-        self.type = 'balance'
+        self.type = type
         for i in range(self.cls_num):
             idx = torch.where(self.target == i)[0]
             self.class_dict[i] = idx

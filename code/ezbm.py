@@ -137,7 +137,7 @@ class EZBM:
         mem_targets = np.array(self.mem_targets)
         cls_num_list = np.array(self.cls_num_list)
 
-        emb_fts_ds = EmbFeatEZBM(torch.FloatTensor(mem_outputs), torch.from_numpy(mem_targets), self.cls_num_list)
+        emb_fts_ds = EmbFeatEZBM(torch.FloatTensor(mem_outputs), torch.from_numpy(mem_targets), self.cls_num_list, self.config.TRAIN.EXPANSION)
         emb_fts_dl = DataLoader(dataset=emb_fts_ds, batch_size=self.config.DATA.BATCH_SIZE*self.config.DATA.MU, shuffle=True)
         tk1 = tqdm(emb_fts_dl, total=len(emb_fts_dl))
         num_steps = len(emb_fts_dl)
@@ -160,7 +160,7 @@ class EZBM:
             outputs_s = self.model.fc(mix)
             l_o = ce_loss(outputs_o, targets, reduction='mean')
             l_s = 0.5*ce_loss(outputs_s, targets, reduction='mean') + 0.5*ce_loss(outputs_s, targets_dual, reduction='mean')
-            losses = l_o + l_s
+            losses = l_o + self.config.TRAIN.LAMBDA_C*l_s
 
             self.optimizer.zero_grad()
 
