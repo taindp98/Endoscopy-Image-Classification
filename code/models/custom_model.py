@@ -156,6 +156,7 @@ class ModelwEmb(nn.Module):
         self.k = 3
         self.model_name = model_name
         if pretrained != 'None':
+            print('Load checkpoint Abnormal')
             self.checkpoint = torch.load(pretrained, map_location = {'cuda:0':'cpu'})
             self.model.load_state_dict(self.checkpoint['model_state_dict'])
         ## transfer
