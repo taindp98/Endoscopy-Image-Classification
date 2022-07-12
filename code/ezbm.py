@@ -337,7 +337,7 @@ class EZBM:
     def fit(self):
         print('-'*10, 'Stage 1', '-'*10)
         print(f"Total Trainable Params: {count_parameters(self.model)}")
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
+        for epoch in range(self.epoch_start, 20):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss_stage_1 = self.train_one_stage_1(self.epoch)
