@@ -303,7 +303,7 @@ class SupLearning:
         
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
             if self.config.TRAIN.TRAIN_RULE == 'RDW':
-                idx = self.config.TRAIN.EPOCHS // 25 ## 0/1
+                idx = epoch // 25 ## 0/1
                 # print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
                 betas = [0, 0.9999]
                 effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
