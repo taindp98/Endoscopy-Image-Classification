@@ -97,11 +97,11 @@ class EZBM:
 
             bs = imgs.size(0)//3
 
-            logits, features = self.model(imgs)
+            logits, features, features_low = self.model(imgs)
             anchor_logits = logits[:bs]
-            anchor_fts = features[:bs]
+            anchor_fts = features_low[:bs]
 
-            pos_fts, neg_fts = torch.split(features[bs:], bs)
+            pos_fts, neg_fts = torch.split(features_low[bs:], bs)
 
             triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
             ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean', type_loss = 'poly')
@@ -109,7 +109,7 @@ class EZBM:
 
             ## storaged features at last epoch
             if epoch + 1 == self.config.TRAIN.EPOCHS:
-                self.mem_features.extend(np.array(anchor_fts.cpu().data))
+                self.mem_features.extend(np.array(features[:bs].cpu().data))
                 self.mem_targets.extend(np.array(targets.cpu().data))
 
 

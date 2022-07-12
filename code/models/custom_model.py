@@ -189,5 +189,5 @@ class ModelwEmb(nn.Module):
         #     logits = self.fc(fts)
 
         logits = self.fc(fts)
-        fts = self.head_emb(fts)
-        return logits, fts 
+        fts_low = self.head_emb(fts)
+        return logits, fts, fts_low
