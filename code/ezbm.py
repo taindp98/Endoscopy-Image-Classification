@@ -108,7 +108,7 @@ class EZBM:
             losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
 
             ## storaged features at last epoch
-            if epoch + 1 == self.config.TRAIN.EPOCHS_S1:
+            if epoch + 1 == self.config.TRAIN.EPOCHS:
                 self.mem_features.extend(np.array(features[:bs].cpu().data))
                 self.mem_targets.extend(np.array(targets.cpu().data))
 
@@ -337,7 +337,8 @@ class EZBM:
     def fit(self):
         print('-'*10, 'Stage 1', '-'*10)
         print(f"Total Trainable Params: {count_parameters(self.model)}")
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS_S1):
+        self.config.TRAIN.EPOCHS = 20
+        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss_stage_1 = self.train_one_stage_1(self.epoch)
@@ -349,6 +350,7 @@ class EZBM:
 
         print('-'*10, 'Stage 2', '-'*10)
         print('Freeze backbone')
+        self.config.TRAIN.EPOCHS = 100
         for parameter in self.model.parameters():
             parameter.requires_grad = False
             self.model.fc.requires_grad_(True)
@@ -356,7 +358,7 @@ class EZBM:
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl)//self.config.DATA.MU)
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS_S2):
+        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
             self.epoch = epoch
             print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss_stage_2 = self.train_one_stage_2(self.epoch)
