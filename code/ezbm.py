@@ -156,8 +156,8 @@ class EZBM:
             if self.config.TRAIN.EXPANSION == 'reverse':
                 lam = 1 - lam
             mix = lam * inputs + (1-lam) * inputs_dual
-            outputs_o = self.mdoel.fc(inputs)
-            outputs_s = self.mdoel.fc(mix)
+            outputs_o = self.model.fc(inputs)
+            outputs_s = self.model.fc(mix)
             l_o = ce_loss(outputs_o, targets, reduction='mean', type_loss='poly')
             l_s = 0.5*ce_loss(outputs_s, targets, reduction='mean', type_loss='poly') + 0.5*ce_loss(outputs_s, targets_dual, reduction='mean', type_loss='poly')
             losses = l_o + l_s
@@ -349,10 +349,11 @@ class EZBM:
 
         print('-'*10, 'Stage 2', '-'*10)
         print('Freeze backbone')
-        print(f"Total Trainable Params: {count_parameters(self.model)}")
         for parameter in self.model.parameters():
             parameter.requires_grad = False
             self.model.fc.requires_grad_(True)
+        print(f"Total Trainable Params: {count_parameters(self.model)}")
+
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl)//self.config.DATA.MU)
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
