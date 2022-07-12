@@ -158,8 +158,8 @@ class EZBM:
             mix = lam * inputs + (1-lam) * inputs_dual
             outputs_o = self.model.fc(inputs)
             outputs_s = self.model.fc(mix)
-            l_o = ce_loss(outputs_o, targets, reduction='mean', type_loss='poly')
-            l_s = 0.5*ce_loss(outputs_s, targets, reduction='mean', type_loss='poly') + 0.5*ce_loss(outputs_s, targets_dual, reduction='mean', type_loss='poly')
+            l_o = ce_loss(outputs_o, targets, reduction='mean')
+            l_s = 0.5*ce_loss(outputs_s, targets, reduction='mean') + 0.5*ce_loss(outputs_s, targets_dual, reduction='mean')
             losses = l_o + l_s
 
             self.optimizer.zero_grad()
@@ -341,8 +341,6 @@ class EZBM:
 
     def fit(self):
         print('-'*10, 'Stage 1', '-'*10)
-        print('Freeze head')
-        self.model.fc.requires_grad_(False)
         print(f"Total Trainable Params: {count_parameters(self.model)}")
         self.config.TRAIN.EPOCHS = 50
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
