@@ -88,7 +88,7 @@ class SupLearning:
 
                 bs = imgs.size(0)//3
 
-                logits, features = self.model(imgs)
+                logits, _, features = self.model(imgs)
                 anchor_logits = logits[:bs]
                 anchor_fts = features[:bs]
 
@@ -156,7 +156,7 @@ class SupLearning:
                 
                 
                 if self.config.MODEL.IS_TRIPLET:
-                    outputs, _ = eval_model(images)
+                    outputs, _, _ = eval_model(images)
                 else:
                     outputs = eval_model(images)
                 losses = ce_loss(outputs, targets, reduction='mean')            
@@ -206,14 +206,8 @@ class SupLearning:
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
-                if self.config.MODEL.NAME == 'conformer':
-                    ## out_conv and out_trans
-                    out_conv, out_trans = eval_model(images)
-                    outputs = out_trans + out_conv
-                elif self.config.MODEL.IS_TRIPLET:
-                    outputs, _ = eval_model(images)
-                else:
-                    outputs = eval_model(images)
+                
+                outputs, _, _ = eval_model(images)
                 losses = ce_loss(outputs, targets, reduction='mean')            
                 summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
                 tk0.set_postfix(loss=summary_loss.avg)
@@ -245,14 +239,8 @@ class SupLearning:
             for step, (images, index) in enumerate(tk0):
                 images = images.to(self.device, non_blocking=True)
                 
-                if self.config.MODEL.NAME == 'conformer':
-                    ## out_conv and out_trans
-                    out_conv, out_trans = eval_model(images)
-                    outputs = out_trans + out_conv
-                elif self.config.MODEL.IS_TRIPLET:
-                    outputs, _ = eval_model(images)
-                else:
-                    outputs = eval_model(images)
+                
+                outputs, _, _ = eval_model(images)
                 
                 outputs = F.softmax(outputs, dim=1)
                 outputs = outputs.cpu().numpy()
