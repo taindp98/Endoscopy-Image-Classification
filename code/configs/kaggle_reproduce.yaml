@@ -8,16 +8,17 @@ DATA:
  MU: 6
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
- IS_CROP: False
+ IS_CROP: True
 MODEL:
  NUM_CLASSES: 23
- NAME: 'densenet161'
+ NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
- IS_TRIPLET: False
+ IS_TRIPLET: True
 TRAIN:
+ TRAIN_RULE: "DRW"
  IS_SSL: False
  EPOCHS: 100
  BASE_LR: 0.001
@@ -41,3 +42,10 @@ TRAIN:
  LAMBDA_U: 1.
  LAMBDA_C: 1.
  SAVE_CP: '/kaggle/working/'
+ MIXUP: 0.0
+ CUTMIX: 0.
+ CUTMIX_MINMAX: None
+ MIXUP_PROB: 1.0
+ MIXUP_SWITCH_PROB: 0.5
+ MIXUP_MODE: 'batch'
+ LABEL_SMOOTHING: 0.0
