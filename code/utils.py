@@ -41,7 +41,7 @@ def calculate_metrics(pred, target, config):
     res = []
     for l in range(config.MODEL.NUM_CLASSES):
         prec, recall, _, _ = precision_recall_fscore_support(np.array(target)==l, np.array(pred)==l, pos_label=True,average=None)
-        res.append([l, recall[0], recall[1]])
+        res.append([l, recall[1], recall[0]])
 
     df_sen_spec = pd.DataFrame(res,columns = ['class','sensitivity','specificity'])
 
