@@ -11,11 +11,11 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50cbam'
+ NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
- IS_TRIPLET: False
+ IS_TRIPLET: True
 TRAIN:
  IS_SSL: False
  EPOCHS: 100
