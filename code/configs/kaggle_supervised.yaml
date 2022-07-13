@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
+ ANNO: '../resource/hyper_kvasir/df_12_pathologies_ite_1.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -10,7 +10,7 @@ DATA:
  TARGET_NAME: 'target'
  IS_CROP: True
 MODEL:
- NUM_CLASSES: 6
+ NUM_CLASSES: 12
  NAME: 'resnet50'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
