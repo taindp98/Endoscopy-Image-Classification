@@ -103,6 +103,7 @@ from models.cbam import Bottleneck as BNCBAM
 
 def build_head(in_fts, out_fts, is_complex = False):
     if is_complex:
+        print('Build complex MLP head')
         head = nn.Sequential(
                         nn.Linear(in_fts, in_fts//4), 
                         nn.ReLU(), 
@@ -174,7 +175,7 @@ class ModelwEmb(nn.Module):
         #     self.model.fc = build_head(in_fts, num_classes)
         #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         #     self.fc = self.model.fc
-        self.model.fc = build_head(in_fts, num_classes, is_complex)
+        self.model.fc = build_head(in_fts, num_classes, is_complex = True)
         self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         self.fc = self.model.fc
         self.head_emb = nn.Sequential(
