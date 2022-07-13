@@ -59,7 +59,7 @@ def calculate_metrics(pred, target, config):
 def show_cfs_matrix(targ, pred, percent = False):
     C = confusion_matrix(targ, pred)
     if percent:
-        C = C / C.astype('float').sum(axis=1)
+        C = C / C.astype('float').sum(axis=0)
     # fig, ax = plt.subplots(figsize=(10,10))
     sns.heatmap(C, annot=True, fmt='.2f', cmap="Blues")
     plt.ylabel('Actual')
