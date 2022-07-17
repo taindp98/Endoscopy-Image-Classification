@@ -58,6 +58,7 @@ def calculate_metrics(pred, target, config):
 
 def show_cfs_matrix(targ, pred, percent = False):
     C = confusion_matrix(targ, pred)
+    C = C.astype(int)
     if percent:
         C = C / C.astype('float').sum(axis=0)
     # fig, ax = plt.subplots(figsize=(10,10))
