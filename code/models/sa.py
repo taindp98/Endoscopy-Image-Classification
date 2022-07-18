@@ -123,11 +123,11 @@ class SABottleneck(nn.Module):
         return out
 
 
-class ResNet(nn.Module):
+class ResNetSA(nn.Module):
     def __init__(self, block, layers, num_classes=1000, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None,
                  norm_layer=None):
-        super(ResNet, self).__init__()
+        super(ResNetSA, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
             self._norm_layer = norm_layer
@@ -217,23 +217,23 @@ class ResNet(nn.Module):
         return x
 
 
-def _sanet(arch, block, layers, pretrained, **kwargs):
-    model = ResNet(block, layers, **kwargs)
-    if pretrained:
-        state_dict = load_state_dict(model_urls[arch])
-        model.load_state_dict(state_dict, strict=False)
-    return model
+# def _sanet(arch, block, layers, pretrained, **kwargs):
+#     model = ResNet(block, layers, **kwargs)
+#     if pretrained:
+#         state_dict = load_state_dict(model_urls[arch])
+#         model.load_state_dict(state_dict, strict=False)
+#     return model
 
 
-def sa_resnet50(pretrained=False):
-    model = _sanet('SANet-50', SABottleneck, [3, 4, 6, 3], pretrained=pretrained)
-    return model
+# def sa_resnet50(pretrained=False):
+#     model = _sanet('SANet-50', SABottleneck, [3, 4, 6, 3], pretrained=pretrained)
+#     return model
 
 
-def sa_resnet101(pretrained=False):
-    model = _sanet('SANet-101', SABottleneck, [3, 4, 23, 3], pretrained=pretrained)
+# def sa_resnet101(pretrained=False):
+#     model = _sanet('SANet-101', SABottleneck, [3, 4, 23, 3], pretrained=pretrained)
 
 
-def sa_resnet152(pretrained=False):
-    model = _sanet('sSANet-152', SABottleneck, [3, 8, 36, 3], pretrained=pretrained)
-    return model
+# def sa_resnet152(pretrained=False):
+#     model = _sanet('sSANet-152', SABottleneck, [3, 8, 36, 3], pretrained=pretrained)
+#     return model

@@ -23,6 +23,7 @@ from models.cbam import Bottleneck as BNCBAM
 from models.sasa import ResNetSASA
 from models.sasa import Bottleneck as BNSASA
 # from models.vit_lsa import ViT
+from models.sa import SABottleneck, ResNetSA
 
 def build_model(config, is_pathology = True):
     model_name = config.MODEL.NAME
@@ -185,7 +186,25 @@ def build_model(config, is_pathology = True):
                 in_fts = model.fc.in_features
                 print('Build up new head MLP')
                 model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
-
+    elif model_name == 'resnet50sa':
+        if config.MODEL.IS_TRIPLET:
+            print(f'Selected model: {str(model_name)} w/ Triplet')
+            model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
+        else:
+            if is_pathology:
+                model = ResNetSA(block = SABottleneck, layers = [3, 4, 6, 3])
+                checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+                in_fts = model.fc.in_features
+                print('Build up new head MLP')
+                model.fc = build_head(in_fts, 2)
+                model.load_state_dict(checkpoint['model_state_dict'])
+                print('Loaded checkpoint abnormal')
+                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+            else:
+                model = ResNetSA(block = SABottleneck, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
+                in_fts = model.fc.in_features
+                print('Build up new head MLP')
+                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
     else:
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)

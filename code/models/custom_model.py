@@ -17,6 +17,7 @@ from models.sasa import ResNetSASA
 from models.sasa import Bottleneck as BNSASA
 from models.cbam import ResNetCBAM
 from models.cbam import Bottleneck as BNCBAM
+from models.sa import ResNetSA, SABottleneck
 
 # def reshape_transform(tensor, height=7, width=7):
 #     result = tensor.reshape(tensor.size(0),
@@ -151,6 +152,10 @@ class ModelwEmb(nn.Module):
 
         elif model_name == 'resnet50cbam':
             self.model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
+            in_fts = self.model.fc.in_features
+            self.model.fc = build_head(in_fts, 2, True)
+        elif model_name == 'resnet50sa':
+            self.model = ResNetSA(block = SABottleneck, layers = [3,4,6,3])
             in_fts = self.model.fc.in_features
             self.model.fc = build_head(in_fts, 2, True)
         else:
