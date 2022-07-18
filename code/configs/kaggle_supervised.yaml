@@ -40,7 +40,7 @@ TRAIN:
  THRES: 0.9
  T: 1.0
  LAMBDA_U: 1.
- LAMBDA_C: 4.
+ LAMBDA_C: 1.
  SAVE_CP: '/kaggle/working/'
  MIXUP: 0.2
  CUTMIX: 0.
