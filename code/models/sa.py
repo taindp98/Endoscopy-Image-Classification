@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
-from utils import load_state_dict
+# from utils import load_state_dict
 
 __all__ = ['sa_resnet50', 'sa_resnet101', 'sa_resnet152']
 model_urls = {
