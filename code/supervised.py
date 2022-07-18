@@ -128,14 +128,7 @@ class SupLearning:
     def evaluate_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
 
         if self.config.TRAIN.USE_EMA:
-            eval_model = self.ema_mo                if self.config.TRAIN.CLS_WEIGHT:
-                    self.class_weights = class_weight.compute_class_weight(class_weight  = 'balanced',
-                                classes  = np.unique(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]).tolist(),
-                                y = list(self.train_dl.dataset.df[self.config.DATA.TARGET_NAME]))
-
-                    self.class_weights = torch.tensor(self.class_weights,dtype=torch.float).to(self.device)
-                else:
-                    self.class_weights = Nonedel.ema
+            eval_model = self.ema_model.ema
         else:
             eval_model = self.model
 
