@@ -158,7 +158,7 @@ class ModelwEmb(nn.Module):
         elif model_name == 'resnet50sa':
             self.model = ResNetSA(block = SABottleneck, layers = [3,4,6,3])
             in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2, True)
+            self.model.fc = build_head(in_fts, 2)
         else:
             self.model = timm.create_model(model_name, num_classes = 2)
             in_fts = self.model.fc.in_features
