@@ -113,6 +113,7 @@ def build_head(in_fts, out_fts, is_complex = False):
                         nn.Linear(in_fts//4, out_fts)
                         )   
     else:
+        print('Build simple MLP head')
         head = nn.Linear(in_fts, out_fts, bias = True)
     return head
 
