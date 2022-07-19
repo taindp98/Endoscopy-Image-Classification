@@ -317,13 +317,13 @@ class SupLearning:
             self.epoch = epoch
             # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
-            self.writer.add_scalar("Loss/train", train_loss, epoch)
-            self.wandb.log({"Loss/train": train_loss})
+            self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
+            self.wandb.log({"Loss/train": train_loss.avg})
             # print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one(self.epoch)
-                self.wandb.log({"Loss/valid": valid_loss, "Metric/f1": valid_metric['macro/f1']})
-                self.writer.add_scalar("Loss/valid", valid_loss, epoch)
+                self.wandb.log({"Loss/valid": valid_loss.avg, "Metric/f1": valid_metric['macro/f1']})
+                self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
                 self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
                 if self.best_valid_loss and self.best_valid_score:
                     if self.best_valid_loss > valid_loss.avg:
