@@ -150,7 +150,7 @@ class ModelwEmb(nn.Module):
         if model_name == 'resnet50se':
             self.model = SEResNet(block = Bottleneck, layers = [3, 4, 6, 3])
             in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2, True)
+            self.model.fc = build_head(in_fts, 2)
 
         # elif model_name == 'resnet50cbam':
         #     self.model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
