@@ -16,7 +16,7 @@ import numpy as np
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
 from timm.loss import SoftTargetCrossEntropy
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 from fastprogress.fastprogress import master_bar, progress_bar
 
 
@@ -30,7 +30,7 @@ class SupLearning:
         self.epoch_start = 1
         self.best_valid_loss = None
         self.best_valid_score = None
-        self.writer = SummaryWriter()
+        # self.writer = SummaryWriter()
         self.wandb = wandb
     def get_dataloader(self, train_dl, valid_dl, mixup_fn, test_dl = None):
         self.train_dl = train_dl
@@ -317,14 +317,14 @@ class SupLearning:
             self.epoch = epoch
             # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
-            self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
+            # self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
             self.wandb.log({"Loss/train": train_loss.avg})
             # print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one(self.epoch)
                 self.wandb.log({"Loss/valid": valid_loss.avg, "Metric/f1": valid_metric['macro/f1']})
-                self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
-                self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
+                # self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
+                # self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
                 if self.best_valid_loss and self.best_valid_score:
                     if self.best_valid_loss > valid_loss.avg:
                         self.best_valid_loss = valid_loss.avg
@@ -339,5 +339,5 @@ class SupLearning:
                 # f1_score = valid_metric['macro/f1']
                 # print(f'\tMacro F1-score: {f1_score}')
         
-        self.writer.flush()
-        self.writer.close()
+        # self.writer.flush()
+        # self.writer.close()
