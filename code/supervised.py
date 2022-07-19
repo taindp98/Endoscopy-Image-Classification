@@ -305,7 +305,7 @@ class SupLearning:
         self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS))
         count_early_stop = 0
         for epoch in self.mb:
-            if count_early_stop > 5:
+            if count_early_stop > 10:
                 print('Early stopping')
                 break
             else:
