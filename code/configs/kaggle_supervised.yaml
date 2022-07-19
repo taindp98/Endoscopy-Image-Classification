@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_3.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_4.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -13,7 +13,7 @@ MODEL:
  NUM_CLASSES: 6
  NAME: 'efficientnet_b1'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: None
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_effb1_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: True
