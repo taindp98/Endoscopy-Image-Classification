@@ -115,7 +115,7 @@ class SupLearning:
                     losses = ce_loss(logits = outputs, 
                                     targets = targets, 
                                     class_weights = self.class_weights, 
-                                    reduction = 'mean', type_loss = 'poly')
+                                    reduction = 'mean', type_loss = 'focal')
             
             self.optimizer.zero_grad()
 
