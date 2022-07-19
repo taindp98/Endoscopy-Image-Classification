@@ -21,7 +21,7 @@ from fastprogress.fastprogress import master_bar, progress_bar
 
 
 class SupLearning:
-    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
+    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', wandb = None):
         self.model = model
         self.opt_func = opt_func
         self.device = device
@@ -31,7 +31,7 @@ class SupLearning:
         self.best_valid_loss = None
         self.best_valid_score = None
         self.writer = SummaryWriter()
-
+        self.wandb = wandb
     def get_dataloader(self, train_dl, valid_dl, mixup_fn, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
@@ -123,6 +123,7 @@ class SupLearning:
             self.optimizer.step()
             self.lr_scheduler.step_update(epoch * num_steps + step)
             self.writer.add_scalar("Loss/train", losses, epoch)
+            self.wandb.log({"Loss/train": losses})
 
             if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model)
@@ -173,7 +174,7 @@ class SupLearning:
             metric = calculate_metrics(arr_outputs, arr_targets, self.config)
             self.writer.add_scalar("Loss/valid", losses, epoch)
             self.writer.add_scalar("Metric/f1", metric['macro/f1'], epoch)
-
+            self.wandb.log({"Loss/valid": losses, "Metric/f1": metric['macro/f1']})
             if show_metric:
                 print('Metric:')
                 print(metric)
