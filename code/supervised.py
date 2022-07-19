@@ -326,9 +326,8 @@ class SupLearning:
                 # self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
                 # self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
                 if self.best_valid_loss and self.best_valid_score:
-                    if self.best_valid_loss > valid_loss.avg:
+                    if self.best_valid_loss > valid_loss.avg and self.best_valid_score < float(valid_metric['macro/f1']):
                         self.best_valid_loss = valid_loss.avg
-                    if self.best_valid_score < float(valid_metric['macro/f1']):
                         self.best_valid_score = float(valid_metric['macro/f1'])
                         self.save_checkpoint(self.config.TRAIN.SAVE_CP)
                 else:
