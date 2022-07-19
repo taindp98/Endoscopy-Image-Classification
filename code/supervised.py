@@ -122,8 +122,7 @@ class SupLearning:
             losses.backward()
             self.optimizer.step()
             self.lr_scheduler.step_update(epoch * num_steps + step)
-            self.writer.add_scalar("Loss/train", losses, epoch)
-            self.wandb.log({"Loss/train": losses})
+            
 
             if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model)
@@ -172,9 +171,7 @@ class SupLearning:
             arr_outputs = np.argmax(arr_outputs, axis=1)
             arr_targets = np.array(list_targets)
             metric = calculate_metrics(arr_outputs, arr_targets, self.config)
-            self.writer.add_scalar("Loss/valid", losses, epoch)
-            self.writer.add_scalar("Metric/f1", metric['macro/f1'], epoch)
-            self.wandb.log({"Loss/valid": losses, "Metric/f1": metric['macro/f1']})
+            
             if show_metric:
                 print('Metric:')
                 print(metric)
@@ -320,9 +317,14 @@ class SupLearning:
             self.epoch = epoch
             # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
+            self.writer.add_scalar("Loss/train", train_loss, epoch)
+            self.wandb.log({"Loss/train": train_loss})
             # print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one(self.epoch)
+                self.wandb.log({"Loss/valid": valid_loss, "Metric/f1": valid_metric['macro/f1']})
+                self.writer.add_scalar("Loss/valid", valid_loss, epoch)
+                self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
                 if self.best_valid_loss and self.best_valid_score:
                     if self.best_valid_loss > valid_loss.avg:
                         self.best_valid_loss = valid_loss.avg
