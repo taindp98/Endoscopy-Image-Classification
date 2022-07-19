@@ -320,7 +320,7 @@ class SupLearning:
             # self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
             self.wandb.log({"Loss/train": train_loss.avg})
             # print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+            if (self.epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                 valid_loss, valid_metric = self.evaluate_one(self.epoch)
                 self.wandb.log({"Loss/valid": valid_loss.avg, "Metric/f1": valid_metric['macro/f1']})
                 # self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
