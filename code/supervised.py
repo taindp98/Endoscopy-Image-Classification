@@ -27,7 +27,7 @@ class SupLearning:
         self.device = device
         self.model.to(self.device);
         ## init
-        self.epoch_start = 1
+        self.epoch_start = 0
         self.best_valid_loss = None
         self.best_valid_score = None
         # self.writer = SummaryWriter()
@@ -302,7 +302,7 @@ class SupLearning:
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
 
     def fit(self):
-        self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS+1))
+        self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS))
         count_early_stop = 0
         for epoch in self.mb:
             if self.config.TRAIN.TRAIN_RULE == 'RDW':
