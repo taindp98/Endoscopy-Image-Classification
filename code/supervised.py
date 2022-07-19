@@ -330,6 +330,11 @@ class SupLearning:
                         self.best_valid_loss = valid_loss.avg
                         self.best_valid_score = float(valid_metric['macro/f1'])
                         self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                    elif self.best_valid_loss < valid_loss.avg and self.best_valid_score > float(valid_metric['macro/f1']):
+                        print('Early stopping')
+                        break
+                    else:
+                        continue
                 else:
                     self.best_valid_loss = valid_loss.avg
                     self.best_valid_score = float(valid_metric['macro/f1'])
