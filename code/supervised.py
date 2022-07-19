@@ -305,49 +305,48 @@ class SupLearning:
         self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS))
         count_early_stop = 0
         for epoch in self.mb:
-            if self.config.TRAIN.TRAIN_RULE == 'RDW':
-                idx = epoch // 25 ## 0/1
-                # print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
-                betas = [0, 0.9999]
-                effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
-                per_cls_weights = (1.0 - betas[idx]) / np.array(effective_num)
-                per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
-                self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
-            
-            self.epoch = epoch
-            # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
-            train_loss = self.train_one(self.epoch)
-            # self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
-            self.wandb.log({"Loss/train": train_loss.avg})
-            # print(f'\tTrain Loss: {train_loss.avg:.3f}')
-            if (self.epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one(self.epoch)
-                self.wandb.log({"Loss/valid": valid_loss.avg, "Metric/f1": valid_metric['macro/f1']})
-                # self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
-                # self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
-                if self.best_valid_loss and self.best_valid_score:
-                    if self.best_valid_loss > valid_loss.avg and self.best_valid_score < float(valid_metric['macro/f1']):
+            if count_early_stop > 5:
+                print('Early stopping')
+                break
+            else:
+                if self.config.TRAIN.TRAIN_RULE == 'RDW':
+                    idx = epoch // 25 ## 0/1
+                    # print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
+                    betas = [0, 0.9999]
+                    effective_num = 1.0 - np.power(betas[idx], self.cls_num_list)
+                    per_cls_weights = (1.0 - betas[idx]) / np.array(effective_num)
+                    per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
+                    self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
+                
+                self.epoch = epoch
+                # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
+                train_loss = self.train_one(self.epoch)
+                # self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
+                self.wandb.log({"Loss/train": train_loss.avg})
+                # print(f'\tTrain Loss: {train_loss.avg:.3f}')
+                if (self.epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+                    valid_loss, valid_metric = self.evaluate_one(self.epoch)
+                    self.wandb.log({"Loss/valid": valid_loss.avg, "Metric/f1": valid_metric['macro/f1']})
+                    # self.writer.add_scalar("Loss/valid", valid_loss.avg, epoch)
+                    # self.writer.add_scalar("Metric/f1", valid_metric['macro/f1'], epoch)
+                    if self.best_valid_loss and self.best_valid_score:
+                        if self.best_valid_loss > valid_loss.avg and self.best_valid_score < float(valid_metric['macro/f1']):
+                            self.best_valid_loss = valid_loss.avg
+                            self.best_valid_score = float(valid_metric['macro/f1'])
+                            self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                        elif self.best_valid_loss < valid_loss.avg or self.best_valid_score > float(valid_metric['macro/f1']):
+                            # print('Early stopping')
+                            count_early_stop += 1
+                        else:
+                            ## do nothing
+                            pass
+                    else:
                         self.best_valid_loss = valid_loss.avg
                         self.best_valid_score = float(valid_metric['macro/f1'])
                         self.save_checkpoint(self.config.TRAIN.SAVE_CP)
-                    elif self.best_valid_loss < valid_loss.avg and self.best_valid_score > float(valid_metric['macro/f1']):
-                        print('Early stopping')
-                        break
-                    elif self.best_valid_loss < valid_loss.avg:
-                        count_early_stop += 1
-                        if count_early_stop > 5:
-                            print('Early stopping')
-                            break
-                    else:
-                        ## do nothing
-                        pass
-                else:
-                    self.best_valid_loss = valid_loss.avg
-                    self.best_valid_score = float(valid_metric['macro/f1'])
-                    self.save_checkpoint(self.config.TRAIN.SAVE_CP)
-                # print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                # f1_score = valid_metric['macro/f1']
-                # print(f'\tMacro F1-score: {f1_score}')
-        
-        # self.writer.flush()
-        # self.writer.close()
+                    # print(f'\tValid Loss: {valid_loss.avg:.3f}')
+                    # f1_score = valid_metric['macro/f1']
+                    # print(f'\tMacro F1-score: {f1_score}')
+            
+            # self.writer.flush()
+            # self.writer.close()
