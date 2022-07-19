@@ -18,12 +18,13 @@ from torch import nn
 from models.conformer import Conformer
 from torchvision import models
 from fastai.layers import PooledSelfAttention2d
-from models.cbam import ResNetCBAM
-from models.cbam import Bottleneck as BNCBAM
-from models.sasa import ResNetSASA
-from models.sasa import Bottleneck as BNSASA
+# from models.cbam import ResNetCBAM
+# from models.cbam import Bottleneck as BNCBAM
+# from models.sasa import ResNetSASA
+# from models.sasa import Bottleneck as BNSASA
 # from models.vit_lsa import ViT
-from models.sa import SABottleneck, ResNetSA
+# from models.sa import SABottleneck, ResNetSA
+from models.se import SEResNet, Bottleneck
 
 def build_model(config, is_pathology = True):
     model_name = config.MODEL.NAME
@@ -148,13 +149,13 @@ def build_model(config, is_pathology = True):
             #             num_heads=6, 
             #             mlp_ratio=4, 
             #             qkv_bias=True)
-    elif model_name == 'resnet50cbam':
+    elif model_name == 'resnet50se':
         if config.MODEL.IS_TRIPLET:
             print(f'Selected model: {str(model_name)} w/ Triplet')
             model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
         else:
             if is_pathology:
-                model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
+                model = SEResNet(Bottleneck, [3, 4, 6, 3], 1000)
                 checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
                 in_fts = model.fc.in_features
                 print('Build up new head MLP')
@@ -163,48 +164,48 @@ def build_model(config, is_pathology = True):
                 print('Loaded checkpoint abnormal')
                 model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
             else:
-                model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", config.MODEL.NUM_CLASSES, "CBAM")
+                model = SEResNet(Bottleneck, [3, 4, 6, 3], config.MODEL.NUM_CLASSES)
                 in_fts = model.fc.in_features
                 print('Build up new head MLP')
                 model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
-    elif model_name == 'resnet50sasa':
-        if config.MODEL.IS_TRIPLET:
-            print(f'Selected model: {str(model_name)} w/ Triplet')
-            model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
-        else:
-            if is_pathology:
-                model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
-                checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
-                in_fts = model.fc.in_features
-                print('Build up new head MLP')
-                model.fc = build_head(in_fts, 2)
-                model.load_state_dict(checkpoint['model_state_dict'])
-                print('Loaded checkpoint abnormal')
-                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
-            else:
-                model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
-                in_fts = model.fc.in_features
-                print('Build up new head MLP')
-                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
-    elif model_name == 'resnet50sa':
-        if config.MODEL.IS_TRIPLET:
-            print(f'Selected model: {str(model_name)} w/ Triplet')
-            model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
-        else:
-            if is_pathology:
-                model = ResNetSA(block = SABottleneck, layers = [3, 4, 6, 3])
-                checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
-                in_fts = model.fc.in_features
-                print('Build up new head MLP')
-                model.fc = build_head(in_fts, 2)
-                model.load_state_dict(checkpoint['model_state_dict'])
-                print('Loaded checkpoint abnormal')
-                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
-            else:
-                model = ResNetSA(block = SABottleneck, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
-                in_fts = model.fc.in_features
-                print('Build up new head MLP')
-                model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+    # elif model_name == 'resnet50sasa':
+    #     if config.MODEL.IS_TRIPLET:
+    #         print(f'Selected model: {str(model_name)} w/ Triplet')
+    #         model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
+    #     else:
+    #         if is_pathology:
+    #             model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+    #             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+    #             in_fts = model.fc.in_features
+    #             print('Build up new head MLP')
+    #             model.fc = build_head(in_fts, 2)
+    #             model.load_state_dict(checkpoint['model_state_dict'])
+    #             print('Loaded checkpoint abnormal')
+    #             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+    #         else:
+    #             model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
+    #             in_fts = model.fc.in_features
+    #             print('Build up new head MLP')
+    #             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+    # elif model_name == 'resnet50sa':
+    #     if config.MODEL.IS_TRIPLET:
+    #         print(f'Selected model: {str(model_name)} w/ Triplet')
+    #         model = ModelwEmb(model_name, pretrained = config.MODEL.PRE_TRAIN_PATH, num_classes= config.MODEL.NUM_CLASSES)
+    #     else:
+    #         if is_pathology:
+    #             model = ResNetSA(block = SABottleneck, layers = [3, 4, 6, 3])
+    #             checkpoint = torch.load(config.MODEL.PRE_TRAIN_PATH, map_location = {'cuda:0':'cpu'})
+    #             in_fts = model.fc.in_features
+    #             print('Build up new head MLP')
+    #             model.fc = build_head(in_fts, 2)
+    #             model.load_state_dict(checkpoint['model_state_dict'])
+    #             print('Loaded checkpoint abnormal')
+    #             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
+    #         else:
+    #             model = ResNetSA(block = SABottleneck, layers = [3, 4, 6, 3], num_classes = config.MODEL.NUM_CLASSES)
+    #             in_fts = model.fc.in_features
+    #             print('Build up new head MLP')
+    #             model.fc = build_head(in_fts, config.MODEL.NUM_CLASSES)
     else:
         if config.MODEL.MARGIN != 'None':
             model = ModelMargin(model_name, pretrained=True, num_classes=config.MODEL.NUM_CLASSES)

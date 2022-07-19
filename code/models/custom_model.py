@@ -12,12 +12,13 @@ import numpy as np
 import cv2
 from torchvision import transforms
 # from code.models.cbam import ResNetCBAM
-from models.conformer import Conformer
-from models.sasa import ResNetSASA
-from models.sasa import Bottleneck as BNSASA
-from models.cbam import ResNetCBAM
-from models.cbam import Bottleneck as BNCBAM
-from models.sa import ResNetSA, SABottleneck
+# from models.conformer import Conformer
+# from models.sasa import ResNetSASA
+# from models.sasa import Bottleneck as BNSASA
+# from models.cbam import ResNetCBAM
+# from models.cbam import Bottleneck as BNCBAM
+# from models.sa import ResNetSA, SABottleneck
+from models.se import SEResNet, Bottleneck
 
 # def reshape_transform(tensor, height=7, width=7):
 #     result = tensor.reshape(tensor.size(0),
@@ -146,19 +147,19 @@ class ModelwEmb(nn.Module):
     def __init__(self, model_name, pretrained, num_classes, low_dim = 256, is_complex = False):
         super().__init__()
         ## load pre-trained weight abnormality classification
-        if model_name == 'resnet50sasa':
-            self.model = ResNetSASA(block = BNSASA, layers = [3, 4, 6, 3])
+        if model_name == 'resnet50se':
+            self.model = SEResNet(block = Bottleneck, layers = [3, 4, 6, 3])
             in_fts = self.model.fc.in_features
             self.model.fc = build_head(in_fts, 2, True)
 
-        elif model_name == 'resnet50cbam':
-            self.model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
-            in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2, True)
-        elif model_name == 'resnet50sa':
-            self.model = ResNetSA(block = SABottleneck, layers = [3,4,6,3])
-            in_fts = self.model.fc.in_features
-            self.model.fc = build_head(in_fts, 2)
+        # elif model_name == 'resnet50cbam':
+        #     self.model = ResNetCBAM(BNCBAM, [3, 4, 6, 3], "ImageNet", 1000, "CBAM")
+        #     in_fts = self.model.fc.in_features
+        #     self.model.fc = build_head(in_fts, 2, True)
+        # elif model_name == 'resnet50sa':
+        #     self.model = ResNetSA(block = SABottleneck, layers = [3,4,6,3])
+        #     in_fts = self.model.fc.in_features
+        #     self.model.fc = build_head(in_fts, 2)
         else:
             self.model = timm.create_model(model_name, num_classes = 2)
             in_fts = self.model.fc.in_features
