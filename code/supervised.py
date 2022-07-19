@@ -303,7 +303,7 @@ class SupLearning:
 
     def fit(self):
         self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS+1))
-
+        count_early_stop = 0
         for epoch in self.mb:
             if self.config.TRAIN.TRAIN_RULE == 'RDW':
                 idx = epoch // 25 ## 0/1
@@ -333,8 +333,14 @@ class SupLearning:
                     elif self.best_valid_loss < valid_loss.avg and self.best_valid_score > float(valid_metric['macro/f1']):
                         print('Early stopping')
                         break
+                    elif self.best_valid_loss < valid_loss.avg:
+                        count_early_stop += 1
+                        if count_early_stop > 5:
+                            print('Early stopping')
+                            break
                     else:
-                        continue
+                        ## do nothing
+                        pass
                 else:
                     self.best_valid_loss = valid_loss.avg
                     self.best_valid_score = float(valid_metric['macro/f1'])
