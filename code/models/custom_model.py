@@ -4,6 +4,7 @@ attention-guided. extract the attention map to highlight the important area
 """
 # from pydantic import create_model
 from cmath import e
+from pyexpat import model
 import torch.nn as nn
 import timm
 import torch
@@ -147,6 +148,7 @@ class ModelwEmb(nn.Module):
     def __init__(self, model_name, pretrained, num_classes, low_dim = 256, is_complex = False):
         super().__init__()
         ## load pre-trained weight abnormality classification
+        self.model_name = model_name
         if model_name == 'resnet50se':
             self.model = SEResNet(block = Bottleneck, layers = [3, 4, 6, 3])
             in_fts = self.model.fc.in_features
@@ -185,9 +187,13 @@ class ModelwEmb(nn.Module):
         #     self.model.fc = build_head(in_fts, num_classes)
         #     self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
         #     self.fc = self.model.fc
-        self.model.fc = build_head(in_fts, num_classes, is_complex = True)
+        if str(model_name).startswith('resnet'):
+            self.model.fc = build_head(in_fts, num_classes, is_complex = True)
+            self.fc = self.model.fc
+        else:
+            self.model.classifier = build_head(in_fts, num_classes, is_complex = True)
+            self.fc = self.model.classifier
         self.backbone = nn.Sequential(*(list(self.model.children())[:-1]))
-        self.fc = self.model.fc
         self.head_emb = nn.Sequential(
             nn.Linear(in_fts, low_dim * self.k),
             nn.LeakyReLU(inplace=True, negative_slope=0.1),
@@ -197,11 +203,7 @@ class ModelwEmb(nn.Module):
     def forward(self, x):
         fts = self.backbone(x)
         fts = torch.flatten(fts, 1)
-        # if self.model_name == 'densenet161':
-        #     logits = self.classifier(fts)
-        # else:
-        #     logits = self.fc(fts)
-
         logits = self.fc(fts)
+
         fts_low = self.head_emb(fts)
         return logits, fts, fts_low
