@@ -34,7 +34,8 @@ def build_scheduler(config, optimizer, n_iter_per_epoch):
         lr_scheduler = CosineLRScheduler(
             optimizer,
             t_initial=num_steps,
-            t_mul=1.,
+            # t_mul=1.,
+            cycle_mul=1.,
             lr_min=5e-6,
             warmup_lr_init=warmup_lr_init,
             warmup_t=warmup_t,
