@@ -16,6 +16,9 @@ import numpy as np
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix, classification_report, precision_recall_fscore_support
 from timm.loss import SoftTargetCrossEntropy
+from torch.utils.tensorboard import SummaryWriter
+from fastprogress.fastprogress import master_bar, progress_bar
+
 
 class SupLearning:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
@@ -25,7 +28,10 @@ class SupLearning:
         self.model.to(self.device);
         ## init
         self.epoch_start = 1
-        self.best_valid_perf = None
+        self.best_valid_loss = None
+        self.best_valid_score = None
+        self.writer = SummaryWriter()
+
     def get_dataloader(self, train_dl, valid_dl, mixup_fn, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
@@ -68,10 +74,11 @@ class SupLearning:
 
         summary_loss = AverageMeter()
         
-        tk0 = tqdm(self.train_dl, total=len(self.train_dl))
+        # tk0 = tqdm(self.train_dl, total=len(self.train_dl))
         num_steps = len(self.train_dl)
 
-        for step, (images, targets) in enumerate(tk0):
+        # for step, (images, targets) in enumerate(tk0):
+        for step, (images, targets) in enumerate(progress_bar(self.train_dl, parent = self.mb)):
             if self.config.MODEL.IS_TRIPLET:
                 anchors, poss, negs = images
                 targets = targets[0].to(self.device, non_blocking=True)
@@ -90,7 +97,7 @@ class SupLearning:
                                     targets = targets, 
                                     class_weights = self.class_weights, 
                                     reduction = 'mean', 
-                                    type_loss = 'ldam',
+                                    type_loss = 'poly',
                                     cls_num_list=self.cls_num_list)
                 
                 losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
@@ -115,17 +122,18 @@ class SupLearning:
             losses.backward()
             self.optimizer.step()
             self.lr_scheduler.step_update(epoch * num_steps + step)
+            self.writer.add_scalar("Loss/train", losses, epoch)
 
             if self.config.TRAIN.USE_EMA:
                 self.ema_model.update(self.model)
             self.model.zero_grad()
 
             summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
-            tk0.set_postfix(loss=summary_loss.avg)
+            # tk0.set_postfix(loss=summary_loss.avg)
             
         return summary_loss
 
-    def evaluate_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
+    def evaluate_one(self, epoch, show_metric = False, show_report = False, show_cf_matrix = False):
 
         if self.config.TRAIN.USE_EMA:
             eval_model = self.ema_model.ema
@@ -140,8 +148,9 @@ class SupLearning:
 
         with torch.no_grad():
             
-            tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
-            for step, (images, targets) in enumerate(tk0):
+            # tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
+            # for step, (images, targets) in enumerate(tk0):
+            for images, targets in self.valid_dl:
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
@@ -152,7 +161,7 @@ class SupLearning:
                     outputs = eval_model(images)
                 losses = ce_loss(outputs, targets, reduction='mean')            
                 summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
-                tk0.set_postfix(loss=summary_loss.avg)
+                # tk0.set_postfix(loss=summary_loss.avg)
                 targets = targets.cpu().numpy()
                 outputs = F.softmax(outputs, dim=1)
                 outputs = outputs.cpu().numpy()
@@ -162,6 +171,9 @@ class SupLearning:
             arr_outputs = np.argmax(arr_outputs, axis=1)
             arr_targets = np.array(list_targets)
             metric = calculate_metrics(arr_outputs, arr_targets, self.config)
+            self.writer.add_scalar("Loss/valid", losses, epoch)
+            self.writer.add_scalar("Metric/f1", metric['macro/f1'], epoch)
+
             if show_metric:
                 print('Metric:')
                 print(metric)
@@ -260,14 +272,15 @@ class SupLearning:
         filename =  d +'_' + h + '_epoch_' + str(self.epoch)
 
         checkpoint['epoch'] = self.epoch
-        checkpoint['best_valid_perf'] = self.best_valid_perf
+        checkpoint['best_valid_loss'] = self.best_valid_loss
+        checkpoint['best_valid_score'] = self.best_valid_score
         checkpoint['model_state_dict'] = self.model.state_dict()
         checkpoint['optimizer'] = self.optimizer.state_dict()
         checkpoint['scheduler'] = self.lr_scheduler.state_dict()
 
         f = os.path.join(foldname, filename + '.pth')
         torch.save(checkpoint, f)
-        print('Saved checkpoint')
+        # print('Saved checkpoint')
 
     def load_checkpoint(self, checkpoint_dir, is_train=False):
         checkpoint = torch.load(checkpoint_dir, map_location = {'cuda:0':'cpu'})    
@@ -291,8 +304,9 @@ class SupLearning:
         self.lr_scheduler.load_state_dict(checkpoint['scheduler'])
 
     def fit(self):
-        
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS+1):
+        self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS+1))
+
+        for epoch in self.mb:
             if self.config.TRAIN.TRAIN_RULE == 'RDW':
                 idx = epoch // 25 ## 0/1
                 # print('Train rule: ', str(self.config.TRAIN.TRAIN_RULE))
@@ -302,20 +316,25 @@ class SupLearning:
                 per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(self.cls_num_list)
                 self.class_weights = torch.FloatTensor(per_cls_weights).to(self.device)
             
-
-
             self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
+            # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
             train_loss = self.train_one(self.epoch)
-            print(f'\tTrain Loss: {train_loss.avg:.3f}')
+            # print(f'\tTrain Loss: {train_loss.avg:.3f}')
             if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one()
-                if self.best_valid_perf:
-                    if self.best_valid_perf > valid_loss.avg:
-                        self.best_valid_perf = valid_loss.avg
-                        # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                valid_loss, valid_metric = self.evaluate_one(self.epoch)
+                if self.best_valid_loss and self.best_valid_score:
+                    if self.best_valid_loss > valid_loss.avg:
+                        self.best_valid_loss = valid_loss.avg
+                    if self.best_valid_score < float(valid_metric['macro/f1']):
+                        self.best_valid_score = float(valid_metric['macro/f1'])
+                        self.save_checkpoint(self.config.TRAIN.SAVE_CP)
                 else:
-                    self.best_valid_perf = valid_loss.avg
-                self.save_checkpoint(self.config.TRAIN.SAVE_CP)
-                print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                print(f'\tMetric: {valid_metric}')
+                    self.best_valid_loss = valid_loss.avg
+                    self.best_valid_score = float(valid_metric['macro/f1'])
+                    self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                # print(f'\tValid Loss: {valid_loss.avg:.3f}')
+                # f1_score = valid_metric['macro/f1']
+                # print(f'\tMacro F1-score: {f1_score}')
+        
+        self.writer.flush()
+        self.writer.close()
