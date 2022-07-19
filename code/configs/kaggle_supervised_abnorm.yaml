@@ -12,7 +12,7 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 2
- NAME: 'resnet50sa'
+ NAME: 'resnet50se'
  PRE_TRAIN: True
  PRE_TRAIN_PATH: 'None'
  MARGIN: None
