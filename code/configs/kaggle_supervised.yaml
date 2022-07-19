@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_5.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -11,9 +11,9 @@ DATA:
  IS_CROP: True
 MODEL:
  NUM_CLASSES: 6
- NAME: 'resnet50'
+ NAME: 'densenet161'
  PRE_TRAIN: True
- PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
+ PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_densenet161_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
  IS_TRIPLET: True
