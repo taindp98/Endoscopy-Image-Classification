@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_5.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -16,7 +16,7 @@ MODEL:
  PRE_TRAIN_PATH: '/kaggle/input/checkpoint-abnormal/sup_resnet50_abnormal_224.pth'
  MARGIN: None
  TYPE_SEMI: 'FixMatch'
- IS_TRIPLET: False
+ IS_TRIPLET: True
 TRAIN:
  TRAIN_RULE: None
  IS_SSL: False
@@ -40,7 +40,7 @@ TRAIN:
  THRES: 0.9
  T: 1.0
  LAMBDA_U: 1.
- LAMBDA_C: 1.
+ LAMBDA_C: 2.
  SAVE_CP: '/kaggle/working/'
  MIXUP: 0.0
  CUTMIX: 0.

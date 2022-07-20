@@ -153,3 +153,14 @@ def resize_aspect_ratio(img, size, interp=cv2.INTER_LINEAR):
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def show_triplet_dist(d_ap, d_an, triplet_loss):
+    ax = plt.figure(figsize=(10,6))
+    ax = sns.distplot(np.array(d_ap), label='positive_score')
+    ax = sns.distplot(np.array(d_an), label='negative_score')
+    ax.legend(labels=['positive_score','negative_score'])
+    ax.set_xlim(0, 10)
+    plt.show()
+    print('='*20+'Training'+'='*20)
+    print(f'triplet_loss: {triplet_loss.cpu().detach().numpy():.4f} d_A_P: {(np.mean(d_ap)):.4f} d_A_N: {(np.mean(d_an)):.4f} current_lr: {cur_lr: .5f}')    
+    print("=====================================")
