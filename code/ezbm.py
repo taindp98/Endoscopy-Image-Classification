@@ -209,7 +209,7 @@ class EZBM:
                     # outputs = eval_model(images)
                 losses = ce_loss(outputs, targets, reduction='mean')            
                 summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
-                tk0.set_postfix(loss=summary_loss.avg)
+                # tk0.set_postfix(loss=summary_loss.avg)
                 targets = targets.cpu().numpy()
                 outputs = F.softmax(outputs, dim=1)
                 outputs = outputs.cpu().numpy()
