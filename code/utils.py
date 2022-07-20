@@ -154,12 +154,13 @@ def resize_aspect_ratio(img, size, interp=cv2.INTER_LINEAR):
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-def show_triplet_dist(d_ap, d_an, triplet_loss):
-    # ax = plt.figure(figsize=(5,3))
+def show_triplet_dist(d_ap, d_an):
+    fig = plt.figure(figsize=(5,3))
     df = pd.DataFrame([])
-    df['score'] = [np.array(d_ap), np.array(d_an)]
-    df['type'] = ['positive_score','negative_score']
-    ax = sns.histplot(df, x="score", stat="probability", hue="region")
+    df['pos_score'] = list(np.array(d_ap))
+    df['neg_score'] = list(np.array(d_an))
+    fig = sns.histplot(data = df, x="pos_score", color="skyblue", label="Positive Score", kde=True)
+    fig = sns.histplot(data = df, x="neg_score", color="red", label="Negative Score", kde=True)
 
     # ax = sns.displot(np.array(d_ap))
     # ax = sns.displot(np.array(d_an))
@@ -169,4 +170,4 @@ def show_triplet_dist(d_ap, d_an, triplet_loss):
     # print('='*20+'Training'+'='*20)
     # print(f'triplet_loss: {triplet_loss.cpu().detach().numpy():.4f} d_A_P: {(np.mean(d_ap)):.4f} d_A_N: {(np.mean(d_an)):.4f}')    
     # print("=====================================")
-    return ax
+    return fig
