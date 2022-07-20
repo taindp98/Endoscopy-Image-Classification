@@ -155,11 +155,16 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def show_triplet_dist(d_ap, d_an, triplet_loss):
-    ax = plt.figure(figsize=(5,3))
-    ax = sns.displot(np.array(d_ap), label='positive_score')
-    ax = sns.displot(np.array(d_an), label='negative_score')
-    ax.legend(labels=['positive_score','negative_score'])
-    ax.set_xlim(0, 10)
+    # ax = plt.figure(figsize=(5,3))
+    df = pd.DataFrame([])
+    df['score'] = [np.array(d_ap), np.array(d_an)]
+    df['type'] = ['positive_score','negative_score']
+    ax = sns.histplot(df, x="score", stat="probability", hue="region")
+
+    # ax = sns.displot(np.array(d_ap))
+    # ax = sns.displot(np.array(d_an))
+    # ax.legend(labels=['positive_score','negative_score'])
+    # ax.set_xlim(0, 10)
     # plt.show()
     # print('='*20+'Training'+'='*20)
     # print(f'triplet_loss: {triplet_loss.cpu().detach().numpy():.4f} d_A_P: {(np.mean(d_ap)):.4f} d_A_N: {(np.mean(d_an)):.4f}')    
