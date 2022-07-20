@@ -18,6 +18,7 @@ from sklearn.metrics import confusion_matrix, classification_report, precision_r
 from timm.loss import SoftTargetCrossEntropy
 from dataset import EmbFeatEZBM
 from torch.utils.data import DataLoader
+from fastprogress.fastprogress import master_bar, progress_bar
 
 class EZBM:
     def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', wandb = None):
@@ -72,6 +73,7 @@ class EZBM:
             self.class_weights = None
 
         self.cls_num_list = self.train_dl.dataset.get_cls_num_list()
+        self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
 
     def train_one_stage_1(self, epoch):
         self.model.train()
@@ -79,11 +81,13 @@ class EZBM:
         ## Stage 1 - Train Full
         summary_loss = AverageMeter()
         
-        tk0 = tqdm(self.train_dl, total=len(self.train_dl))
+        # tk0 = tqdm(self.train_dl, total=len(self.train_dl))
         num_steps = len(self.train_dl)
         self.mem_features, self.mem_targets = [], []
 
-        for step, (images, targets) in enumerate(tk0):
+        # for step, (images, targets) in enumerate(tk0):
+        for step, (images, targets) in enumerate(progress_bar(self.train_dl, parent = self.mb)):
+
             anchors, poss, negs = images
             targets = targets[0].to(self.device, non_blocking=True)
             imgs = torch.cat([anchors, poss, negs], dim=0).to(self.device, non_blocking=True)
@@ -124,7 +128,7 @@ class EZBM:
             self.model.zero_grad()
 
             summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
-            tk0.set_postfix(loss=summary_loss.avg)
+            # tk0.set_postfix(loss=summary_loss.avg)
         return summary_loss
     def train_one_stage_2(self, epoch):
         self.model.train()
@@ -137,10 +141,12 @@ class EZBM:
 
         emb_fts_ds = EmbFeatEZBM(torch.FloatTensor(mem_outputs), torch.from_numpy(mem_targets), self.cls_num_list, self.config.TRAIN.EXPANSION)
         emb_fts_dl = DataLoader(dataset=emb_fts_ds, batch_size=self.config.DATA.BATCH_SIZE*self.config.DATA.MU, shuffle=True)
-        tk1 = tqdm(emb_fts_dl, total=len(emb_fts_dl))
+        # tk1 = tqdm(emb_fts_dl, total=len(emb_fts_dl))
         num_steps = len(emb_fts_dl)
 
-        for step, (inputs, targets, inputs_dual, targets_dual) in enumerate(tk1):
+        # for step, (inputs, targets, inputs_dual, targets_dual) in enumerate(tk1):
+        for step, (inputs, targets, inputs_dual, targets_dual) in enumerate(progress_bar(emb_fts_dl, parent = self.mb)):
+
             inputs = inputs.to(self.device, non_blocking=True)
             targets = targets.to(self.device, non_blocking=True)
             inputs_dual = inputs_dual.to(self.device, non_blocking=True)
@@ -171,7 +177,7 @@ class EZBM:
             self.model.zero_grad()
 
             summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE*self.config.DATA.MU)
-            tk1.set_postfix(loss=summary_loss.avg)
+            # tk1.set_postfix(loss=summary_loss.avg)
 
         return summary_loss
     def evaluate_one(self, show_metric = False, show_report = False, show_cf_matrix = False):
@@ -189,8 +195,10 @@ class EZBM:
 
         with torch.no_grad():
             
-            tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
-            for step, (images, targets) in enumerate(tk0):
+            # tk0 = tqdm(self.valid_dl, total=len(self.valid_dl))
+            # for step, (images, targets) in enumerate(tk0):
+            for images, targets in self.valid_dl:
+
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
@@ -343,7 +351,9 @@ class EZBM:
         print(f"Total Trainable Params: {count_parameters(self.model)}")
         self.config.TRAIN.EPOCHS = 100
         count_early_stop = 0
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
+        self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS))
+
+        for epoch in self.mb:
             if count_early_stop > 5:
                 print('Early stopping stage 1')
                 break
@@ -371,7 +381,9 @@ class EZBM:
 
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl)//self.config.DATA.MU)
-        for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
+        self.mb = master_bar(range(self.epoch_start, self.config.TRAIN.EPOCHS))
+
+        for epoch in self.mb:
             if count_early_stop > 10:
                 print('Early stopping stage 2')
                 break
