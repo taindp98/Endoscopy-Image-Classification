@@ -96,7 +96,8 @@ class SupLearning:
 
                 triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
                 mean_triplet_loss += triplet_losses
-
+                d_ap.append(ap.cpu().detach().numpy())
+                d_an.append(an.cpu().detach().numpy())
                 ce_losses = ce_loss(logits = anchor_logits, 
                                     targets = targets, 
                                     class_weights = self.class_weights, 
@@ -106,12 +107,7 @@ class SupLearning:
                 
                 losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
 
-                if (epoch)% 5 == 0:
-                    mean_triplet_loss = mean_triplet_loss/len(self.train_dl)
-                    d_ap.append(ap.cpu().detach().numpy())
-                    d_an.append(an.cpu().detach().numpy())
-                    fig = show_triplet_dist(d_ap=d_ap, d_an=d_an)
-                    self.wandb.log({"triplet_dist": fig})
+                
             else:
                 if self.mixup_fn is not None:
                     images, targets = self.mixup_fn(images, targets)
@@ -142,6 +138,10 @@ class SupLearning:
             summary_loss.update(losses.item(), self.config.DATA.BATCH_SIZE)
             
             # tk0.set_postfix(loss=summary_loss.avg)
+        if self.config.MODEL.IS_TRIPLET:
+            if (epoch)% 5 == 0:
+                fig = show_triplet_dist(d_ap=d_ap, d_an=d_an)
+                self.wandb.log({"triplet_dist": fig})
             
         return summary_loss
 
