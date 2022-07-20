@@ -110,9 +110,9 @@ class EZBM:
             losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
 
             ## storaged features at last epoch
-            if epoch + 1 == self.config.TRAIN.EPOCHS:
-                self.mem_features.extend(np.array(features[:bs].cpu().data))
-                self.mem_targets.extend(np.array(targets.cpu().data))
+            # if epoch + 1 == self.config.TRAIN.EPOCHS:
+            self.mem_features.extend(np.array(features[:bs].cpu().data))
+            self.mem_targets.extend(np.array(targets.cpu().data))
 
 
             self.optimizer.zero_grad()
