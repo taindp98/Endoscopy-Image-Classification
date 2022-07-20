@@ -20,20 +20,23 @@ from dataset import EmbFeatEZBM
 from torch.utils.data import DataLoader
 
 class EZBM:
-    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu'):
+    def __init__(self, model, opt_func="Adam", lr=1e-3, device = 'cpu', wandb = None):
         self.model = model
         self.opt_func = opt_func
         self.device = device
         self.model.to(self.device);
         ## init
         self.epoch_start = 0
-        self.best_valid_perf = None
+        # self.best_valid_perf = None
+        self.wandb = wandb
+        self.best_valid_loss = None
+        self.best_valid_score = None
+
     def get_dataloader(self, train_dl, valid_dl, mixup_fn, test_dl = None):
         self.train_dl = train_dl
         self.valid_dl = valid_dl
         self.test_dl = test_dl
         self.mixup_fn = mixup_fn
-        self.cls_num_list = self.train_dl.dataset.get_cls_num_list()
 
     def get_config(self, config):
         self.config = config
@@ -68,18 +71,8 @@ class EZBM:
         else:
             self.class_weights = None
 
-        self.loss_fc = AngularPenaltySMLoss(config, device = self.device)
-        self.loss_triplet = TripletLoss(alpha = 0.7, device = self.device)
+        self.cls_num_list = self.train_dl.dataset.get_cls_num_list()
 
-        # if self.config.TRAIN.MIXUP > 0.:
-        #  # smoothing is handled with mixup label transform
-        #     self.criterion = SoftTargetCrossEntropy()
-        # elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-        #     self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
-        # else:
-        #     # self.criterion = torch.nn.CrossEntropyLoss()
-        #     self.criterion = FocalLoss(gamma = 1, class_weights= self.class_weights, reduction= 'mean')
-        # print('Loss fnc: ', self.criterion)
     def train_one_stage_1(self, epoch):
         self.model.train()
         
@@ -104,7 +97,12 @@ class EZBM:
             pos_fts, neg_fts = torch.split(features_low[bs:], bs)
 
             triplet_losses, ap, an = self.loss_triplet(anchor_fts,pos_fts,neg_fts, average_loss=True)
-            ce_losses = ce_loss(anchor_logits, targets, class_weights = self.class_weights, reduction = 'mean', type_loss = 'poly')
+            ce_losses = ce_loss(logits = anchor_logits, 
+                                    targets = targets, 
+                                    class_weights = self.class_weights, 
+                                    reduction = 'mean', 
+                                    type_loss = 'poly',
+                                    cls_num_list=self.cls_num_list)
             losses = ce_losses + self.config.TRAIN.LAMBDA_C*triplet_losses
 
             ## storaged features at last epoch
@@ -309,7 +307,8 @@ class EZBM:
         filename =  d +'_' + h + '_epoch_' + str(self.epoch)
 
         checkpoint['epoch'] = self.epoch
-        checkpoint['best_valid_perf'] = self.best_valid_perf
+        checkpoint['best_valid_loss'] = self.best_valid_loss
+        checkpoint['best_valid_score'] = self.best_valid_score
         checkpoint['model_state_dict'] = self.model.state_dict()
         checkpoint['optimizer'] = self.optimizer.state_dict()
         checkpoint['scheduler'] = self.lr_scheduler.state_dict()
@@ -342,20 +341,29 @@ class EZBM:
     def fit(self):
         print('-'*10, 'Stage 1', '-'*10)
         print(f"Total Trainable Params: {count_parameters(self.model)}")
-        self.config.TRAIN.EPOCHS = 20
+        self.config.TRAIN.EPOCHS = 100
+        count_early_stop = 0
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
-            self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
-            train_loss_stage_1 = self.train_one_stage_1(self.epoch)
-            print(f'\tTrain Loss: {train_loss_stage_1.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one()
-                print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                print(f'\tMetric: {valid_metric}')
+            if count_early_stop > 5:
+                print('Early stopping stage 1')
+                break
+            else:
+                self.epoch = epoch
+                # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
+                train_loss_stage_1 = self.train_one_stage_1(self.epoch)
+                self.wandb.log({"Loss/train_s1": train_loss_stage_1.avg})
+                # print(f'\tTrain Loss: {train_loss_stage_1.avg:.3f}')
+                if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+                    valid_loss_stage_1, valid_metric_stage_1 = self.evaluate_one()
+                    self.wandb.log({"Loss/valid_s1": valid_loss_stage_1.avg, "Metric/f1": valid_metric_stage_1['macro/f1']})
+                    
+                # print(f'\tValid Loss: {valid_loss.avg:.3f}')
+                # print(f'\tMetric: {valid_metric}')
 
         print('-'*10, 'Stage 2', '-'*10)
         print('Freeze backbone')
         self.config.TRAIN.EPOCHS = 100
+        count_early_stop = 0
         for parameter in self.model.parameters():
             parameter.requires_grad = False
             self.model.fc.requires_grad_(True)
@@ -364,18 +372,30 @@ class EZBM:
         self.optimizer = build_optimizer(self.model, opt_func = self.opt_func, lr = self.config.TRAIN.BASE_LR)
         self.lr_scheduler = build_scheduler(config = self.config, optimizer = self.optimizer, n_iter_per_epoch = len(self.train_dl)//self.config.DATA.MU)
         for epoch in range(self.epoch_start, self.config.TRAIN.EPOCHS):
-            self.epoch = epoch
-            print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
-            train_loss_stage_2 = self.train_one_stage_2(self.epoch)
-            print(f'\tTrain Loss: {train_loss_stage_2.avg:.3f}')
-            if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
-                valid_loss, valid_metric = self.evaluate_one()
-                if self.best_valid_perf:
-                    if self.best_valid_perf > valid_loss.avg:
-                        self.best_valid_perf = valid_loss.avg
-                        # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
-                else:
-                    self.best_valid_perf = valid_loss.avg
-                self.save_checkpoint(self.config.TRAIN.SAVE_CP)
-                print(f'\tValid Loss: {valid_loss.avg:.3f}')
-                print(f'\tMetric: {valid_metric}')
+            if count_early_stop > 10:
+                print('Early stopping stage 2')
+                break
+            else:
+                self.epoch = epoch
+                # print(f'Training epoch: {self.epoch} | Current LR: {self.optimizer.param_groups[0]["lr"]:.6f}')
+                train_loss_stage_2 = self.train_one_stage_2(self.epoch)
+                # print(f'\tTrain Loss: {train_loss_stage_2.avg:.3f}')
+                self.wandb.log({"Loss/train_s2": train_loss_stage_2.avg})
+                if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
+                    valid_loss_stage_2, valid_metric_stage_2 = self.evaluate_one()
+                    self.wandb.log({"Loss/valid_s2": valid_loss_stage_2.avg, "Metric/f1": valid_metric_stage_2['macro/f1']})
+
+                    if self.best_valid_loss and self.best_valid_score:
+                        if self.best_valid_loss > valid_loss_stage_2.avg and self.best_valid_score < float(valid_metric_stage_2['macro/f1']):
+                            self.best_valid_loss = valid_loss_stage_2.avg
+                            self.best_valid_score = float(valid_metric_stage_2['macro/f1'])
+                            self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                        elif self.best_valid_loss < valid_loss_stage_2.avg or self.best_valid_score > float(valid_metric_stage_2['macro/f1']):
+                            count_early_stop += 1
+                        else:
+                            ## do nothing
+                            pass
+                    else:
+                        self.best_valid_loss = valid_loss_stage_2.avg
+                        self.best_valid_score = float(valid_metric_stage_2['macro/f1'])
+                        self.save_checkpoint(self.config.TRAIN.SAVE_CP)

@@ -1,6 +1,6 @@
 DATA:
  PATH: '/kaggle/input/hyper-kvasir/labeled_images_resize'
- ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_2.csv'
+ ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_5.csv'
  IMG_SIZE: 224
  BATCH_SIZE: 32
  NUM_WORKERS: 2
@@ -41,7 +41,7 @@ TRAIN:
  LAMBDA_U: 1.
  LAMBDA_C: 4.
  SAVE_CP: '/kaggle/working/'
- MIXUP: 0.2
+ MIXUP: 0.0
  CUTMIX: 0.
  CUTMIX_MINMAX: None
  MIXUP_PROB: 1.0
