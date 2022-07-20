@@ -155,7 +155,7 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def show_triplet_dist(d_ap, d_an):
-    fig = plt.figure(figsize=(5,3))
+    fig = plt.figure(figsize=(10,6))
     df = pd.DataFrame([])
     df['pos_score'] = list(np.array(d_ap))
     df['neg_score'] = list(np.array(d_an))
