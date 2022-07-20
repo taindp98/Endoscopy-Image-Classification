@@ -160,7 +160,8 @@ def show_triplet_dist(d_ap, d_an, triplet_loss):
     ax = sns.distplot(np.array(d_an), label='negative_score')
     ax.legend(labels=['positive_score','negative_score'])
     ax.set_xlim(0, 10)
-    plt.show()
+    # plt.show()
     # print('='*20+'Training'+'='*20)
     # print(f'triplet_loss: {triplet_loss.cpu().detach().numpy():.4f} d_A_P: {(np.mean(d_ap)):.4f} d_A_N: {(np.mean(d_an)):.4f}')    
     # print("=====================================")
+    return ax

@@ -110,7 +110,8 @@ class SupLearning:
                     mean_triplet_loss = mean_triplet_loss/len(self.train_dl)
                     d_ap.append(ap.cpu().detach().numpy())
                     d_an.append(an.cpu().detach().numpy())
-                    show_triplet_dist(d_ap=d_ap, d_an=d_an, triplet_loss=mean_triplet_loss)
+                    fig = show_triplet_dist(d_ap=d_ap, d_an=d_an, triplet_loss=mean_triplet_loss)
+                    self.wandb.log({"triplet_dist": fig})
             else:
                 if self.mixup_fn is not None:
                     images, targets = self.mixup_fn(images, targets)
