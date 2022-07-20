@@ -365,8 +365,21 @@ class EZBM:
                 # print(f'\tTrain Loss: {train_loss_stage_1.avg:.3f}')
                 if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                     valid_loss_stage_1, valid_metric_stage_1 = self.evaluate_one()
-                    self.wandb.log({"Loss/valid_s1": valid_loss_stage_1.avg, "Metric/f1": valid_metric_stage_1['macro/f1']})
-                    
+                    self.wandb.log({"Loss/valid_s1": valid_loss_stage_1.avg, "Metric/f1_s1": valid_metric_stage_1['macro/f1']})
+                    if self.best_valid_loss and self.best_valid_score:
+                        if self.best_valid_loss > valid_loss_stage_1.avg and self.best_valid_score < float(valid_metric_stage_1['macro/f1']):
+                            self.best_valid_loss = valid_loss_stage_1.avg
+                            self.best_valid_score = float(valid_metric_stage_1['macro/f1'])
+                            # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
+                        elif self.best_valid_loss < valid_loss_stage_1.avg or self.best_valid_score > float(valid_metric_stage_1['macro/f1']):
+                            count_early_stop += 1
+                        else:
+                            ## do nothing
+                            pass
+                    else:
+                        self.best_valid_loss = valid_loss_stage_1.avg
+                        self.best_valid_score = float(valid_metric_stage_1['macro/f1'])
+                        # self.save_checkpoint(self.config.TRAIN.SAVE_CP)
                 # print(f'\tValid Loss: {valid_loss.avg:.3f}')
                 # print(f'\tMetric: {valid_metric}')
 
@@ -395,7 +408,7 @@ class EZBM:
                 self.wandb.log({"Loss/train_s2": train_loss_stage_2.avg})
                 if (epoch)% self.config.TRAIN.FREQ_EVAL == 0:
                     valid_loss_stage_2, valid_metric_stage_2 = self.evaluate_one()
-                    self.wandb.log({"Loss/valid_s2": valid_loss_stage_2.avg, "Metric/f1": valid_metric_stage_2['macro/f1']})
+                    self.wandb.log({"Loss/valid_s2": valid_loss_stage_2.avg, "Metric/f1_s2": valid_metric_stage_2['macro/f1']})
 
                     if self.best_valid_loss and self.best_valid_score:
                         if self.best_valid_loss > valid_loss_stage_2.avg and self.best_valid_score < float(valid_metric_stage_2['macro/f1']):
