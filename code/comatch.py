@@ -255,7 +255,7 @@ class CoMatch:
                 images = images.to(self.device, non_blocking=True)
                 targets = targets.to(self.device, non_blocking=True)
                 
-                outputs, _ = eval_model(images)
+                outputs, _, _ = eval_model(images)
                 
                 losses = ce_loss(outputs, targets, reduction='mean')            
 
