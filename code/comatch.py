@@ -145,7 +145,7 @@ class CoMatch:
 
             targets_x = targets_x.to(self.device, non_blocking=True)
             
-            logits, features = self.model(imgs)
+            logits, _, features = self.model(imgs)
 
             logits_x = logits[:bt]
             logits_u_w, logits_u_s0, logits_u_s1 = torch.split(logits[bt:], btu)
