@@ -128,7 +128,7 @@ class CoMatch:
 
         tk0 = tqdm(self.train_unlabeled_dl, total=len(self.train_unlabeled_dl))
 
-        for batch_idx, (inputs_u_w, inputs_u_s_0, inputs_u_s_1) in enumerate(tk0):
+        for batch_idx, (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ in enumerate(tk0):
             try:
                 inputs_x, targets_x = next(self.train_labeled_dl)
             except Exception:
