@@ -4,7 +4,7 @@ DATA:
  UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
  IMG_SIZE: 112
- BATCH_SIZE: 32
+ BATCH_SIZE: 28
  NUM_WORKERS: 2
  MOCKUP_SSL: False
  MU: 6
