@@ -93,39 +93,47 @@ class CoMatch:
         # for distribution alignment
         self.prob_list = []
 
-        if self.config.TRAIN.MIXUP > 0.:
-         # smoothing is handled with mixup label transform
-            self.criterion = SoftTargetCrossEntropy()
-        elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
-            self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
-        else:
-            self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
-        print('Loss fnc: ', self.criterion)
+        # if self.config.TRAIN.MIXUP > 0.:
+        #  # smoothing is handled with mixup label transform
+        #     self.criterion = SoftTargetCrossEntropy()
+        # elif self.config.TRAIN.LABEL_SMOOTHING > 0.:
+        #     self.criterion = LabelSmoothingLoss(epsilon = config.TRAIN.LABEL_SMOOTHING, weight = self.class_weights)
+        # else:
+        #     self.criterion = torch.nn.CrossEntropyLoss(weight = self.class_weights)
+        # print('Loss fnc: ', self.criterion)
 
     def train_one(self, epoch):
         self.model.train()
-        dl_x = iter(self.train_labeled_dl)
-        dl_u = iter(self.train_unlabeled_dl)
+        # dl_x = iter(self.train_labeled_dl)
+        # dl_u = iter(self.train_unlabeled_dl)
         
         summary_loss = AverageMeter()
         
-        tk0 = tqdm(range(self.config.TRAIN.EVAL_STEP), total=self.config.TRAIN.EVAL_STEP)
+        # tk0 = tqdm(range(self.config.TRAIN.EVAL_STEP), total=self.config.TRAIN.EVAL_STEP)
+        # for batch_idx, _ in enumerate(tk0):
 
-        for batch_idx, _ in enumerate(tk0):
+        #     # inputs_x, targets_x = next(dl_x)
+        #     # (inputs_u_w, inputs_u_s_0, inputs_u_s_1)= next(dl_u)
 
-            # inputs_x, targets_x = next(dl_x)
-            # (inputs_u_w, inputs_u_s_0, inputs_u_s_1)= next(dl_u)
+        #     try:
+        #         inputs_x, targets_x = dl_x.next()
+        #     except:
+        #         dl_x = iter(self.train_labeled_dl)
+        #         inputs_x, targets_x = dl_x.next()
+        #     try:
+        #         (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ = dl_u.next()
+        #     except:
+        #         dl_u = iter(self.train_unlabeled_dl)
+        #         (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ = dl_u.next()
 
+        tk0 = tqdm(self.train_unlabeled_dl, total=len(self.train_unlabeled_dl))
+
+        for batch_idx, (inputs_u_w, inputs_u_s_0, inputs_u_s_1) in enumerate(tk0):
             try:
-                inputs_x, targets_x = dl_x.next()
-            except:
+                inputs_x, targets_x = next(self.train_labeled_dl)
+            except Exception:
                 dl_x = iter(self.train_labeled_dl)
                 inputs_x, targets_x = dl_x.next()
-            try:
-                (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ = dl_u.next()
-            except:
-                dl_u = iter(self.train_unlabeled_dl)
-                (inputs_u_w, inputs_u_s_0, inputs_u_s_1), _ = dl_u.next()
 
             # bs_lb = inputs_x.size[0]
             bt = inputs_x.size(0)
@@ -143,8 +151,11 @@ class CoMatch:
             feats_x = features[:bt]
             feats_u_w, feats_u_s0, feats_u_s1 = torch.split(features[bt:], btu)
 
-            # loss_x = ce_loss(logits_x, targets_x, class_weights = self.class_weights, reduction = 'mean')
-            loss_x = self.criterion(logits_x, targets_x)
+            loss_x = ce_loss(logits = logits_x, 
+                            targets = targets_x, 
+                            class_weights = self.class_weights, 
+                            reduction = 'mean', 
+                            type_loss = 'poly')
 
             with torch.no_grad():
                 logits_u_w = logits_u_w.detach()
