@@ -35,6 +35,8 @@ class CoMatch:
         self.temperature = 0.2
         # pseudo label graph threshold
         self.contrast_th = 0.8
+        # focal loss for unlabeled branch
+        self.gamma = 2
 
     def get_dataloader(self, train_dl, valid_dl, test_dl = None):
         self.train_labeled_dl, self.train_unlabeled_dl  = train_dl
@@ -211,7 +213,10 @@ class CoMatch:
             loss_contrast = loss_contrast.mean()  
             
             # unsupervised classification loss
-            loss_u = - torch.sum((F.log_softmax(logits_u_s0,dim=1) * probs),dim=1) * mask                
+            logp = - torch.sum((F.log_softmax(logits_u_s0,dim=1) * probs),dim=1) * mask  
+            ## apply focal loss
+            p = torch.exp(-logp)    
+            loss_u = (1 - p) ** self.gamma * logp
             loss_u = loss_u.mean()
 
             losses = loss_x + self.config.TRAIN.LAMBDA_U * loss_u + self.config.TRAIN.LAMBDA_C * loss_contrast
