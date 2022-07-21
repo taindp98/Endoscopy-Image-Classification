@@ -320,14 +320,14 @@ def get_data(config, df_anno, df_unanno = None, is_full_sup = True, is_visual=Fa
     ## break down into labeled and unlabeled set
 
     mixup_fn = None
-    if config.TRAIN.CUTMIX_MINMAX == 'None':
-        config.TRAIN.CUTMIX_MINMAX = None
-    mixup_active = config.TRAIN.MIXUP > 0. or config.TRAIN.CUTMIX > 0. or config.TRAIN.CUTMIX_MINMAX is not None
-    if mixup_active:
-        mixup_fn = Mixup(
-            mixup_alpha=config.TRAIN.MIXUP, cutmix_alpha=config.TRAIN.CUTMIX, cutmix_minmax=config.TRAIN.CUTMIX_MINMAX,
-            prob=config.TRAIN.MIXUP_PROB, switch_prob=config.TRAIN.MIXUP_SWITCH_PROB, mode=config.TRAIN.MIXUP_MODE,
-            label_smoothing=config.TRAIN.LABEL_SMOOTHING, num_classes=config.MODEL.NUM_CLASSES)
+    # if config.TRAIN.CUTMIX_MINMAX == 'None':
+    #     config.TRAIN.CUTMIX_MINMAX = None
+    # mixup_active = config.TRAIN.MIXUP > 0. or config.TRAIN.CUTMIX > 0. or config.TRAIN.CUTMIX_MINMAX is not None
+    # if mixup_active:
+    #     mixup_fn = Mixup(
+    #         mixup_alpha=config.TRAIN.MIXUP, cutmix_alpha=config.TRAIN.CUTMIX, cutmix_minmax=config.TRAIN.CUTMIX_MINMAX,
+    #         prob=config.TRAIN.MIXUP_PROB, switch_prob=config.TRAIN.MIXUP_SWITCH_PROB, mode=config.TRAIN.MIXUP_MODE,
+    #         label_smoothing=config.TRAIN.LABEL_SMOOTHING, num_classes=config.MODEL.NUM_CLASSES)
 
     if predict:
         unlabeled_ds = GIDataset(df = df_unanno, config = config, transforms = get_transform(config = config, is_train=False, is_labeled=False, type_semi = type_semi, is_reprod = is_reprod), is_unanno = True)
