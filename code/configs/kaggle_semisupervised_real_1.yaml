@@ -43,6 +43,6 @@ TRAIN:
  CLS_WEIGHT: True
  THRES: 0.9
  T: 1.0
- LAMBDA_U: 1
+ LAMBDA_U: 2
  LAMBDA_C: 2
  SAVE_CP: '/kaggle/working/'
