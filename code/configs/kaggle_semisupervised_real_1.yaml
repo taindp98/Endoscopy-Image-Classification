@@ -3,11 +3,11 @@ DATA:
  ANNO: '../resource/hyper_kvasir/df_6_pathologies_ite_1.csv'
  UNANNO_PATH: '/kaggle/input/hyperkvasirunlabeled/unlabeled-images-resize'
  UNANNO: '../resource/hyper_kvasir/full_unlabeled_predict.csv'
- IMG_SIZE: 224
+ IMG_SIZE: 128
  BATCH_SIZE: 32
  NUM_WORKERS: 2
  MOCKUP_SSL: False
- MU: 6
+ MU: 7
  INPUT_NAME: 'image'
  TARGET_NAME: 'target'
  IS_CROP: True

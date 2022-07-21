@@ -163,7 +163,11 @@ class ModelwEmb(nn.Module):
         #     in_fts = self.model.fc.in_features
         #     self.model.fc = build_head(in_fts, 2)
         else:
-            self.model = timm.create_model(model_name, pretrained=True, num_classes = 2)
+            if pretrained:
+                self.model = timm.create_model(model_name, pretrained=True, num_classes = 2)
+            else:
+                self.model = timm.create_model(model_name, pretrained=False, num_classes = 2)
+
             if str(model_name).startswith('resnet'):
                 in_fts = self.model.fc.in_features
             else:
